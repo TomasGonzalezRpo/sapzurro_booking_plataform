@@ -1,10 +1,8 @@
 import React, { useState } from "react";
 import { Mail, AlertCircle, CheckCircle, ArrowLeft } from "lucide-react";
-// 🎯 Importar el hook de autenticación
-import { useAuth } from "../../contexts/AuthContext"; // Asegúrate de que la ruta sea correcta
+import { useAuth } from "../../contexts/AuthContext";
 
 const ForgotPasswordForm = ({ onSwitchToLogin }) => {
-  // 🎯 Obtener la función de recuperación y el estado de carga del contexto
   const { recoverCredentials, loading } = useAuth();
 
   const [email, setEmail] = useState("");
@@ -31,13 +29,11 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
 
     // 2. Llamada a la lógica real del contexto
     try {
-      // 🎯 Llamar a recoverCredentials del AuthContext
       await recoverCredentials(email);
 
       // Si la llamada es exitosa, mostrar mensaje de éxito.
       setSuccess(true);
     } catch (err) {
-      // 🎯 Capturar y mostrar errores del contexto/backend
       setError(err.message || "Ocurrió un error al intentar la recuperación.");
     }
   };

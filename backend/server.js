@@ -8,6 +8,8 @@ const perfilRoutes = require("./routes/perfil.routes");
 const personaRoutes = require("./routes/persona.routes");
 const usuarioRoutes = require("./routes/usuario.routes");
 
+const authRoutes = require("./routes/usuario.routes");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 
@@ -19,9 +21,17 @@ app.use(
 );
 app.use(express.json());
 
+// ====================================================================
+// Mapeo de Rutas
+// ====================================================================
+
 app.use("/api/perfiles", perfilRoutes);
 app.use("/api/personas", personaRoutes);
+
+// Mapeo de las rutas CRUD de usuarios
 app.use("/api/usuarios", usuarioRoutes);
+
+app.use("/api/auth", authRoutes);
 
 const startServer = async () => {
   try {

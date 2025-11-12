@@ -17,16 +17,17 @@ const Usuario = db.sequelize.define(
     password: {
       type: db.DataTypes.STRING(255),
       allowNull: false,
+      field: "contrasena", // <--- ¡MODIFICACIÓN CLAVE! Mapea 'password' a la columna 'contrasena'
     },
     estado: {
       type: db.DataTypes.TINYINT,
       defaultValue: 1,
       allowNull: false,
-    }, // CLAVES FORÁNEAS
+    },
     id_persona: {
       type: db.DataTypes.INTEGER,
       allowNull: false,
-      unique: true, // Un usuario solo puede estar asociado a una persona (1:1)
+      unique: true,
       references: {
         model: "persona",
         key: "id_persona",
@@ -40,22 +41,52 @@ const Usuario = db.sequelize.define(
         key: "id_perfil",
       },
     },
+    resetPasswordToken: {
+      type: db.DataTypes.STRING(255),
+      allowNull: true,
+    }, // 🎯 NUEVO: Campo para la Expiración del Token (en milisegundos Unix)
+    resetPasswordExpires: {
+      type: db.DataTypes.BIGINT, // Usamos BIGINT o DATE, BIGINT es común para milisegundos
+      allowNull: true,
+    },
   },
   {
     tableName: "usuario",
     timestamps: false,
     freezeTableName: true,
     hooks: {
+      // hashing en creación
       beforeCreate: async (usuario) => {
         if (usuario.password) {
           const salt = await bcrypt.genSalt(10);
           usuario.password = await bcrypt.hash(usuario.password, salt);
         }
-      },
+      }, // hashing para actualizaciones por instancia (se dispara con instance.save())
       beforeUpdate: async (usuario) => {
-        if (usuario.changed("password")) {
+        if (
+          typeof usuario.changed === "function" &&
+          usuario.changed("password")
+        ) {
           const salt = await bcrypt.genSalt(10);
           usuario.password = await bcrypt.hash(usuario.password, salt);
+        }
+      }, // cobertura adicional: antes de save (create + update por instancia)
+      beforeSave: async (usuario) => {
+        if (
+          typeof usuario.changed === "function" &&
+          usuario.changed("password")
+        ) {
+          const salt = await bcrypt.genSalt(10);
+          usuario.password = await bcrypt.hash(usuario.password, salt);
+        }
+      }, // si usas Model.update(...) sin individualHooks, aquí se intercepta
+      beforeBulkUpdate: async (options) => {
+        if (options.attributes && options.attributes.password) {
+          const salt = await bcrypt.genSalt(10);
+          options.attributes.password = await bcrypt.hash(
+            options.attributes.password,
+            salt
+          );
         }
       },
     },

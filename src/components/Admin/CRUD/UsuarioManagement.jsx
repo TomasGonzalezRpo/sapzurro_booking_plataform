@@ -1,4 +1,5 @@
-import React, { useState, useCallback } from "react";
+import React, { useState, useCallback, useEffect } from "react";
+import axios from "axios";
 import {
   Plus,
   Edit2,
@@ -8,12 +9,44 @@ import {
   AlertCircle,
   CheckCircle,
   Info,
+  Loader,
 } from "lucide-react";
 
-/**
- * Componente Modal de Confirmación o Mensaje
- * Reemplaza los usos de alert() y confirm()
- */
+const API_URL = "http://localhost:5000/api/usuarios";
+
+/* ----------------------------------------------------------------------
+   ErrorBoundary: captura errores en render para evitar pantalla en blanco
+   ---------------------------------------------------------------------- */
+class ErrorBoundary extends React.Component {
+  constructor(props) {
+    super(props);
+    this.state = { hasError: false, error: null };
+  }
+  static getDerivedStateFromError(error) {
+    return { hasError: true, error };
+  }
+  componentDidCatch(error, info) {
+    console.error("ErrorBoundary caught:", error, info);
+  }
+  render() {
+    if (this.state.hasError) {
+      return (
+        <div className="p-8 bg-red-50 rounded-lg">
+          <h2 className="text-xl font-bold text-red-700">Error en la vista</h2>
+          <p className="mt-2 text-red-600">
+            Ocurrió un error al renderizar la página de Usuarios. Revisa la
+            consola para más detalles.
+          </p>
+        </div>
+      );
+    }
+    return this.props.children;
+  }
+}
+
+/* ----------------------------------------------------------------------
+   ConfirmationModal (sin cambios funcionales)
+   ---------------------------------------------------------------------- */
 const ConfirmationModal = ({
   title,
   message,
@@ -59,7 +92,6 @@ const ConfirmationModal = ({
             <button
               onClick={() => {
                 onConfirm();
-                onClose();
               }}
               className="px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all shadow-md"
             >
@@ -72,51 +104,14 @@ const ConfirmationModal = ({
   );
 };
 
-const UsuarioManagement = () => {
-  // Datos simulados
-  const [usuarios, setUsuarios] = useState([
-    {
-      id_usuario: 1,
-      username: "admin",
-      contrasena: "admin123",
-      id_persona: 1,
-      nombres: "Yonier",
-      apellidos: "Garcés",
-      correo: "Yonier@gmail.com",
-      id_perfil: 1,
-      rol: "Administrador",
-      provider: "local",
-      estado: 1,
-    },
-    {
-      id_usuario: 2,
-      username: "hotelmar",
-      contrasena: "clave123",
-      id_persona: 2,
-      nombres: "Tomas",
-      apellidos: "Gonzáles",
-      correo: "yonier@gmail.com",
-      id_perfil: 3,
-      rol: "Aliado",
-      provider: "local",
-      estado: 1,
-    },
-    {
-      id_usuario: 3,
-      username: "usuario1",
-      contrasena: "usuario123",
-      id_persona: 3,
-      nombres: "Andrés",
-      apellidos: "González",
-      correo: "maria@gmail.com",
-      id_perfil: 2,
-      rol: "Usuario",
-      provider: "local",
-      estado: 1,
-    },
-  ]);
+/* ----------------------------------------------------------------------
+   Componente principal (defensivo)
+   ---------------------------------------------------------------------- */
+const UsuarioManagementInner = () => {
+  const [usuarios, setUsuarios] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [errorCarga, setErrorCarga] = useState(null);
 
-  // Perfiles disponibles
   const perfilesDisponibles = [
     { id_perfil: 1, nombre: "Administrador" },
     { id_perfil: 2, nombre: "Usuario" },
@@ -124,7 +119,6 @@ const UsuarioManagement = () => {
   ];
 
   const [searchTerm, setSearchTerm] = useState("");
-  // Estado para el modal de Crear/Editar
   const [showModal, setShowModal] = useState(false);
   const [editingUsuario, setEditingUsuario] = useState(null);
   const [formData, setFormData] = useState({
@@ -140,11 +134,9 @@ const UsuarioManagement = () => {
   });
   const [error, setError] = useState("");
 
-  // ESTADOS PARA EL MODAL DE CONFIRMACIÓN/MENSAJES (Reemplaza alert/confirm)
   const [showConfirmModal, setShowConfirmModal] = useState(false);
-  const [modalContent, setModalContent] = useState({}); // { title, message, onConfirm, isConfirmation }
+  const [modalContent, setModalContent] = useState({});
 
-  // Función para abrir el modal de confirmación/mensaje
   const openConfirmModal = useCallback((title, message, onConfirm = null) => {
     setModalContent({
       title,
@@ -160,13 +152,96 @@ const UsuarioManagement = () => {
     setModalContent({});
   }, []);
 
-  const filteredUsuarios = usuarios.filter(
-    (usuario) =>
-      usuario.username.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.nombres.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.apellidos.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      usuario.correo.toLowerCase().includes(searchTerm.toLowerCase())
-  );
+  /* --------------------------------------------------------------------
+     fetchUsuarios: robusto y con logs para depurar respuestas inesperadas
+     -------------------------------------------------------------------- */
+  const fetchUsuarios = useCallback(async () => {
+    setLoading(true);
+    setErrorCarga(null);
+    try {
+      const response = await axios.get(API_URL, {
+        headers: {
+          "Cache-Control": "no-cache",
+          Pragma: "no-cache",
+          Expires: "0",
+        },
+        params: { _: new Date().getTime() },
+        validateStatus: (s) => s < 500,
+      });
+
+      console.log("fetchUsuarios - status:", response.status);
+      console.log("fetchUsuarios - response.data:", response.data);
+
+      if (response.status !== 200) {
+        setErrorCarga(`Error HTTP ${response.status}`);
+        setUsuarios([]);
+        return;
+      }
+
+      const raw = response.data;
+      if (!Array.isArray(raw)) {
+        if (Array.isArray(raw?.data)) {
+          console.warn(
+            "fetchUsuarios: response.data.data es un array (ajustando)."
+          );
+          raw = raw.data; // eslint-disable-line no-param-reassign
+        } else {
+          console.error(
+            "fetchUsuarios: la respuesta no es un array ni contiene data[]."
+          );
+          setErrorCarga("Respuesta inesperada del servidor");
+          setUsuarios([]);
+          return;
+        }
+      }
+
+      // Adaptamos a formato frontend (username, nombres, apellidos, correo, rol)
+      const usuariosAdaptados = raw.map((u) => ({
+        id_usuario: u?.id_usuario ?? null,
+        username: u?.usuario ?? u?.username ?? "",
+        nombres: u?.personaInfo?.nombres ?? "",
+        apellidos: u?.personaInfo?.apellidos ?? "",
+        correo: u?.personaInfo?.correo ?? u?.correo ?? "",
+        id_perfil: u?.id_perfil ?? null,
+        rol: u?.perfil?.nombre ?? u?.rol ?? "Desconocido",
+        provider: u?.provider ?? "local",
+        estado: typeof u?.estado !== "undefined" ? u.estado : 1,
+      }));
+
+      setUsuarios(usuariosAdaptados);
+    } catch (err) {
+      console.error("fetchUsuarios error:", err);
+      setErrorCarga(
+        "No fue posible conectarse al servidor o la respuesta fue inválida."
+      );
+      setUsuarios([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchUsuarios();
+  }, [fetchUsuarios]);
+
+  const filteredUsuarios = (usuarios || []).filter((usuario) => {
+    try {
+      const username = String(usuario?.username || "").toLowerCase();
+      const nombres = String(usuario?.nombres || "").toLowerCase();
+      const apellidos = String(usuario?.apellidos || "").toLowerCase();
+      const correo = String(usuario?.correo || "").toLowerCase();
+      const term = String(searchTerm || "").toLowerCase();
+      return (
+        username.includes(term) ||
+        nombres.includes(term) ||
+        apellidos.includes(term) ||
+        correo.includes(term)
+      );
+    } catch (e) {
+      console.error("Error filtrando usuarios:", e);
+      return false;
+    }
+  });
 
   const getRolColor = (rol) => {
     switch (rol) {
@@ -181,7 +256,9 @@ const UsuarioManagement = () => {
     }
   };
 
-  // Abrir modal para crear
+  /* --------------------------------------------------------------------
+     CRUD handlers
+     -------------------------------------------------------------------- */
   const handleNuevo = () => {
     setEditingUsuario(null);
     setFormData({
@@ -199,52 +276,48 @@ const UsuarioManagement = () => {
     setShowModal(true);
   };
 
-  // Abrir modal para editar
   const handleEditar = (usuario) => {
     setEditingUsuario(usuario);
     setFormData({
-      username: usuario.username,
-      contrasena: "", // No mostrar contraseña actual
+      username: usuario?.username ?? "",
+      contrasena: "",
       confirmarContrasena: "",
-      id_perfil: usuario.id_perfil,
-      nombres: usuario.nombres,
-      apellidos: usuario.apellidos,
-      correo: usuario.correo,
-      provider: usuario.provider,
-      estado: usuario.estado,
+      id_perfil: usuario?.id_perfil ?? 2,
+      nombres: usuario?.nombres ?? "",
+      apellidos: usuario?.apellidos ?? "",
+      correo: usuario?.correo ?? "",
+      provider: usuario?.provider ?? "local",
+      estado: usuario?.estado ?? 1,
     });
     setError("");
     setShowModal(true);
   };
 
-  // Guardar (crear o actualizar)
-  const handleGuardar = () => {
+  const handleGuardar = async () => {
     setError("");
 
-    // Validaciones
-    if (!formData.username.trim()) {
+    if (!String(formData.username || "").trim()) {
       setError("El username es obligatorio");
       return;
     }
-
-    if (!formData.nombres.trim() || !formData.apellidos.trim()) {
+    if (
+      !String(formData.nombres || "").trim() ||
+      !String(formData.apellidos || "").trim()
+    ) {
       setError("Nombres y apellidos son obligatorios");
       return;
     }
-
-    if (!formData.correo.trim()) {
+    if (!String(formData.correo || "").trim()) {
       setError("El correo es obligatorio");
       return;
     }
 
-    // Validar email
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.correo)) {
       setError("Por favor ingresa un correo válido");
       return;
     }
 
-    // Validar contraseña solo al crear o si se está cambiando
     if (!editingUsuario) {
       if (!formData.contrasena) {
         setError("La contraseña es obligatoria");
@@ -259,7 +332,6 @@ const UsuarioManagement = () => {
         return;
       }
     } else if (formData.contrasena) {
-      // Si está editando y quiere cambiar la contraseña
       if (formData.contrasena.length < 6) {
         setError("La contraseña debe tener al menos 6 caracteres");
         return;
@@ -270,119 +342,99 @@ const UsuarioManagement = () => {
       }
     }
 
-    // Verificar duplicados
-    const usernameDuplicado = usuarios.find(
-      (u) =>
-        u.username.toLowerCase() === formData.username.toLowerCase() &&
-        (!editingUsuario || u.id_usuario !== editingUsuario.id_usuario)
-    );
-    if (usernameDuplicado) {
-      setError("Ya existe un usuario con este username");
-      return;
-    }
+    const dataToSend = {
+      username: formData.username,
+      contrasena: formData.contrasena || undefined,
+      id_perfil: formData.id_perfil,
+      nombres: formData.nombres,
+      apellidos: formData.apellidos,
+      correo: formData.correo,
+      provider: formData.provider,
+      estado: formData.estado,
+    };
 
-    const correoDuplicado = usuarios.find(
-      (u) =>
-        u.correo.toLowerCase() === formData.correo.toLowerCase() &&
-        (!editingUsuario || u.id_usuario !== editingUsuario.id_usuario)
-    );
-    if (correoDuplicado) {
-      setError("Ya existe un usuario con este correo");
-      return;
-    }
+    try {
+      if (editingUsuario) {
+        await axios.put(`${API_URL}/${editingUsuario.id_usuario}`, dataToSend);
+        openConfirmModal("Éxito", "Usuario actualizado exitosamente.");
+      } else {
+        await axios.post(API_URL, dataToSend);
+        openConfirmModal("Éxito", "Usuario creado exitosamente.");
+      }
 
-    // Obtener nombre del rol
-    const rolSeleccionado = perfilesDisponibles.find(
-      (p) => p.id_perfil === formData.id_perfil
-    );
-
-    if (editingUsuario) {
-      // Actualizar
-      setUsuarios(
-        usuarios.map((u) =>
-          u.id_usuario === editingUsuario.id_usuario
-            ? {
-                ...u,
-                username: formData.username,
-                ...(formData.contrasena && { contrasena: formData.contrasena }), // Solo actualizar si hay nueva contraseña
-                id_perfil: formData.id_perfil,
-                rol: rolSeleccionado.nombre,
-                nombres: formData.nombres,
-                apellidos: formData.apellidos,
-                correo: formData.correo,
-                provider: formData.provider,
-                estado: formData.estado,
-              }
-            : u
-        )
+      setShowModal(false);
+      await fetchUsuarios();
+    } catch (err) {
+      console.error(
+        "Error al guardar usuario (frontend):",
+        err.response ?? err.message ?? err
       );
-      // Reemplazo de alert()
-      openConfirmModal("Éxito", "Usuario actualizado exitosamente.");
-    } else {
-      // Crear
-      const newUsuario = {
-        id_usuario: Math.max(...usuarios.map((u) => u.id_usuario)) + 1,
-        id_persona: Math.max(...usuarios.map((u) => u.id_persona || 0)) + 1,
-        username: formData.username,
-        contrasena: formData.contrasena,
-        id_perfil: formData.id_perfil,
-        rol: rolSeleccionado.nombre,
-        nombres: formData.nombres,
-        apellidos: formData.apellidos,
-        correo: formData.correo,
-        provider: formData.provider,
-        estado: formData.estado,
-      };
-      setUsuarios([...usuarios, newUsuario]);
-      // Reemplazo de alert()
-      openConfirmModal("Éxito", "Usuario creado exitosamente.");
+      setError(
+        err.response?.data?.message ||
+          err.response?.data?.details ||
+          "Error al conectar con el servidor. Inténtalo de nuevo."
+      );
     }
-
-    setShowModal(false);
   };
 
-  // Inhabilitar (borrado lógico)
   const handleInhabilitar = (usuario) => {
     const action = usuario.estado === 1 ? "inhabilitar" : "habilitar";
+    const newEstado = usuario.estado === 1 ? 0 : 1;
     const message = `¿Está seguro de ${action} al usuario "${usuario.username}"?`;
 
-    // Reemplazo de confirm()
     openConfirmModal(
       `${action === "inhabilitar" ? "Inhabilitar" : "Habilitar"} Usuario`,
       message,
-      () => {
-        setUsuarios((currentUsers) =>
-          currentUsers.map((u) =>
-            u.id_usuario === usuario.id_usuario
-              ? { ...u, estado: u.estado === 1 ? 0 : 1 }
-              : u
-          )
-        );
-        // Reemplazo de alert()
-        openConfirmModal(
-          "Éxito",
-          `Usuario ${
-            action === "inhabilitar" ? "inhabilitado" : "habilitado"
-          } exitosamente.`
-        );
+      async () => {
+        try {
+          await axios.put(`${API_URL}/estado/${usuario.id_usuario}`, {
+            estado: newEstado,
+          });
+          openConfirmModal(
+            "Éxito",
+            `Usuario ${
+              action === "inhabilitar" ? "inhabilitado" : "habilitado"
+            } exitosamente.`
+          );
+          await fetchUsuarios();
+          closeConfirmModal();
+        } catch (error) {
+          console.error(`Error al ${action} usuario:`, error);
+          openConfirmModal(
+            "Error",
+            `Fallo al ${action} usuario: ${
+              error.response?.data?.message || "Error de conexión."
+            }`
+          );
+        }
       }
     );
   };
 
-  // Eliminar físicamente
   const handleEliminar = (usuario) => {
     const message = `¿Está seguro de ELIMINAR PERMANENTEMENTE al usuario "${usuario.username}"? Esta acción no se puede deshacer.`;
 
-    // Reemplazo de confirm()
-    openConfirmModal("Confirmar Eliminación Permanente", message, () => {
-      setUsuarios((currentUsers) =>
-        currentUsers.filter((u) => u.id_usuario !== usuario.id_usuario)
-      );
-      // Reemplazo de alert()
-      openConfirmModal("Éxito", "Usuario eliminado permanentemente.");
+    openConfirmModal("Confirmar Eliminación Permanente", message, async () => {
+      try {
+        await axios.delete(`${API_URL}/${usuario.id_usuario}`);
+        openConfirmModal("Éxito", "Usuario eliminado permanentemente.");
+        await fetchUsuarios();
+        closeConfirmModal();
+      } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+        openConfirmModal(
+          "Error",
+          `Fallo al eliminar usuario: ${
+            error.response?.data?.message || "Error de conexión."
+          }`
+        );
+      }
     });
   };
 
+  /* --------------------------------------------------------------------
+     RENDER
+     -------------------------------------------------------------------- */
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -398,6 +450,7 @@ const UsuarioManagement = () => {
         <button
           onClick={handleNuevo}
           className="flex items-center space-x-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md active:shadow-none transform active:scale-95"
+          disabled={loading}
         >
           <Plus className="w-5 h-5" />
           <span>Nuevo Usuario</span>
@@ -418,121 +471,130 @@ const UsuarioManagement = () => {
         </div>
       </div>
 
-      {/* Tabla */}
+      {/* Tabla / Estado de carga */}
       <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <div className="overflow-x-auto">
-          <table className="min-w-full">
-            <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
-              <tr>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  ID
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Username
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Nombre Completo
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Correo
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Rol
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Proveedor
-                </th>
-                <th className="px-6 py-4 text-left text-sm font-semibold text-gray-700">
-                  Estado
-                </th>
-                <th className="px-6 py-4 text-center text-sm font-semibold text-gray-700">
-                  Acciones
-                </th>
-              </tr>
-            </thead>
-            <tbody className="divide-y divide-gray-200">
-              {filteredUsuarios.map((usuario) => (
-                <tr
-                  key={usuario.id_usuario}
-                  className="hover:bg-gray-50 transition-colors"
-                >
-                  <td className="px-6 py-4 text-sm text-gray-800">
-                    {usuario.id_usuario}
-                  </td>
-                  <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                    {usuario.username}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-800">
-                    {usuario.nombres} {usuario.apellidos}
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {usuario.correo}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${getRolColor(
-                        usuario.rol
-                      )}`}
+        {loading ? (
+          <div className="text-center py-12">
+            <Loader className="w-8 h-8 text-cyan-500 animate-spin mx-auto" />
+            <p className="text-gray-500 mt-3">Cargando usuarios...</p>
+          </div>
+        ) : errorCarga ? (
+          <div className="text-center py-12 bg-red-50 border-t-2 border-red-500">
+            <AlertCircle className="w-8 h-8 text-red-600 mx-auto" />
+            <p className="text-red-700 font-medium mt-3">{errorCarga}</p>
+            <button
+              onClick={fetchUsuarios}
+              className="mt-4 px-4 py-2 text-sm bg-red-600 text-white rounded-lg hover:bg-red-700 transition-all"
+            >
+              Reintentar Conexión
+            </button>
+          </div>
+        ) : (
+          <div className="overflow-x-auto">
+            <table className="min-w-full">
+              <thead className="bg-gray-50 border-b border-gray-200 sticky top-0">
+                <tr>
+                  {[
+                    "ID",
+                    "Username",
+                    "Nombre Completo",
+                    "Correo",
+                    "Rol",
+                    "Proveedor",
+                    "Estado",
+                    "Acciones",
+                  ].map((col) => (
+                    <th
+                      key={col}
+                      className="px-6 py-4 text-left text-sm font-semibold text-gray-700"
                     >
-                      {usuario.rol}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4 text-sm text-gray-600">
-                    {usuario.provider === "local" ? "🔑 Local" : "🌐 Google"}
-                  </td>
-                  <td className="px-6 py-4">
-                    <span
-                      className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
-                        usuario.estado === 1
-                          ? "bg-green-100 text-green-700"
-                          : "bg-red-100 text-red-700"
-                      }`}
-                    >
-                      {usuario.estado === 1 ? "Activo" : "Inactivo"}
-                    </span>
-                  </td>
-                  <td className="px-6 py-4">
-                    <div className="flex items-center justify-center space-x-2">
-                      <button
-                        onClick={() => handleEditar(usuario)}
-                        className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-all active:bg-blue-100"
-                        title="Editar"
-                      >
-                        <Edit2 className="w-4 h-4" />
-                      </button>
-
-                      {/* Botón Inhabilitar/Habilitar */}
-                      <button
-                        onClick={() => handleInhabilitar(usuario)}
-                        className={`px-3 py-1 rounded-full text-xs font-semibold transition-all shadow-sm ${
-                          usuario.estado === 1
-                            ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
-                            : "bg-green-100 text-green-700 hover:bg-green-200"
-                        }`}
-                        title={
-                          usuario.estado === 1 ? "Inhabilitar" : "Habilitar"
-                        }
-                      >
-                        {usuario.estado === 1 ? "Inhabilitar" : "Habilitar"}
-                      </button>
-
-                      {/* Botón Eliminar */}
-                      <button
-                        onClick={() => handleEliminar(usuario)}
-                        className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all active:bg-red-100"
-                        title="Eliminar permanentemente"
-                      >
-                        <Trash2 className="w-4 h-4" />
-                      </button>
-                    </div>
-                  </td>
+                      {col}
+                    </th>
+                  ))}
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {filteredUsuarios.map((usuario) => (
+                  <tr
+                    key={usuario.id_usuario ?? Math.random()}
+                    className="hover:bg-gray-50 transition-colors"
+                  >
+                    <td className="px-6 py-4 text-sm text-gray-800">
+                      {usuario.id_usuario}
+                    </td>
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                      {usuario.username}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-800">
+                      {`${usuario.nombres} ${usuario.apellidos}`.trim()}
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {usuario.correo}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${getRolColor(
+                          usuario.rol
+                        )}`}
+                      >
+                        {usuario.rol}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4 text-sm text-gray-600">
+                      {usuario.provider === "local" ? "🔑 Local" : "🌐 Google"}
+                    </td>
+                    <td className="px-6 py-4">
+                      <span
+                        className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
+                          usuario.estado === 1
+                            ? "bg-green-100 text-green-700"
+                            : "bg-red-100 text-red-700"
+                        }`}
+                      >
+                        {usuario.estado === 1 ? "Activo" : "Inactivo"}
+                      </span>
+                    </td>
+                    <td className="px-6 py-4">
+                      <div className="flex items-center justify-center space-x-2">
+                        <button
+                          onClick={() => handleEditar(usuario)}
+                          className="p-2 text-blue-600 hover:bg-blue-50 rounded-full transition-all active:bg-blue-100"
+                          title="Editar"
+                        >
+                          <Edit2 className="w-4 h-4" />
+                        </button>
 
-        {filteredUsuarios.length === 0 && (
+                        <button
+                          onClick={() => handleInhabilitar(usuario)}
+                          className={`px-3 py-1 rounded-full text-xs font-semibold transition-all shadow-sm ${
+                            usuario.estado === 1
+                              ? "bg-orange-100 text-orange-700 hover:bg-orange-200"
+                              : "bg-green-100 text-green-700 hover:bg-green-200"
+                          }`}
+                          title={
+                            usuario.estado === 1 ? "Inhabilitar" : "Habilitar"
+                          }
+                        >
+                          {usuario.estado === 1 ? "Inhabilitar" : "Habilitar"}
+                        </button>
+
+                        <button
+                          onClick={() => handleEliminar(usuario)}
+                          className="p-2 text-red-600 hover:bg-red-50 rounded-full transition-all active:bg-red-100"
+                          title="Eliminar permanentemente"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {!loading && !errorCarga && filteredUsuarios.length === 0 && (
           <div className="text-center py-12">
             <p className="text-gray-500">No se encontraron usuarios</p>
           </div>
@@ -543,7 +605,6 @@ const UsuarioManagement = () => {
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
-            {/* Header del modal */}
             <div className="sticky top-0 bg-white flex items-center justify-between p-6 border-b border-gray-200 z-10">
               <h3 className="text-xl font-bold text-gray-800">
                 {editingUsuario ? "Editar Usuario" : "Nuevo Usuario"}
@@ -556,7 +617,6 @@ const UsuarioManagement = () => {
               </button>
             </div>
 
-            {/* Contenido del modal */}
             <div className="p-6 space-y-4">
               {error && (
                 <div className="bg-red-50 border border-red-200 rounded-xl p-3 flex items-center space-x-2">
@@ -565,6 +625,7 @@ const UsuarioManagement = () => {
                 </div>
               )}
 
+              {/* Formulario */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Username <span className="text-red-500">*</span>
@@ -725,7 +786,6 @@ const UsuarioManagement = () => {
               </div>
             </div>
 
-            {/* Footer del modal */}
             <div className="sticky bottom-0 bg-white flex items-center justify-end space-x-3 p-6 border-t border-gray-200 z-10">
               <button
                 onClick={() => setShowModal(false)}
@@ -744,7 +804,6 @@ const UsuarioManagement = () => {
         </div>
       )}
 
-      {/* Modal de Confirmación/Mensaje */}
       {showConfirmModal && (
         <ConfirmationModal
           title={modalContent.title}
@@ -758,4 +817,13 @@ const UsuarioManagement = () => {
   );
 };
 
-export default UsuarioManagement;
+/* ----------------------------------------------------------------------
+   Export con ErrorBoundary envuelto para evitar pantalla blanca total
+   ---------------------------------------------------------------------- */
+export default function UsuarioManagement() {
+  return (
+    <ErrorBoundary>
+      <UsuarioManagementInner />
+    </ErrorBoundary>
+  );
+}

@@ -16,7 +16,7 @@ const App = () => {
   const [isAdminView, setIsAdminView] = useState(false);
 
   // Mostrar función global para cambiar a vista admin
-  useEffect(() => {
+useEffect(() => {
     window.goToAdmin = () => setIsAdminView(true);
     window.goToHome = () => setIsAdminView(false);
 
