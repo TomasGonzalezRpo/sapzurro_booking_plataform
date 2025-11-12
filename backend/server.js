@@ -8,7 +8,7 @@ const perfilRoutes = require("./routes/perfil.routes");
 const personaRoutes = require("./routes/persona.routes");
 const usuarioRoutes = require("./routes/usuario.routes");
 
-const authRoutes = require("./routes/usuario.routes");
+const authRoutes = require("./routes/auth.routes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
