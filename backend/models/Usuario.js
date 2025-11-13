@@ -17,7 +17,7 @@ const Usuario = db.sequelize.define(
     password: {
       type: db.DataTypes.STRING(255),
       allowNull: false,
-      field: "contrasena", // <--- ¡MODIFICACIÓN CLAVE! Mapea 'password' a la columna 'contrasena'
+      field: "contrasena",
     },
     estado: {
       type: db.DataTypes.TINYINT,
@@ -44,9 +44,9 @@ const Usuario = db.sequelize.define(
     resetPasswordToken: {
       type: db.DataTypes.STRING(255),
       allowNull: true,
-    }, // 🎯 NUEVO: Campo para la Expiración del Token (en milisegundos Unix)
+    },
     resetPasswordExpires: {
-      type: db.DataTypes.BIGINT, // Usamos BIGINT o DATE, BIGINT es común para milisegundos
+      type: db.DataTypes.BIGINT,
       allowNull: true,
     },
   },
@@ -55,40 +55,15 @@ const Usuario = db.sequelize.define(
     timestamps: false,
     freezeTableName: true,
     hooks: {
-      // hashing en creación
+      // Solo hashear en creación
       beforeCreate: async (usuario) => {
         if (usuario.password) {
           const salt = await bcrypt.genSalt(10);
           usuario.password = await bcrypt.hash(usuario.password, salt);
         }
-      }, // hashing para actualizaciones por instancia (se dispara con instance.save())
-      beforeUpdate: async (usuario) => {
-        if (
-          typeof usuario.changed === "function" &&
-          usuario.changed("password")
-        ) {
-          const salt = await bcrypt.genSalt(10);
-          usuario.password = await bcrypt.hash(usuario.password, salt);
-        }
-      }, // cobertura adicional: antes de save (create + update por instancia)
-      beforeSave: async (usuario) => {
-        if (
-          typeof usuario.changed === "function" &&
-          usuario.changed("password")
-        ) {
-          const salt = await bcrypt.genSalt(10);
-          usuario.password = await bcrypt.hash(usuario.password, salt);
-        }
-      }, // si usas Model.update(...) sin individualHooks, aquí se intercepta
-      beforeBulkUpdate: async (options) => {
-        if (options.attributes && options.attributes.password) {
-          const salt = await bcrypt.genSalt(10);
-          options.attributes.password = await bcrypt.hash(
-            options.attributes.password,
-            salt
-          );
-        }
       },
+      // NO hashear en actualización (porque ya viene hasheado desde AuthController)
+      // beforeUpdate, beforeSave y beforeBulkUpdate se ELIMINAN
     },
   }
 );
