@@ -159,7 +159,7 @@ const UsuarioManagementInner = () => {
     setLoading(true);
     setErrorCarga(null);
     try {
-      const response = await axios.get(API_URL, {
+      let response = await axios.get(API_URL, {
         headers: {
           "Cache-Control": "no-cache",
           Pragma: "no-cache",
@@ -172,19 +172,14 @@ const UsuarioManagementInner = () => {
       console.log("fetchUsuarios - status:", response.status);
       console.log("fetchUsuarios - response.data:", response.data);
 
-      if (response.status !== 200) {
-        setErrorCarga(`Error HTTP ${response.status}`);
-        setUsuarios([]);
-        return;
-      }
-
-      const raw = response.data;
+      // Adaptación de respuesta a array
+      let raw = response.data;
       if (!Array.isArray(raw)) {
         if (Array.isArray(raw?.data)) {
           console.warn(
             "fetchUsuarios: response.data.data es un array (ajustando)."
           );
-          raw = raw.data; // eslint-disable-line no-param-reassign
+          raw = raw.data;
         } else {
           console.error(
             "fetchUsuarios: la respuesta no es un array ni contiene data[]."
@@ -503,14 +498,19 @@ const UsuarioManagementInner = () => {
                     "Proveedor",
                     "Estado",
                     "Acciones",
-                  ].map((col) => (
-                    <th
-                      key={col}
-                      className="px-6 py-4 text-left text-sm font-semibold text-gray-700"
-                    >
-                      {col}
-                    </th>
-                  ))}
+                  ].map((col) => {
+                    const isActions = col === "Acciones";
+                    return (
+                      <th
+                        key={col}
+                        className={`px-6 py-4 text-sm font-semibold text-gray-700 align-middle ${
+                          isActions ? "text-center" : "text-left"
+                        }`}
+                      >
+                        {col}
+                      </th>
+                    );
+                  })}
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-200">
@@ -519,19 +519,19 @@ const UsuarioManagementInner = () => {
                     key={usuario.id_usuario ?? Math.random()}
                     className="hover:bg-gray-50 transition-colors"
                   >
-                    <td className="px-6 py-4 text-sm text-gray-800">
+                    <td className="px-6 py-4 text-sm text-gray-800 align-middle">
                       {usuario.id_usuario}
                     </td>
-                    <td className="px-6 py-4 text-sm font-medium text-gray-800">
+                    <td className="px-6 py-4 text-sm font-medium text-gray-800 align-middle">
                       {usuario.username}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-800">
+                    <td className="px-6 py-4 text-sm text-gray-800 align-middle">
                       {`${usuario.nombres} ${usuario.apellidos}`.trim()}
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-600 align-middle">
                       {usuario.correo}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 align-middle">
                       <span
                         className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${getRolColor(
                           usuario.rol
@@ -540,10 +540,10 @@ const UsuarioManagementInner = () => {
                         {usuario.rol}
                       </span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-600">
+                    <td className="px-6 py-4 text-sm text-gray-600 align-middle">
                       {usuario.provider === "local" ? "🔑 Local" : "🌐 Google"}
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 align-middle">
                       <span
                         className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
                           usuario.estado === 1
@@ -554,7 +554,7 @@ const UsuarioManagementInner = () => {
                         {usuario.estado === 1 ? "Activo" : "Inactivo"}
                       </span>
                     </td>
-                    <td className="px-6 py-4">
+                    <td className="px-6 py-4 text-center align-middle">
                       <div className="flex items-center justify-center space-x-2">
                         <button
                           onClick={() => handleEditar(usuario)}
