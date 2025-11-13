@@ -52,7 +52,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
   const handleChange = (field, value) =>
     setFormData((s) => ({ ...s, [field]: value }));
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -66,6 +66,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
       confirmPassword,
       nombreNegocio,
       tipoNegocio,
+      numero_documento,
     } = formData;
 
     if (
@@ -75,36 +76,46 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
       !username ||
       !password ||
       !nombreNegocio ||
-      !tipoNegocio
+      !tipoNegocio ||
+      !numero_documento
     ) {
       setError("Por favor completa todos los campos obligatorios");
       return;
     }
+
     if (password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
+
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
+
     if (!emailRegex.test(correo)) {
       setError("Por favor ingresa un correo válido");
       return;
     }
 
-    const result = onRegisterAliado(formData);
-    if (result.success) {
-      setSuccess(result.message);
-      // esperar y volver al login (igual que el original)
-      setTimeout(() => onSwitchToLogin(), 3000);
-    } else {
-      setError(result.message);
+    try {
+      const result = await onRegisterAliado(formData);
+      if (result.success) {
+        setSuccess(result.message);
+        setFormData(INITIAL_FORM); // Limpiar formulario
+        setTimeout(() => onSwitchToLogin(), 3000);
+      } else {
+        setError(result.message);
+      }
+    } catch (err) {
+      setError("Error inesperado al registrar el aliado");
+      console.error(err);
     }
   };
 
   return (
     <div className="space-y-6">
+      {/* Título */}
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full mb-4">
           <Building2 className="w-8 h-8 text-white" />
@@ -115,6 +126,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
         <p className="text-gray-600 mt-2">Inscribe tu negocio en Sapzurro</p>
       </div>
 
+      {/* Info aprobación */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
           <strong>⏳ Proceso de aprobación:</strong> Tu solicitud será revisada
@@ -123,13 +135,13 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
         </p>
       </div>
 
+      {/* Mensajes */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
           <p className="text-sm text-red-600">{error}</p>
         </div>
       )}
-
       {success && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -145,103 +157,70 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
             <span>Datos Personales</span>
           </h3>
 
-          <div className="space-y-4">
-            <div className="grid md:grid-cols-2 gap-4">
-              <inputField
-                label="Nombres"
-                required
-                value={formData.nombres}
-                onChange={(v) => handleChange("nombres", v)}
-                placeholder="Juan"
-              />
-              <inputField
-                label="Apellidos"
-                required
-                value={formData.apellidos}
-                onChange={(v) => handleChange("apellidos", v)}
-                placeholder="Pérez"
-              />
-            </div>
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Tipo de documento
-                </label>
-                <select
-                  value={formData.tipo_documento}
-                  onChange={(e) =>
-                    handleChange("tipo_documento", e.target.value)
-                  }
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                >
-                  {DOC_OPTIONS.map((o) => (
-                    <option key={o.value} value={o.value}>
-                      {o.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <inputField
-                label="Número de documento"
-                value={formData.numero_documento}
-                onChange={(v) => handleChange("numero_documento", v)}
-                placeholder="1234567890"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Correo electrónico <span className="text-red-500">*</span>
-              </label>
-              <div className="relative">
-                <Mail className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  name="correo"
-                  type="email"
-                  value={formData.correo}
-                  onChange={(e) => handleChange("correo", e.target.value)}
-                  placeholder="negocio@email.com"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Teléfono
-              </label>
-              <div className="relative">
-                <Phone className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
-                <input
-                  name="telefono"
-                  type="tel"
-                  value={formData.telefono}
-                  onChange={(e) => handleChange("telefono", e.target.value)}
-                  placeholder="3001234567"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Dirección
-              </label>
-              <div className="relative">
-                <MapPin className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                <input
-                  name="direccion"
-                  type="text"
-                  value={formData.direccion}
-                  onChange={(e) => handleChange("direccion", e.target.value)}
-                  placeholder="Calle principal, Sapzurro"
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+          <div className="grid md:grid-cols-2 gap-4">
+            <InputField
+              label="Nombres"
+              required
+              value={formData.nombres}
+              onChange={(v) => handleChange("nombres", v)}
+              placeholder="Juan"
+            />
+            <InputField
+              label="Apellidos"
+              required
+              value={formData.apellidos}
+              onChange={(v) => handleChange("apellidos", v)}
+              placeholder="Pérez"
+            />
           </div>
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Tipo de documento
+              </label>
+              <select
+                value={formData.tipo_documento}
+                onChange={(e) => handleChange("tipo_documento", e.target.value)}
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+              >
+                {DOC_OPTIONS.map((o) => (
+                  <option key={o.value} value={o.value}>
+                    {o.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <InputField
+              label="Número de documento"
+              required
+              value={formData.numero_documento}
+              onChange={(v) => handleChange("numero_documento", v)}
+              placeholder="1234567890"
+            />
+          </div>
+
+          <InputField
+            label="Correo electrónico"
+            required
+            type="email"
+            value={formData.correo}
+            onChange={(v) => handleChange("correo", v)}
+            placeholder="negocio@email.com"
+          />
+          <InputField
+            label="Teléfono"
+            value={formData.telefono}
+            onChange={(v) => handleChange("telefono", v)}
+            placeholder="3001234567"
+          />
+          <InputField
+            label="Dirección"
+            value={formData.direccion}
+            onChange={(v) => handleChange("direccion", v)}
+            placeholder="Calle principal, Sapzurro"
+          />
         </div>
 
         {/* Datos del negocio */}
@@ -251,46 +230,44 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
             <span>Datos del Negocio</span>
           </h3>
 
-          <div className="space-y-4">
-            <inputField
-              label="Nombre del negocio"
-              required
-              value={formData.nombreNegocio}
-              onChange={(v) => handleChange("nombreNegocio", v)}
-              placeholder="Hotel Paraíso del Mar"
+          <InputField
+            label="Nombre del negocio"
+            required
+            value={formData.nombreNegocio}
+            onChange={(v) => handleChange("nombreNegocio", v)}
+            placeholder="Hotel Paraíso del Mar"
+          />
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Tipo de negocio <span className="text-red-500">*</span>
+            </label>
+            <select
+              value={formData.tipoNegocio}
+              onChange={(e) => handleChange("tipoNegocio", e.target.value)}
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+            >
+              {BUSINESS_OPTIONS.map((o) => (
+                <option key={o.value} value={o.value}>
+                  {o.label}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-2">
+              Descripción del negocio
+            </label>
+            <textarea
+              value={formData.descripcionNegocio}
+              onChange={(e) =>
+                handleChange("descripcionNegocio", e.target.value)
+              }
+              placeholder="Describe tu negocio, servicios que ofreces, etc."
+              rows="4"
+              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
             />
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Tipo de negocio <span className="text-red-500">*</span>
-              </label>
-              <select
-                value={formData.tipoNegocio}
-                onChange={(e) => handleChange("tipoNegocio", e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-              >
-                {BUSINESS_OPTIONS.map((o) => (
-                  <option key={o.value} value={o.value}>
-                    {o.label}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Descripción del negocio
-              </label>
-              <textarea
-                value={formData.descripcionNegocio}
-                onChange={(e) =>
-                  handleChange("descripcionNegocio", e.target.value)
-                }
-                placeholder="Describe tu negocio, servicios que ofreces, etc."
-                rows="4"
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-              />
-            </div>
           </div>
         </div>
 
@@ -301,46 +278,31 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
             <span>Credenciales de Acceso</span>
           </h3>
 
-          <div className="space-y-4">
-            <inputField
-              label="Nombre de usuario"
+          <InputField
+            label="Nombre de usuario"
+            required
+            value={formData.username}
+            onChange={(v) => handleChange("username", v)}
+            placeholder="hotelparaiso"
+          />
+
+          <div className="grid md:grid-cols-2 gap-4">
+            <InputField
+              label="Contraseña"
               required
-              value={formData.username}
-              onChange={(v) => handleChange("username", v)}
-              placeholder="hotelparaiso"
+              type="password"
+              value={formData.password}
+              onChange={(v) => handleChange("password", v)}
+              placeholder="••••••••"
             />
-
-            <div className="grid md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Contraseña <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="password"
-                  type="password"
-                  value={formData.password}
-                  onChange={(e) => handleChange("password", e.target.value)}
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Confirmar contraseña <span className="text-red-500">*</span>
-                </label>
-                <input
-                  name="confirmPassword"
-                  type="password"
-                  value={formData.confirmPassword}
-                  onChange={(e) =>
-                    handleChange("confirmPassword", e.target.value)
-                  }
-                  placeholder="••••••••"
-                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
-                />
-              </div>
-            </div>
+            <InputField
+              label="Confirmar contraseña"
+              required
+              type="password"
+              value={formData.confirmPassword}
+              onChange={(v) => handleChange("confirmPassword", v)}
+              placeholder="••••••••"
+            />
           </div>
         </div>
 
@@ -366,14 +328,14 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
 };
 
 /* --- pequeños helpers locales --- */
-/* Nota: los componentes internos ayudan a reducir repetición del JSX de inputs */
-function inputField({ label, required, value, onChange, placeholder }) {
+function InputField({ label, required, value, onChange, placeholder, type }) {
   return (
     <div>
       <label className="block text-sm font-medium text-gray-700 mb-2">
         {label} {required && <span className="text-red-500">*</span>}
       </label>
       <input
+        type={type || "text"}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={placeholder}

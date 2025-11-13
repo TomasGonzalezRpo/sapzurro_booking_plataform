@@ -376,3 +376,70 @@ exports.forgotPassword = async (req, res) => {
     });
   }
 };
+
+// 6. RESETEAR CONTRASEÑA
+
+exports.resetPassword = async (req, res) => {
+  try {
+    const { email, token, newPassword } = req.body;
+
+    // Validación básica
+    if (!email || !token || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: "Faltan datos obligatorios: email, token o nueva contraseña.",
+      });
+    }
+
+    // Buscar la persona y el usuario
+    const persona = await Persona.findOne({ where: { correo: email } });
+    if (!persona) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado.",
+      });
+    }
+
+    const user = await Usuario.findOne({
+      where: { id_persona: persona.id_persona },
+    });
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: "Usuario no encontrado.",
+      });
+    }
+
+    // Validar token y expiración
+    if (user.resetPasswordToken !== token) {
+      return res.status(400).json({
+        success: false,
+        message: "Token inválido.",
+      });
+    }
+    if (Date.now() > user.resetPasswordExpires) {
+      return res.status(400).json({
+        success: false,
+        message: "Token expirado.",
+      });
+    }
+
+    // Actualizar contraseña y limpiar token (hooks de Sequelize harán el hash)
+    user.password = newPassword;
+    user.resetPasswordToken = null;
+    user.resetPasswordExpires = null;
+    await user.save();
+
+    return res.status(200).json({
+      success: true,
+      message: "Contraseña restablecida correctamente.",
+    });
+  } catch (error) {
+    console.error("resetPassword error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Error interno al restablecer la contraseña.",
+      error: error.message,
+    });
+  }
+};

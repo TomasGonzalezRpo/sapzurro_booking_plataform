@@ -22,12 +22,10 @@ const Persona = db.sequelize.define(
     },
     numero_documento: {
       type: db.DataTypes.STRING(20),
-      unique: true,
       allowNull: false,
     },
     correo: {
       type: db.DataTypes.STRING(100),
-      unique: true,
       allowNull: false,
     },
     telefono: {
@@ -48,6 +46,16 @@ const Persona = db.sequelize.define(
     tableName: "persona",
     timestamps: false,
     freezeTableName: true,
+    indexes: [
+      {
+        unique: true,
+        fields: ["numero_documento"],
+      },
+      {
+        unique: true,
+        fields: ["correo"],
+      },
+    ],
   }
 );
 

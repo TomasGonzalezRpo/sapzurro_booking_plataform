@@ -27,7 +27,7 @@ const RegisterForm = ({
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -61,12 +61,30 @@ const RegisterForm = ({
       return;
     }
 
-    // Registrar usuario
-    const result = onRegister(formData);
-    if (result.success) {
-      setSuccess(result.message);
-    } else {
-      setError(result.message);
+    try {
+      // Llamada asíncrona a onRegister
+      const result = await onRegister(formData);
+
+      if (result.success) {
+        setSuccess(result.message || "Usuario creado con éxito");
+        // Limpiar formulario
+        setFormData({
+          nombres: "",
+          apellidos: "",
+          tipo_documento: "CC",
+          numero_documento: "",
+          correo: "",
+          telefono: "",
+          username: "",
+          password: "",
+          confirmPassword: "",
+        });
+      } else {
+        setError(result.message || "Error al crear usuario");
+      }
+    } catch (err) {
+      console.error("Error en el registro:", err);
+      setError("Ocurrió un error al crear el usuario");
     }
   };
 

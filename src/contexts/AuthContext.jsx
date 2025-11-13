@@ -7,16 +7,12 @@ import React, {
   useState,
 } from "react";
 import axios from "axios";
-import emailjs from "@emailjs/browser";
 
 const AuthContext = createContext();
 const STORAGE_KEY = "sapzurro_user";
 
 // --- Config EmailJS (reemplaza si es necesario) ---
-const SERVICE_ID = "service_jl0zlxh";
-const TEMPLATE_ID = "template_dnmt1se";
-const PUBLIC_KEY = "CL0NXTguTkfLmGwwv";
-emailjs.init(PUBLIC_KEY); // inicializar una vez
+// inicializar una vez
 
 // --- Config Backend ---
 const API_URL = "http://localhost:5000/api/auth";
@@ -149,7 +145,7 @@ export const AuthProvider = ({ children }) => {
   };
 
   /**
-   * registerUser: intenta registrar en backend (mantengo tu implementación real)
+   * registerUser: intenta registrar en backend y devuelve { success, message, user? }
    */
   const registerUser = async (formData) => {
     setLoading(true);
@@ -158,106 +154,141 @@ export const AuthProvider = ({ children }) => {
         usuario: formData.username,
         password: formData.password,
         id_perfil: 2,
-        id_persona: formData.id_persona ?? null,
+        // Si tu backend crea la persona desde aquí, enviamos los campos personales
         nombres: formData.nombres,
         apellidos: formData.apellidos,
         correo: formData.correo,
         telefono: formData.telefono ?? "",
+        tipo_documento: formData.tipo_documento ?? null,
+        numero_documento: formData.numero_documento ?? null,
       };
 
-      const response = await axios.post(`${API_URL}/register`, payload);
-      const userData = response.data?.user || response.data;
+      const response = await axios.post(`${API_URL}/register`, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
 
-      const newUser = buildUser(userData);
-      setUser(newUser);
-      setIsAuthModalOpen(false);
+      const data = response.data || {};
 
-      return { success: true, message: "Usuario registrado exitosamente" };
-    } catch (error) {
-      console.error("Error en registerUser:", error);
+      // Si el backend devuelve el usuario creado, lo guardamos en el contexto
+      if (data.user) {
+        const newUser = buildUser(data.user);
+        setUser(newUser);
+        setIsAuthModalOpen(false);
+      }
+
+      // Mensaje exitoso (backend puede devolver message)
+      return {
+        success: true,
+        message: data.message || "Usuario registrado exitosamente",
+        user: data.user ?? null,
+      };
+    } catch (err) {
+      // Log completo para debugging en consola
+      console.error(
+        "registerUser error detalle:",
+        err?.response?.data || err.message
+      );
+
+      // Extraer mensaje amigable si viene del backend
       const msg =
-        error.response?.data?.message ||
-        error.message ||
+        err.response?.data?.message ||
+        err.response?.data?.error ||
+        err.message ||
         "Ocurrió un error al registrar el usuario.";
-      throw new Error(msg);
+
+      // No hacemos throw: devolvemos un objeto consistente que el formulario espera
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
   };
 
   /**
-   * registerAliado: ejemplo real que llama al backend
+   * registerAliado: registra solicitud de aliado y devuelve { success, message }
    */
   const registerAliado = async (formData) => {
     setLoading(true);
     try {
-      const response = await axios.post(`${API_URL}/register-aliado`, formData);
+      const payload = {
+        usuario: formData.username,
+        password: formData.password,
+        id_perfil: 3, // si tus perfiles usan 3 para aliado
+        nombres: formData.nombres,
+        apellidos: formData.apellidos,
+        correo: formData.correo,
+        telefono: formData.telefono ?? "",
+        direccion: formData.direccion ?? "",
+        nombreNegocio: formData.nombreNegocio,
+        tipoNegocio: formData.tipoNegocio,
+        descripcionNegocio: formData.descripcionNegocio ?? "",
+        tipo_documento: formData.tipo_documento ?? null,
+        numero_documento: formData.numero_documento ?? null,
+      };
+
+      const response = await axios.post(`${API_URL}/register-aliado`, payload, {
+        headers: { "Content-Type": "application/json" },
+      });
+
+      const data = response.data || {};
       return {
         success: true,
         message:
-          response.data?.message ||
+          data.message ||
           "Solicitud enviada. Un administrador revisará tu solicitud en las próximas 24-48 horas.",
       };
-    } catch (error) {
-      console.error("Error en registerAliado:", error);
-      throw new Error(
-        error.response?.data?.message ||
-          error.message ||
-          "Error al enviar la solicitud del aliado."
+    } catch (err) {
+      console.error(
+        "registerAliado error detalle:",
+        err?.response?.data || err.message
       );
+      const msg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al enviar la solicitud del aliado.";
+      return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
   };
 
   /**
-   * recoverCredentials: llama al backend para generar link y lo envía con EmailJS
+   * 🔐 recoverCredentials: Llama SOLO al backend
+   * El backend se encarga de:
+   * 1. Generar el token de recuperación
+   * 2. Guardarlo en BD con expiración
+   * 3. Enviar el correo con EmailJS (BACKEND, no frontend)
    */
   const recoverCredentials = async (email) => {
     setLoading(true);
     try {
-      const backendResponse = await axios.post(
+      console.log("📧 Iniciando recuperación de contraseña para:", email);
+
+      const response = await axios.post(
         `${API_URL}/forgot-password`,
         { email },
         { headers: { "Content-Type": "application/json" } }
       );
 
-      const { recoveryLink } = backendResponse.data;
+      console.log("✅ Respuesta del backend:", response.data);
 
-      if (!recoveryLink) {
-        console.error(
-          "Backend no devolvió recoveryLink:",
-          backendResponse.data
-        );
+      if (!response.data.success) {
         throw new Error(
-          "El servidor no devolvió el enlace de recuperación. Revisa backend."
+          response.data.message || "Error al recuperar contraseña"
         );
       }
 
-      const templateParams = {
-        user_email: email,
-        recovery_link: recoveryLink,
+      return {
+        success: true,
+        message:
+          response.data.message ||
+          "Correo de recuperación enviado (si la cuenta existe)",
       };
-
-      const emailjsResult = await emailjs.send(
-        SERVICE_ID,
-        TEMPLATE_ID,
-        templateParams,
-        PUBLIC_KEY
-      );
-
-      if (emailjsResult?.status && emailjsResult.status !== 200) {
-        console.error(
-          `[EMAILJS ERROR]: Status ${emailjsResult.status} - ${emailjsResult.text}`
-        );
-        throw new Error("Fallo el envío del correo. Revisa EmailJS.");
-      }
-
-      return { success: true, message: "Correo de recuperación enviado." };
     } catch (error) {
-      console.error("Error en recoverCredentials:", error);
+      console.error("❌ Error en recoverCredentials:", error);
       const msg =
-        error.response?.data?.message || error.message || "Error al recuperar.";
+        error.response?.data?.message ||
+        error.message ||
+        "Error al procesar la recuperación de contraseña.";
       throw new Error(msg);
     } finally {
       setLoading(false);

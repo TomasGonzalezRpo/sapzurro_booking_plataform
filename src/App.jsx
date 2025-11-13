@@ -7,6 +7,7 @@ import RestaurantesSection from "./components/RestaurantesSection";
 import Footer from "./components/Footer";
 import AuthModal from "./components/Auth/AuthModal";
 import AdminPanel from "./components/Admin/AdminPanel";
+import ResetPasswordForm from "./components/Auth/ResetPasswordForm";
 
 const App = () => {
   const { user } = useAuth();
@@ -14,9 +15,20 @@ const App = () => {
   const [activeSection, setActiveSection] = useState("inicio");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAdminView, setIsAdminView] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
+
+  // 🆕 Detectar si estamos en la ruta /reset-password
+  useEffect(() => {
+    const path = window.location.pathname;
+    if (path === "/reset-password") {
+      setShowResetPassword(true);
+    } else {
+      setShowResetPassword(false);
+    }
+  }, []);
 
   // Mostrar función global para cambiar a vista admin
-useEffect(() => {
+  useEffect(() => {
     window.goToAdmin = () => setIsAdminView(true);
     window.goToHome = () => setIsAdminView(false);
 
@@ -52,6 +64,17 @@ useEffect(() => {
     { id: "clima", label: "Clima" },
     { id: "sobre-sapzurro", label: "Sobre Sapzurro" },
   ];
+
+  // 🆕 Si está en /reset-password, mostrar SOLO el formulario de reset
+  if (showResetPassword) {
+    return (
+      <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 flex items-center justify-center p-4">
+        <div className="bg-white rounded-2xl max-w-md w-full shadow-2xl p-8">
+          <ResetPasswordForm />
+        </div>
+      </div>
+    );
+  }
 
   // Si está en vista admin se muestra AdminPanel
   if (isAdminView) {
