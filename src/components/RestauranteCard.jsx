@@ -89,6 +89,8 @@ const RestauranteCard = ({ restaurante }) => {
   };
 
   return (
+    // MODIFICADO PARA ALINEACIÓN AL FONDO (1/3)
+    // Añadida: flex flex-col h-full
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
       {" "}
       {/* Badge de Aliado */}
@@ -150,6 +152,8 @@ const RestauranteCard = ({ restaurante }) => {
         </div>
       </div>
       {/* Contenido */}
+      {/* MODIFICADO PARA ALINEACIÓN AL FONDO (2/3) */}
+      {/* Añadida: flex flex-col flex-grow */}
       <div className="p-6 flex flex-col flex-grow">
         {" "}
         <button
@@ -197,7 +201,9 @@ const RestauranteCard = ({ restaurante }) => {
         )}
         <button
           onClick={handleReservar}
-          className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+          // MODIFICADO PARA ALINEACIÓN AL FONDO (3/3)
+          // Añadida: mt-auto para empujar el botón al final
+          className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 mt-auto"
         >
           <span>{isExpanded ? "Cerrar reserva" : "Reservar mesa"}</span>
           {isExpanded ? (
