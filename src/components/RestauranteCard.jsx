@@ -89,7 +89,8 @@ const RestauranteCard = ({ restaurante }) => {
   };
 
   return (
-    <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
+    <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
+      {" "}
       {/* Badge de Aliado */}
       {restaurante.esAliado && (
         <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-4 py-2 flex items-center justify-center space-x-2">
@@ -97,7 +98,6 @@ const RestauranteCard = ({ restaurante }) => {
           <span className="text-sm font-semibold">Restaurante Aliado</span>
         </div>
       )}
-
       {/* Carrusel de imágenes */}
       <div className="relative h-64 bg-gradient-to-br overflow-hidden group">
         <div
@@ -149,9 +149,9 @@ const RestauranteCard = ({ restaurante }) => {
           {currentImageIndex + 1} / {restaurante.imagenes.length}
         </div>
       </div>
-
       {/* Contenido */}
-      <div className="p-6">
+      <div className="p-6 flex flex-col flex-grow">
+        {" "}
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="w-full text-left group"
@@ -161,9 +161,7 @@ const RestauranteCard = ({ restaurante }) => {
             <Info className="w-5 h-5 text-cyan-600 group-hover:scale-110 transition-transform" />
           </h3>
         </button>
-
         <p className="text-gray-600 mb-4">{restaurante.descripcion}</p>
-
         {/* Info rápida */}
         <div className="space-y-2 mb-4">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
@@ -179,7 +177,6 @@ const RestauranteCard = ({ restaurante }) => {
             <span>{restaurante.rangoPrecios}</span>
           </div>
         </div>
-
         {/* Menú destacado preview */}
         {restaurante.esAliado && (
           <div className="mb-4">
@@ -198,7 +195,6 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           </div>
         )}
-
         <button
           onClick={handleReservar}
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
@@ -211,7 +207,6 @@ const RestauranteCard = ({ restaurante }) => {
           )}
         </button>
       </div>
-
       {/* Modal de información completa */}
       {showInfo && (
         <div
@@ -349,7 +344,6 @@ const RestauranteCard = ({ restaurante }) => {
           </div>
         </div>
       )}
-
       {/* Formulario de reserva expandible */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">

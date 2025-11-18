@@ -1,4 +1,48 @@
+// =============================
+// IMPORTS DE IMÁGENES
+// =============================
+
+// Mariela
+import Mariela1 from "../assets/hotels/mariela/Mariela1.jpg";
+import Mariela2 from "../assets/hotels/mariela/Mariela2.jpg";
+import Mariela3 from "../assets/hotels/mariela/Mariela3.jpg";
+import Mariela4 from "../assets/hotels/mariela/Mariela4.jpg";
+import Mariela5 from "../assets/hotels/mariela/Mariela5.jpg";
+
+// Coral
+import Coral1 from "../assets/hotels/coral/Coral1.jpg";
+import Coral2 from "../assets/hotels/coral/Coral2.jpg";
+import Coral3 from "../assets/hotels/coral/Coral3.jpg";
+import Coral4 from "../assets/hotels/coral/Coral4.jpg";
+import Coral5 from "../assets/hotels/coral/Coral5.jpg";
+
+// HillTop (Top)
+import Top1 from "../assets/hotels/hilltop/Top1.jpg";
+import Top2 from "../assets/hotels/hilltop/Top2.jpg";
+import Top3 from "../assets/hotels/hilltop/Top3.jpg";
+import Top4 from "../assets/hotels/hilltop/Top4.jpg";
+import Top5 from "../assets/hotels/hilltop/Top5.jpg";
+
+// Chileno
+import Chileno1 from "../assets/hotels/chileno/Chileno1.jpg";
+import Chileno2 from "../assets/hotels/chileno/Chileno2.jpg";
+import Chileno3 from "../assets/hotels/chileno/Chileno3.jpg";
+import Chileno4 from "../assets/hotels/chileno/Chileno4.jpg";
+import Chileno5 from "../assets/hotels/chileno/Chileno5.jpg";
+
+// =======================================================
+// LISTA DE HOTELES COMPLETA — CON IMÁGENES YA ASIGNADAS
+// =======================================================
+console.log("[hotelesData] imports comprobación:", {
+  Mariela1,
+  Coral1,
+  Top1,
+  Chileno1,
+});
 export const hotelesDemo = [
+  // ==============================
+  // HOTEL 1 — MARIELA
+  // ==============================
   {
     id: 1,
     nombre: "Casa Hotel La Mariela",
@@ -9,11 +53,31 @@ export const hotelesDemo = [
     precioDesde: 180000,
     calificacion: 4.9,
     imagenes: [
-      { color: "from-cyan-400 to-blue-500", desc: "Vista principal" },
-      { color: "from-blue-400 to-cyan-500", desc: "Habitación suite" },
-      { color: "from-sky-400 to-blue-600", desc: "Terraza con vista al mar" },
-      { color: "from-cyan-500 to-teal-500", desc: "Restaurante" },
-      { color: "from-blue-500 to-indigo-500", desc: "Piscina infinity" },
+      {
+        src: Mariela1,
+        color: "from-cyan-400 to-blue-500",
+        desc: "Vista principal",
+      },
+      {
+        src: Mariela2,
+        color: "from-blue-400 to-cyan-500",
+        desc: "Habitación suite",
+      },
+      {
+        src: Mariela3,
+        color: "from-sky-400 to-blue-600",
+        desc: "Terraza con vista al mar",
+      },
+      {
+        src: Mariela4,
+        color: "from-cyan-500 to-teal-500",
+        desc: "Restaurante",
+      },
+      {
+        src: Mariela5,
+        color: "from-blue-500 to-indigo-500",
+        desc: "Piscina infinity",
+      },
     ],
     amenidades: [
       "Wifi",
@@ -36,6 +100,10 @@ export const hotelesDemo = [
       { tipo: "Suite vista al mar", precio: 400000, disponibles: 2 },
     ],
   },
+
+  // ==============================
+  // HOTEL 2 — CORAL
+  // ==============================
   {
     id: 2,
     nombre: "Casa Hostal Playa Coral",
@@ -46,11 +114,27 @@ export const hotelesDemo = [
     precioDesde: 80000,
     calificacion: 4.6,
     imagenes: [
-      { color: "from-emerald-400 to-cyan-500", desc: "Fachada del hostal" },
-      { color: "from-teal-400 to-emerald-500", desc: "Habitación compartida" },
-      { color: "from-cyan-400 to-emerald-400", desc: "Cocina común" },
-      { color: "from-green-400 to-teal-500", desc: "Área social" },
-      { color: "from-emerald-500 to-cyan-600", desc: "Terraza con hamacas" },
+      {
+        src: Coral1,
+        color: "from-emerald-400 to-cyan-500",
+        desc: "Fachada del hostal",
+      },
+      {
+        src: Coral2,
+        color: "from-teal-400 to-emerald-500",
+        desc: "Habitación compartida",
+      },
+      {
+        src: Coral3,
+        color: "from-cyan-400 to-emerald-400",
+        desc: "Cocina común",
+      },
+      { src: Coral4, color: "from-green-400 to-teal-500", desc: "Área social" },
+      {
+        src: Coral5,
+        color: "from-emerald-500 to-cyan-600",
+        desc: "Terraza con hamacas",
+      },
     ],
     amenidades: ["Wifi", "Cocina compartida", "Terraza", "Biblioteca"],
     servicios: [
@@ -65,6 +149,10 @@ export const hotelesDemo = [
       { tipo: "Doble con baño", precio: 150000, disponibles: 3 },
     ],
   },
+
+  // ==============================
+  // HOTEL 3 — HILLTOP
+  // ==============================
   {
     id: 3,
     nombre: "HillTop Sapzurro Hostel",
@@ -75,11 +163,31 @@ export const hotelesDemo = [
     precioDesde: 200000,
     calificacion: 4.3,
     imagenes: [
-      { color: "from-amber-400 to-orange-500", desc: "Cabaña principal" },
-      { color: "from-yellow-400 to-amber-500", desc: "Interior cabaña" },
-      { color: "from-orange-400 to-red-400", desc: "Vista desde la cabaña" },
-      { color: "from-amber-500 to-yellow-600", desc: "Piscina natural" },
-      { color: "from-yellow-500 to-orange-500", desc: "Bar de playa" },
+      {
+        src: Top1,
+        color: "from-amber-400 to-orange-500",
+        desc: "Cabaña principal",
+      },
+      {
+        src: Top2,
+        color: "from-yellow-400 to-amber-500",
+        desc: "Interior cabaña",
+      },
+      {
+        src: Top3,
+        color: "from-orange-400 to-red-400",
+        desc: "Vista desde la cabaña",
+      },
+      {
+        src: Top4,
+        color: "from-amber-500 to-yellow-600",
+        desc: "Piscina natural",
+      },
+      {
+        src: Top5,
+        color: "from-yellow-500 to-orange-500",
+        desc: "Bar de playa",
+      },
     ],
     amenidades: ["Wifi", "Desayuno", "Piscina", "Bar", "Acceso a playa"],
     servicios: [
@@ -95,6 +203,10 @@ export const hotelesDemo = [
       { tipo: "Cabaña Premium vista al mar", precio: 450000, disponibles: 2 },
     ],
   },
+
+  // ==============================
+  // HOTEL 4 — EL CHILENO
+  // ==============================
   {
     id: 4,
     nombre: "El Chilena Hotel",
@@ -105,11 +217,31 @@ export const hotelesDemo = [
     precioDesde: 150000,
     calificacion: 3.8,
     imagenes: [
-      { color: "from-green-400 to-emerald-500", desc: "Lodge principal" },
-      { color: "from-lime-400 to-green-500", desc: "Bungalow ecológico" },
-      { color: "from-emerald-400 to-teal-500", desc: "Huerta orgánica" },
-      { color: "from-teal-400 to-cyan-500", desc: "Área de meditación" },
-      { color: "from-green-500 to-emerald-600", desc: "Mirador natural" },
+      {
+        src: Chileno1,
+        color: "from-green-400 to-emerald-500",
+        desc: "Lodge principal",
+      },
+      {
+        src: Chileno2,
+        color: "from-lime-400 to-green-500",
+        desc: "Bungalow ecológico",
+      },
+      {
+        src: Chileno3,
+        color: "from-emerald-400 to-teal-500",
+        desc: "Huerta orgánica",
+      },
+      {
+        src: Chileno4,
+        color: "from-teal-400 to-cyan-500",
+        desc: "Área de meditación",
+      },
+      {
+        src: Chileno5,
+        color: "from-green-500 to-emerald-600",
+        desc: "Mirador natural",
+      },
     ],
     amenidades: ["Wifi", "Restaurante", "Tours", "Kayaks", "Huerta orgánica"],
     servicios: [

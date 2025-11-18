@@ -87,18 +87,22 @@ const HotelCard = ({ hotel }) => {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-      {/* Carrusel de imágenes */}
-      <div className="relative h-64 bg-gradient-to-br overflow-hidden group">
+      {/* Carrusel de imágenes (MODIFICADO AQUÍ) */}
+      <div className="relative h-64 overflow-hidden group">
+        <img
+          src={hotel.imagenes[currentImageIndex].src}
+          alt={hotel.imagenes[currentImageIndex].desc}
+          className="w-full h-full object-cover transition-opacity duration-500"
+        />
+
+        {/* Overlay de degradado y descripción para mantener info del data (OPCIONAL) */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${hotel.imagenes[currentImageIndex].color} transition-all duration-500`}
+          className={`absolute inset-0 bg-gradient-to-br ${hotel.imagenes[currentImageIndex].color} transition-all duration-500 opacity-0 group-hover:opacity-30`}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-white">
-              <Waves className="w-16 h-16 mx-auto mb-2 opacity-50" />
-              <p className="text-sm opacity-75">
-                {hotel.imagenes[currentImageIndex].desc}
-              </p>
-            </div>
+          <div className="absolute bottom-4 left-1/2 -translate-x-1/2 text-center text-white p-2 bg-black/50 rounded-lg">
+            <p className="text-sm font-medium">
+              {hotel.imagenes[currentImageIndex].desc}
+            </p>
           </div>
         </div>
 

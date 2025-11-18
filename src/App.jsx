@@ -1,3 +1,4 @@
+// src/App.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import Header from "./components/Header";
@@ -9,29 +10,27 @@ import AuthModal from "./components/Auth/AuthModal";
 import AdminPanel from "./components/Admin/AdminPanel";
 import ResetPasswordForm from "./components/Auth/ResetPasswordForm";
 
+// IMPORTS NUEVOS
+import ActivitiesCard from "./components/ActivitiesCard.jsx";
+import { activities } from "./data/Activities.js";
+
 const App = () => {
   const { user } = useAuth();
+
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("inicio");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAdminView, setIsAdminView] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
 
-  // Detectar si estamos en la ruta /reset-password
   useEffect(() => {
     const path = window.location.pathname;
-    if (path === "/reset-password") {
-      setShowResetPassword(true);
-    } else {
-      setShowResetPassword(false);
-    }
+    setShowResetPassword(path === "/reset-password");
   }, []);
 
-  // Mostrar función global para cambiar a vista admin
   useEffect(() => {
     window.goToAdmin = () => setIsAdminView(true);
     window.goToHome = () => setIsAdminView(false);
-
     return () => {
       delete window.goToAdmin;
       delete window.goToHome;
@@ -39,9 +38,7 @@ const App = () => {
   }, []);
 
   useEffect(() => {
-    const handleScroll = () => {
-      setIsScrolled(window.scrollY > 50);
-    };
+    const handleScroll = () => setIsScrolled(window.scrollY > 50);
     window.addEventListener("scroll", handleScroll);
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
@@ -49,10 +46,8 @@ const App = () => {
   const scrollToSection = (sectionId) => {
     setActiveSection(sectionId);
     setIsMenuOpen(false);
-    const element = document.getElementById(sectionId);
-    if (element) {
-      element.scrollIntoView({ behavior: "smooth" });
-    }
+    const el = document.getElementById(sectionId);
+    if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
   const menuItems = [
@@ -65,7 +60,7 @@ const App = () => {
     { id: "sobre-sapzurro", label: "Sobre Sapzurro" },
   ];
 
-  // 🆕 Si está en /reset-password, mostrar SOLO el formulario de reset
+  // Mostrar sólo el reset password cuando corresponda
   if (showResetPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 flex items-center justify-center p-4">
@@ -76,12 +71,10 @@ const App = () => {
     );
   }
 
-  // Si está en vista admin se muestra AdminPanel
   if (isAdminView) {
     return <AdminPanel onBackToHome={() => setIsAdminView(false)} />;
   }
 
-  // Vista pública normal
   return (
     <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50">
       <Header
@@ -91,35 +84,58 @@ const App = () => {
         scrollToSection={scrollToSection}
         isScrolled={isScrolled}
       />
-
       <Hero scrollToSection={scrollToSection} />
-
       <HotelesSection />
-
       <RestaurantesSection />
-
-      {/* Placeholder Sections */}
-      {menuItems.slice(3).map((item) => (
-        <section
-          key={item.id}
-          id={item.id}
-          className="py-20 px-4"
-          style={{ minHeight: "400px" }}
-        >
-          <div className="container mx-auto">
-            <div className="text-center">
-              <h2 className="text-4xl font-bold text-gray-800 mb-4">
-                {item.label}
-              </h2>
-              <p className="text-gray-600">Sección en desarrollo...</p>
-            </div>
+      {/* Sección real de Actividades (nueva) */}
+      <section id="actividades" className="py-20 px-4 bg-gray-50">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4">
+              Actividades en Sapzurro
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Descubre experiencias únicas en uno de los paraísos naturales más
+              impresionantes del Caribe colombiano
+            </p>
           </div>
-        </section>
-      ))}
 
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {Array.isArray(activities) && activities.length > 0 ? (
+              activities.map((activity) => (
+                <ActivitiesCard key={activity.name} activity={activity} />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                No hay actividades disponibles.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+      {/* Renderiza placeholders para los items que no hemos implementado.
+          Evitamos duplicar 'actividades' usando filter para omitirla. */}
+      {menuItems
+        .filter((mi) => mi.id !== "actividades")
+        .slice(3)
+        .map((item) => (
+          <section
+            key={item.id}
+            id={item.id}
+            className="py-20 px-4"
+            style={{ minHeight: "400px" }}
+          >
+            <div className="container mx-auto">
+              <div className="text-center">
+                <h2 className="text-4xl font-bold text-gray-800 mb-4">
+                  {item.label}
+                </h2>
+                <p className="text-gray-600">Sección en desarrollo...</p>
+              </div>
+            </div>
+          </section>
+        ))}
       <Footer />
-
-      {/* Modal de autenticación */}
       <AuthModal />
     </div>
   );
