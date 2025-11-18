@@ -7,7 +7,7 @@ export const hotelesDemo = [
     descripcionCompleta:
       "La Casa Hotel La Mariela es un refugio exclusivo ubicado en primera línea de playa. Con una arquitectura que combina elementos tradicionales y modernos, ofrece una experiencia única de relajación. Nuestras habitaciones están diseñadas con materiales naturales y cuentan con amplias terrazas privadas. El restaurante sirve cocina del Pacífico con ingredientes frescos locales. Disfruta de atardeceres inolvidables desde nuestra terraza panorámica.",
     precioDesde: 180000,
-    calificacion: 4.8,
+    calificacion: 4.9,
     imagenes: [
       { color: "from-cyan-400 to-blue-500", desc: "Vista principal" },
       { color: "from-blue-400 to-cyan-500", desc: "Habitación suite" },
@@ -44,7 +44,7 @@ export const hotelesDemo = [
     descripcionCompleta:
       "La Casa Hostal Playa Coral es ideal para viajeros que buscan una experiencia auténtica y económica. Ubicado en el corazón de Sapzurro, a pocos pasos de la playa. Ambiente familiar y acogedor donde podrás conocer otros viajeros. Contamos con cocina compartida equipada, terraza con hamacas y una biblioteca de libros. El personal local te ayudará a descubrir los mejores secretos de la zona.",
     precioDesde: 80000,
-    calificacion: 4.5,
+    calificacion: 4.6,
     imagenes: [
       { color: "from-emerald-400 to-cyan-500", desc: "Fachada del hostal" },
       { color: "from-teal-400 to-emerald-500", desc: "Habitación compartida" },
@@ -73,7 +73,7 @@ export const hotelesDemo = [
     descripcionCompleta:
       "HillTop Sapzurro Hostel ofrece una experiencia única de inmersión en la naturaleza sin sacrificar comodidad. Cada cabaña está construida con materiales locales y cuenta con amplios espacios abiertos. Despierta con el sonido de las olas y pájaros tropicales. Nuestra piscina natural se integra perfectamente con el paisaje. El bar de playa sirve cócteles y mariscos frescos. Perfecto para parejas y familias que buscan tranquilidad.",
     precioDesde: 200000,
-    calificacion: 4.9,
+    calificacion: 4.3,
     imagenes: [
       { color: "from-amber-400 to-orange-500", desc: "Cabaña principal" },
       { color: "from-yellow-400 to-amber-500", desc: "Interior cabaña" },
@@ -103,7 +103,7 @@ export const hotelesDemo = [
     descripcionCompleta:
       "El Chilena Hotel es pionero en turismo sostenible en la región. Funcionamos 100% con energía solar y sistemas de recolección de agua lluvia. Nuestras instalaciones están diseñadas para minimizar el impacto ambiental. Ofrecemos experiencias educativas sobre conservación marina y selva tropical. El restaurante usa ingredientes orgánicos de nuestra huerta. Parte de nuestras ganancias se destinan a proyectos comunitarios locales.",
     precioDesde: 150000,
-    calificacion: 4.7,
+    calificacion: 3.8,
     imagenes: [
       { color: "from-green-400 to-emerald-500", desc: "Lodge principal" },
       { color: "from-lime-400 to-green-500", desc: "Bungalow ecológico" },
