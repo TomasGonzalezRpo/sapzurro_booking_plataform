@@ -1,71 +1,121 @@
-// src/data/rutasData.js
+// ==========================================================
+// RUTA 1: Sapzurro → La Miel → Playa Soledad
+// Clave: MIEL (Miel1.jpg a Miel5.jpg)
+// ==========================================================
+import Miel1 from "../assets/rutas/Miel1.jpg"; // Asegúrate de que las rutas a tu assets sean correctas
+import Miel2 from "../assets/rutas/Miel2.jpg";
+import Miel3 from "../assets/rutas/Miel3.jpg";
+import Miel4 from "../assets/rutas/Miel4.jpg";
+import Miel5 from "../assets/rutas/Miel5.jpg";
 
-/**
- * Array de datos para las Rutas Turísticas.
- * NOTA: Los precios son ejemplos y deben ser ajustados
- * a las tarifas reales de los tours en Sapzurro.
- */
+// ==========================================================
+// RUTA 2: Sapzurro → El Cielo → Capurganá
+// Clave: CIELO (Cielo1.jpg a Cielo5.jpg)
+// ==========================================================
+import Cielo1 from "../assets/rutas/Cielo1.jpg";
+import Cielo2 from "../assets/rutas/Cielo2.jpg";
+import Cielo3 from "../assets/rutas/Cielo3.jpg";
+import Cielo4 from "../assets/rutas/Cielo4.jpg";
+import Cielo5 from "../assets/rutas/Cielo5.jpg";
+
+// ==========================================================
+// RUTA 3: Sapzurro → Capurganá → Playa Aguacate
+// Clave: AGUA (Agua1.jpg a Agua5.jpg)
+// ==========================================================
+import Agua1 from "../assets/rutas/Agua1.jpg";
+import Agua2 from "../assets/rutas/Agua2.jpg";
+import Agua3 from "../assets/rutas/Agua3.jpg";
+import Agua4 from "../assets/rutas/Agua4.jpg";
+import Agua5 from "../assets/rutas/Agua5.jpg";
+
+// ==========================================================
+// RUTA 4: Sapzurro → Snorkel → Cabo Tiburón
+// Clave: CABO (Cabo1.jpg a Cabo5.jpg)
+// ==========================================================
+import Cabo1 from "../assets/rutas/Cabo1.jpg";
+import Cabo2 from "../assets/rutas/Cabo2.jpg";
+import Cabo3 from "../assets/rutas/Cabo3.jpg";
+import Cabo4 from "../assets/rutas/Cabo4.jpg";
+import Cabo5 from "../assets/rutas/Cabo5.jpg";
+
+// ==========================================================
+// ARREGLO DE RUTAS TURÍSTICAS
+// ==========================================================
 export const rutasTuristicas = [
+  // ==========================================================
+  // RUTA 1: Sapzurro → La Miel → Playa Soledad
+  // ==========================================================
   {
     id: 1,
-    nombre: "Snorkel y Frontera: Cabo Tiburón",
-    subtitulo: "Aventura marina + senderismo fronterizo",
-    duracion: "1 día (6-8 horas)",
-    precio: 150000, // Precio en COP
-    etiqueta: "ecoturismo",
-    descripcion:
-      "Tour en lancha por zonas de snorkel alrededor de Sapzurro (peces, corales). Después del almuerzo, caminata hacia Cabo Tiburón, punto icónico entre Colombia y Panamá.",
-    idealPara: ["Ecoturismo", "Aventura", "Viajeros que quieren 'todo en uno'"],
-    imagenPlaceholder: {
-      color: "from-green-500 to-lime-600",
-      desc: "Vista de la frontera",
-    },
-  },
-  {
-    id: 2,
-    nombre: "Las Tres Playas Escondidas",
-    subtitulo: "Sapzurro, La Miel y Capurganá",
-    duracion: "Medio día (4 horas)",
-    precio: 85000,
+    nombre: "Sapzurro → La Miel → Playa Soledad",
+    subtitulo: "Frontera, playa y snorkel en un día",
+    duracion: "1 día",
+    precio: 150000,
     etiqueta: "playas",
     descripcion:
-      "Recorrido rápido en lancha por las tres playas más hermosas de la región. Incluye tiempo libre en La Miel (Panamá) para compras y baño en Capurganá.",
-    idealPara: ["Playa", "Familias", "Fotografía", "Recorrido rápido"],
+      "Inicia en Sapzurro subiendo la escalinata fronteriza hacia La Miel (Panamá), donde podrás disfrutar playa tranquila y tiendas libres de impuestos. Luego, regreso por lancha hacia Playa Soledad, una playa paradisíaca perfecta para nadar, descansar y hacer snorkel.",
+    idealPara: ["Familias", "Parejas", "Fotografía", "Día completo de playa"],
     imagenPlaceholder: {
       color: "from-blue-400 to-cyan-500",
-      desc: "Arena blanca y mar azul",
+      desc: "Playa Soledad y frontera",
     },
   },
+  // ==========================================================
+  // RUTA 2: Sapzurro → El Cielo → Capurganá
+  // ==========================================================
   {
-    id: 3,
-    nombre: "Cascadas y Ríos: Tesoros Naturales",
-    subtitulo: "Senderismo en selva y piscinas naturales",
-    duracion: "4 horas",
-    precio: 60000,
+    id: 2,
+    nombre: "Sapzurro → El Cielo → Capurganá",
+    subtitulo: "Senderismo, cascadas y selva tropical",
+    duracion: "Medio día",
+    precio: 85000,
     etiqueta: "selva",
     descripcion:
-      "Caminata guiada en la densa selva hasta la majestuosa Cascada del Cielo. Podrás disfrutar de un refrescante baño en sus piscinas naturales y observar flora local.",
-    idealPara: ["Senderismo", "Naturaleza", "Baños en río", "Ejercicio"],
+      "Sal de Sapzurro hacia el sendero ecológico que lleva a El Cielo, donde disfrutarás pozas y cascadas naturales. Después del baño en agua dulce, continúa la caminata hacia Capurganá, una ruta rodeada de selva tropical.",
+    idealPara: ["Amantes del senderismo", "Turismo ecológico", "Aventureros"],
     imagenPlaceholder: {
-      color: "from-sky-500 to-indigo-600",
-      desc: "Agua dulce y vegetación",
+      color: "from-green-600 to-lime-700",
+      desc: "Sendero ecológico y cascadas",
     },
   },
+  // ==========================================================
+  // RUTA 3: Sapzurro → Capurganá → Playa Aguacate
+  // ==========================================================
+  {
+    id: 3,
+    nombre: "Sapzurro → Capurganá → Playa Aguacate",
+    subtitulo: "Mar, malecón y relax total",
+    duracion: "1 día",
+    precio: 90000,
+    etiqueta: "playas",
+    descripcion:
+      "Caminata suave desde Sapzurro hasta Capurganá, con tiempo libre para recorrer el malecón. Luego salida en lancha hacia Playa Aguacate, una de las más hermosas del sector, famosa por sus aguas tranquilas y gastronomía local.",
+    idealPara: [
+      "Grupos",
+      "Amantes del mar",
+      "Personas que desean un día relajado",
+    ],
+    imagenPlaceholder: {
+      color: "from-sky-500 to-indigo-600",
+      desc: "Playa Aguacate y Capurganá",
+    },
+  },
+  // ==========================================================
+  // RUTA 4: Sapzurro → Snorkel → Cabo Tiburón (CONFIRMADA)
+  // ==========================================================
   {
     id: 4,
-    nombre: "Inmersión Cultural: Vida Costeña",
-    subtitulo: "Comunidad indígena, historia y gastronomía local",
-    duracion: "5 horas",
+    nombre: "Ruta 4: Sapzurro → Snorkel → Cabo Tiburón", // Nombre actualizado
+    subtitulo: "Aventura marina + senderismo fronterizo",
+    duracion: "1 día",
     precio: 95000,
-    etiqueta: "cultural",
+    etiqueta: "ecoturismo",
     descripcion:
-      "Tour educativo que comienza con una interacción con una comunidad indígena local, aprendiendo sobre sus costumbres y artesanías. Finaliza con una degustación de platos típicos caribeños.",
-    idealPara: ["Cultura", "Gastronomía", "Viajeros solos", "Educación"],
+      "Inicia con un tour en lancha por las zonas de snorkel alrededor de Sapzurro, donde podrás ver peces tropicales, corales y estrellas de mar. Después del almuerzo, continúa la caminata hacia Cabo Tiburón, un punto icónico en la frontera entre Colombia y Panamá.",
+    idealPara: ["Ecoturismo", "Aventura", "Viajeros que quieren “todo en uno”"],
     imagenPlaceholder: {
-      color: "from-purple-500 to-fuchsia-600",
-      desc: "Pueblo y tradiciones",
+      color: "from-green-500 to-lime-600",
+      desc: "Vista de la frontera y snorkel",
     },
   },
 ];
-
-// NOTA IMPORTANTE: Este archivo no necesita 'export default'.
