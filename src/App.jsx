@@ -9,10 +9,11 @@ import Footer from "./components/Footer";
 import AuthModal from "./components/Auth/AuthModal";
 import AdminPanel from "./components/Admin/AdminPanel";
 import ResetPasswordForm from "./components/Auth/ResetPasswordForm";
-
-// IMPORTS NUEVOS
 import ActivitiesCard from "./components/ActivitiesCard.jsx";
+import RutaCard from "./components/RutaCard.jsx";
 import { activities } from "./data/Activities.js";
+import { rutasTuristicas } from "./data/rutasData.js";
+import { Compass } from "lucide-react"; // <-- CORREGIDO: Usar Hiking
 
 const App = () => {
   const { user } = useAuth();
@@ -55,6 +56,7 @@ const App = () => {
     { id: "hoteles", label: "Hoteles" },
     { id: "restaurantes", label: "Restaurantes" },
     { id: "actividades", label: "Actividades" },
+    { id: "rutas", label: "Rutas" },
     { id: "flora-fauna", label: "Flora y Fauna" },
     { id: "clima", label: "Clima" },
     { id: "sobre-sapzurro", label: "Sobre Sapzurro" },
@@ -87,7 +89,10 @@ const App = () => {
       <Hero scrollToSection={scrollToSection} />
       <HotelesSection />
       <RestaurantesSection />
-      {/* Sección real de Actividades (nueva) */}
+
+      {/* ------------------------------------------ */}
+      {/* SECCIÓN DE ACTIVIDADES */}
+      {/* ------------------------------------------ */}
       <section id="actividades" className="py-20 px-4 bg-gray-50">
         <div className="container mx-auto">
           <div className="text-center mb-12">
@@ -113,10 +118,41 @@ const App = () => {
           </div>
         </div>
       </section>
-      {/* Renderiza placeholders para los items que no hemos implementado.
-          Evitamos duplicar 'actividades' usando filter para omitirla. */}
+
+      {/* ------------------------------------------ */}
+      {/* NUEVA SECCIÓN DE RUTAS TURÍSTICAS */}
+      {/* ------------------------------------------ */}
+      <section id="rutas" className="py-20 px-4 bg-white">
+        <div className="container mx-auto">
+          <div className="text-center mb-12">
+            <h2 className="text-4xl font-bold text-gray-800 mb-4 flex items-center justify-center space-x-3">
+              <Compass className="w-8 h-8 text-cyan-600" />
+              <span>Rutas Turísticas</span>
+            </h2>
+            <p className="text-xl text-gray-600 max-w-2xl mx-auto">
+              Explora Sapzurro con paquetes todo incluido y tours guiados por
+              las zonas más emblemáticas.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+            {Array.isArray(rutasTuristicas) && rutasTuristicas.length > 0 ? (
+              rutasTuristicas.map((ruta) => (
+                <RutaCard key={ruta.id} ruta={ruta} />
+              ))
+            ) : (
+              <div className="col-span-full text-center text-gray-500">
+                No hay rutas disponibles en este momento.
+              </div>
+            )}
+          </div>
+        </div>
+      </section>
+
+      {/* Renderiza placeholders para los items que no hemos implementado. */}
+      {/* SE HA MODIFICADO EL FILTER PARA EXCLUIR 'rutas' y 'actividades' */}
       {menuItems
-        .filter((mi) => mi.id !== "actividades")
+        .filter((mi) => mi.id !== "actividades" && mi.id !== "rutas")
         .slice(3)
         .map((item) => (
           <section
