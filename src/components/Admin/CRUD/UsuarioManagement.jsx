@@ -15,8 +15,8 @@ import {
 const API_URL = "http://localhost:5000/api/usuarios";
 
 /* ----------------------------------------------------------------------
-   ErrorBoundary: captura errores en render para evitar pantalla en blanco
-   ---------------------------------------------------------------------- */
+    ErrorBoundary: captura errores en render para evitar pantalla en blanco
+    ---------------------------------------------------------------------- */
 class ErrorBoundary extends React.Component {
   constructor(props) {
     super(props);
@@ -45,8 +45,8 @@ class ErrorBoundary extends React.Component {
 }
 
 /* ----------------------------------------------------------------------
-   ConfirmationModal (sin cambios funcionales)
-   ---------------------------------------------------------------------- */
+    ConfirmationModal (sin cambios funcionales)
+    ---------------------------------------------------------------------- */
 const ConfirmationModal = ({
   title,
   message,
@@ -105,8 +105,8 @@ const ConfirmationModal = ({
 };
 
 /* ----------------------------------------------------------------------
-   Componente principal
-   ---------------------------------------------------------------------- */
+    Componente principal
+    ---------------------------------------------------------------------- */
 const UsuarioManagementInner = () => {
   const [usuarios, setUsuarios] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -153,8 +153,8 @@ const UsuarioManagementInner = () => {
   }, []);
 
   /* --------------------------------------------------------------------
-     fetchUsuarios: adaptando fullName proveniente del backend
-     -------------------------------------------------------------------- */
+    fetchUsuarios: adaptando fullName proveniente del backend
+    -------------------------------------------------------------------- */
   const fetchUsuarios = useCallback(async () => {
     setLoading(true);
     setErrorCarga(null);
@@ -259,8 +259,8 @@ const UsuarioManagementInner = () => {
   };
 
   /* --------------------------------------------------------------------
-     CRUD handlers (sin cambios importantes)
-     -------------------------------------------------------------------- */
+    CRUD handlers (sin cambios importantes)
+    -------------------------------------------------------------------- */
   const handleNuevo = () => {
     setEditingUsuario(null);
     setFormData({
@@ -389,7 +389,8 @@ const UsuarioManagementInner = () => {
       message,
       async () => {
         try {
-          await axios.put(`${API_URL}/estado/${usuario.id_usuario}`, {
+          // CAMBIO: usar PUT normal en lugar de /estado/
+          await axios.put(`${API_URL}/${usuario.id_usuario}`, {
             estado: newEstado,
           });
           openConfirmModal(
@@ -435,8 +436,8 @@ const UsuarioManagementInner = () => {
   };
 
   /* --------------------------------------------------------------------
-     RENDER
-     -------------------------------------------------------------------- */
+    RENDER
+    -------------------------------------------------------------------- */
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -610,7 +611,7 @@ const UsuarioManagementInner = () => {
         )}
       </div>
 
-      {/* Modal Crear/Editar */}
+      {/* MODAL CORREGIDO CREAR/EDITAR */}
       {showModal && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
           <div className="bg-white rounded-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl">
@@ -634,7 +635,7 @@ const UsuarioManagementInner = () => {
                 </div>
               )}
 
-              {/* Formulario */}
+              {/* Username */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Username <span className="text-red-500">*</span>
@@ -650,7 +651,7 @@ const UsuarioManagementInner = () => {
                 />
               </div>
 
-              {/* (resto del formulario igual al original) */}
+              {/* Contraseñas */}
               <div className="grid md:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -689,9 +690,117 @@ const UsuarioManagementInner = () => {
                 </div>
               </div>
 
-              {/* resto del formulario sigue igual... */}
+              {/* Nombres y Apellidos */}
+              <div className="grid md:grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Nombres <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.nombres}
+                    onChange={(e) =>
+                      setFormData({ ...formData, nombres: e.target.value })
+                    }
+                    placeholder="Juan Carlos"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                    Apellidos <span className="text-red-500">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={formData.apellidos}
+                    onChange={(e) =>
+                      setFormData({ ...formData, apellidos: e.target.value })
+                    }
+                    placeholder="Pérez García"
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                  />
+                </div>
+              </div>
+
+              {/* Correo */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Correo electrónico <span className="text-red-500">*</span>
+                </label>
+                <input
+                  type="email"
+                  value={formData.correo}
+                  onChange={(e) =>
+                    setFormData({ ...formData, correo: e.target.value })
+                  }
+                  placeholder="correo@ejemplo.com"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                />
+              </div>
+
+              {/* Perfil/Rol */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Perfil/Rol <span className="text-red-500">*</span>
+                </label>
+                <select
+                  value={formData.id_perfil}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      id_perfil: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                >
+                  {perfilesDisponibles.map((perfil) => (
+                    <option key={perfil.id_perfil} value={perfil.id_perfil}>
+                      {perfil.nombre}
+                    </option>
+                  ))}
+                </select>
+              </div>
+
+              {/* Proveedor */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Proveedor
+                </label>
+                <select
+                  value={formData.provider}
+                  onChange={(e) =>
+                    setFormData({ ...formData, provider: e.target.value })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                >
+                  <option value="local">Local</option>
+                  <option value="google">Google</option>
+                </select>
+              </div>
+
+              {/* Estado */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Estado
+                </label>
+                <select
+                  value={formData.estado}
+                  onChange={(e) =>
+                    setFormData({
+                      ...formData,
+                      estado: parseInt(e.target.value),
+                    })
+                  }
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-cyan-500"
+                >
+                  <option value={1}>Activo</option>
+                  <option value={0}>Inactivo</option>
+                </select>
+              </div>
             </div>
 
+            {/* Footer del modal */}
             <div className="sticky bottom-0 bg-white flex items-center justify-end space-x-3 p-6 border-t border-gray-200 z-10">
               <button
                 onClick={() => setShowModal(false)}
@@ -710,6 +819,7 @@ const UsuarioManagementInner = () => {
         </div>
       )}
 
+      {/* Modal de Confirmación/Alerta */}
       {showConfirmModal && (
         <ConfirmationModal
           title={modalContent.title}
@@ -723,13 +833,11 @@ const UsuarioManagementInner = () => {
   );
 };
 
-/* ----------------------------------------------------------------------
-   Export con ErrorBoundary envuelto
-   ---------------------------------------------------------------------- */
-export default function UsuarioManagement() {
-  return (
-    <ErrorBoundary>
-      <UsuarioManagementInner />
-    </ErrorBoundary>
-  );
-}
+// Exportamos el componente envuelto en ErrorBoundary
+const UsuarioManagement = (props) => (
+  <ErrorBoundary>
+    <UsuarioManagementInner {...props} />
+  </ErrorBoundary>
+);
+
+export default UsuarioManagement;

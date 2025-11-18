@@ -17,7 +17,7 @@ const App = () => {
   const [isAdminView, setIsAdminView] = useState(false);
   const [showResetPassword, setShowResetPassword] = useState(false);
 
-  // 🆕 Detectar si estamos en la ruta /reset-password
+  // Detectar si estamos en la ruta /reset-password
   useEffect(() => {
     const path = window.location.pathname;
     if (path === "/reset-password") {

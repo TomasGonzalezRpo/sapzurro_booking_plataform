@@ -1,11 +1,11 @@
 export const hotelesDemo = [
   {
     id: 1,
-    nombre: "Hotel Paraíso Caribeño",
+    nombre: "Casa Hotel La Mariela",
     descripcion:
-      "Hotel boutique frente al mar con vistas espectaculares y ambiente acogedor",
+      "Casa Hotel frente al mar con vistas espectaculares y ambiente acogedor",
     descripcionCompleta:
-      "El Hotel Paraíso Caribeño es un refugio exclusivo ubicado en primera línea de playa. Con una arquitectura que combina elementos tradicionales y modernos, ofrece una experiencia única de relajación. Nuestras habitaciones están diseñadas con materiales naturales y cuentan con amplias terrazas privadas. El restaurante sirve cocina del Pacífico con ingredientes frescos locales. Disfruta de atardeceres inolvidables desde nuestra terraza panorámica.",
+      "La Casa Hotel La Mariela es un refugio exclusivo ubicado en primera línea de playa. Con una arquitectura que combina elementos tradicionales y modernos, ofrece una experiencia única de relajación. Nuestras habitaciones están diseñadas con materiales naturales y cuentan con amplias terrazas privadas. El restaurante sirve cocina del Pacífico con ingredientes frescos locales. Disfruta de atardeceres inolvidables desde nuestra terraza panorámica.",
     precioDesde: 180000,
     calificacion: 4.8,
     imagenes: [
@@ -38,11 +38,11 @@ export const hotelesDemo = [
   },
   {
     id: 2,
-    nombre: "Hostal Brisa Marina",
+    nombre: "Casa Hostal Playa Coral",
     descripcion:
       "Hospedaje económico y cómodo, perfecto para viajeros que buscan autenticidad",
     descripcionCompleta:
-      "Hostal Brisa Marina es ideal para viajeros que buscan una experiencia auténtica y económica. Ubicado en el corazón de Sapzurro, a pocos pasos de la playa. Ambiente familiar y acogedor donde podrás conocer otros viajeros. Contamos con cocina compartida equipada, terraza con hamacas y una biblioteca de libros. El personal local te ayudará a descubrir los mejores secretos de la zona.",
+      "La Casa Hostal Playa Coral es ideal para viajeros que buscan una experiencia auténtica y económica. Ubicado en el corazón de Sapzurro, a pocos pasos de la playa. Ambiente familiar y acogedor donde podrás conocer otros viajeros. Contamos con cocina compartida equipada, terraza con hamacas y una biblioteca de libros. El personal local te ayudará a descubrir los mejores secretos de la zona.",
     precioDesde: 80000,
     calificacion: 4.5,
     imagenes: [
@@ -67,11 +67,11 @@ export const hotelesDemo = [
   },
   {
     id: 3,
-    nombre: "Cabañas Selva y Mar",
+    nombre: "HillTop Sapzurro Hostel",
     descripcion:
       "Cabañas rústicas rodeadas de naturaleza con acceso directo a la playa",
     descripcionCompleta:
-      "Cabañas Selva y Mar ofrece una experiencia única de inmersión en la naturaleza sin sacrificar comodidad. Cada cabaña está construida con materiales locales y cuenta con amplios espacios abiertos. Despierta con el sonido de las olas y pájaros tropicales. Nuestra piscina natural se integra perfectamente con el paisaje. El bar de playa sirve cócteles y mariscos frescos. Perfecto para parejas y familias que buscan tranquilidad.",
+      "HillTop Sapzurro Hostel ofrece una experiencia única de inmersión en la naturaleza sin sacrificar comodidad. Cada cabaña está construida con materiales locales y cuenta con amplios espacios abiertos. Despierta con el sonido de las olas y pájaros tropicales. Nuestra piscina natural se integra perfectamente con el paisaje. El bar de playa sirve cócteles y mariscos frescos. Perfecto para parejas y familias que buscan tranquilidad.",
     precioDesde: 200000,
     calificacion: 4.9,
     imagenes: [
@@ -97,11 +97,11 @@ export const hotelesDemo = [
   },
   {
     id: 4,
-    nombre: "Eco Lodge Sapzurro",
+    nombre: "El Chilena Hotel",
     descripcion:
       "Alojamiento ecológico con compromiso ambiental y experiencia única",
     descripcionCompleta:
-      "Eco Lodge Sapzurro es pionero en turismo sostenible en la región. Funcionamos 100% con energía solar y sistemas de recolección de agua lluvia. Nuestras instalaciones están diseñadas para minimizar el impacto ambiental. Ofrecemos experiencias educativas sobre conservación marina y selva tropical. El restaurante usa ingredientes orgánicos de nuestra huerta. Parte de nuestras ganancias se destinan a proyectos comunitarios locales.",
+      "El Chilena Hotel es pionero en turismo sostenible en la región. Funcionamos 100% con energía solar y sistemas de recolección de agua lluvia. Nuestras instalaciones están diseñadas para minimizar el impacto ambiental. Ofrecemos experiencias educativas sobre conservación marina y selva tropical. El restaurante usa ingredientes orgánicos de nuestra huerta. Parte de nuestras ganancias se destinan a proyectos comunitarios locales.",
     precioDesde: 150000,
     calificacion: 4.7,
     imagenes: [
