@@ -12,7 +12,6 @@ import Ref4 from "../assets/restaurantesaliados/Ref4.jpg";
 import Ref5 from "../assets/restaurantesaliados/Ref5.jpg";
 
 // 2. Restaurante Aliado 2: Donde Juancho (Don1.jpg a Don5.jpg)
-// NOTA: Asumo que "Donde Juancho" es "Donde Tomas" de la instrucción anterior (Don1-5)
 import Don1 from "../assets/restaurantesaliados/Don1.jpg";
 import Don2 from "../assets/restaurantesaliados/Don2.jpg";
 import Don3 from "../assets/restaurantesaliados/Don3.jpg";
@@ -27,7 +26,6 @@ import Sun4 from "../assets/restaurantesaliados/Sun4.jpg";
 import Sun5 from "../assets/restaurantesaliados/Sun5.jpg";
 
 // 4. Restaurante Aliado 4: La Cabaña Vegetariana (Cab1.jpg a Cab5.jpg)
-// NOTA: Asumo que "La Cabaña Vegetariana" es "El Cabañal" de la instrucción anterior (Cab1-5)
 import Cab1 from "../assets/restaurantesaliados/Cab1.jpg";
 import Cab2 from "../assets/restaurantesaliados/Cab2.jpg";
 import Cab3 from "../assets/restaurantesaliados/Cab3.jpg";
@@ -35,7 +33,6 @@ import Cab4 from "../assets/restaurantesaliados/Cab4.jpg";
 import Cab5 from "../assets/restaurantesaliados/Cab5.jpg";
 
 // 5. Restaurante Aliado 5: Asadero & Parrilla El Rancho (Asa1.jpg a Asa5.jpg)
-// NOTA: Asumo que "Asadero & Parrilla El Rancho" es "El Asador" de la instrucción anterior (Asa1-5)
 import Asa1 from "../assets/restaurantesaliados/Asa1.jpg";
 import Asa2 from "../assets/restaurantesaliados/Asa2.jpg";
 import Asa3 from "../assets/restaurantesaliados/Asa3.jpg";
@@ -43,10 +40,36 @@ import Asa4 from "../assets/restaurantesaliados/Asa4.jpg";
 import Asa5 from "../assets/restaurantesaliados/Asa5.jpg";
 
 // ==========================================================
+// RUTA DE IMÁGENES: ../assets/restaurantesnoaliados/ (NUEVAS IMPORTACIONES)
+// ==========================================================
+
+// 6. Restaurante No Aliado 1: Pizzería Bella Italia (Piz1.jpg a Piz5.jpg)
+import Piz1 from "../assets/restaurantesnoaliados/Piz1.jpg";
+import Piz2 from "../assets/restaurantesnoaliados/Piz2.jpg";
+import Piz3 from "../assets/restaurantesnoaliados/Piz3.jpg";
+import Piz4 from "../assets/restaurantesnoaliados/Piz4.jpg";
+import Piz5 from "../assets/restaurantesnoaliados/Piz5.jpg";
+
+// 7. Restaurante No Aliado 2: Café del Puerto (Caf1.jpg a Caf5.jpg)
+import Caf1 from "../assets/restaurantesnoaliados/Caf1.jpg";
+import Caf2 from "../assets/restaurantesnoaliados/Caf2.jpg";
+import Caf3 from "../assets/restaurantesnoaliados/Caf3.jpg";
+import Caf4 from "../assets/restaurantesnoaliados/Caf4.jpg";
+import Caf5 from "../assets/restaurantesnoaliados/Caf5.jpg";
+
+// 8. Restaurante No Aliado 3: Comidas Rápidas El Kiosco (Com1.jpg a Com5.jpg)
+import Com1 from "../assets/restaurantesnoaliados/Comi1.jpg";
+import Com2 from "../assets/restaurantesnoaliados/Comi2.jpg";
+import Com3 from "../assets/restaurantesnoaliados/Comi3.jpg";
+import Com4 from "../assets/restaurantesnoaliados/Comi4.jpg";
+import Com5 from "../assets/restaurantesnoaliados/Comi5.jpg";
+
+// ==========================================================
 // ARREGLO DE RESTAURANTES ALIADOS (CON IMÁGENES)
 // ==========================================================
 
 export const restaurantesAliados = [
+  // ... (El contenido de los 5 restaurantes aliados se mantiene igual)
   {
     id: 1,
     nombre: "El Refugio del Pescador",
@@ -60,7 +83,7 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$ (80.000 - 150.000)",
     horarios: "12:00 PM - 10:00 PM",
     telefono: "+57 300 123 4567",
-    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
+    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Ref1, desc: "Langosta a la parrilla" },
       { url: Ref2, desc: "Ceviche de camarón" },
@@ -118,7 +141,7 @@ export const restaurantesAliados = [
     rangoPrecios: "$$ (30.000 - 60.000)",
     horarios: "7:00 AM - 9:00 PM",
     telefono: "+57 300 234 5678",
-    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
+    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Don1, desc: "Sancocho de pescado" },
       { url: Don2, desc: "Arroz con coco" },
@@ -173,7 +196,7 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$$ (100.000 - 200.000)",
     horarios: "6:00 PM - 11:00 PM",
     telefono: "+57 300 345 6789",
-    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
+    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Sun1, desc: "Filete mignon con reducción" },
       { url: Sun2, desc: "Sushi de atún fresco" },
@@ -227,7 +250,7 @@ export const restaurantesAliados = [
     rangoPrecios: "$$ (35.000 - 70.000)",
     horarios: "7:00 AM - 8:00 PM",
     telefono: "+57 300 456 7890",
-    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
+    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Cab1, desc: "Bowl de quinoa tropical" },
       { url: Cab2, desc: "Smoothie bowl colorido" },
@@ -286,7 +309,7 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$ (60.000 - 120.000)",
     horarios: "12:00 PM - 10:00 PM",
     telefono: "+57 300 567 8901",
-    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
+    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Asa1, desc: "Churrasco argentino" },
       { url: Asa2, desc: "Costillas BBQ" },
@@ -334,10 +357,9 @@ export const restaurantesAliados = [
 ];
 
 // ==========================================================
-// ARREGLO DE RESTAURANTES NO ALIADOS (SIN MODIFICACIONES)
+// ARREGLO DE RESTAURANTES NO ALIADOS (CON MODIFICACIONES DE IMAGEN)
 // ==========================================================
 
-// NOTA: Los restaurantes no aliados no tienen fotos importadas.
 export const restaurantesNoAliados = [
   {
     id: 6,
@@ -352,12 +374,13 @@ export const restaurantesNoAliados = [
     rangoPrecios: "$$ (40.000 - 80.000)",
     horarios: "5:00 PM - 10:00 PM",
     telefono: "+57 300 678 9012",
+    // ✅ MODIFICADO: Usando las importaciones Piz1 - Piz5
     imagenes: [
-      { color: "from-red-400 to-yellow-500", desc: "Pizza margarita" },
-      { color: "from-yellow-400 to-orange-500", desc: "Pizza cuatro quesos" },
-      { color: "from-orange-400 to-red-500", desc: "Horno de leña" },
-      { color: "from-amber-400 to-red-600", desc: "Ambiente italiano" },
-      { color: "from-red-500 to-pink-600", desc: "Pasta fresca casera" },
+      { url: Piz1, desc: "Pizza margarita" },
+      { url: Piz2, desc: "Pizza cuatro quesos" },
+      { url: Piz3, desc: "Horno de leña" },
+      { url: Piz4, desc: "Ambiente italiano" },
+      { url: Piz5, desc: "Pasta fresca casera" },
     ],
     menuDestacado: [
       { plato: "Pizza Margarita clásica", precio: 45000, categoria: "Pizzas" },
@@ -380,12 +403,13 @@ export const restaurantesNoAliados = [
     rangoPrecios: "$ (15.000 - 35.000)",
     horarios: "6:00 AM - 6:00 PM",
     telefono: "+57 300 789 0123",
+    // ✅ MODIFICADO: Usando las importaciones Caf1 - Caf5
     imagenes: [
-      { color: "from-amber-400 to-orange-500", desc: "Café latte art" },
-      { color: "from-yellow-400 to-amber-500", desc: "Croissants frescos" },
-      { color: "from-orange-400 to-yellow-500", desc: "Desayuno continental" },
-      { color: "from-amber-500 to-orange-600", desc: "Terraza con vista" },
-      { color: "from-yellow-500 to-orange-600", desc: "Repostería artesanal" },
+      { url: Caf1, desc: "Café latte art" },
+      { url: Caf2, desc: "Croissants frescos" },
+      { url: Caf3, desc: "Desayuno continental" },
+      { url: Caf4, desc: "Terraza con vista" },
+      { url: Caf5, desc: "Repostería artesanal" },
     ],
     menuDestacado: [
       { plato: "Desayuno continental", precio: 22000, categoria: "Desayuno" },
@@ -409,12 +433,13 @@ export const restaurantesNoAliados = [
     rangoPrecios: "$ (10.000 - 30.000)",
     horarios: "24 horas",
     telefono: "+57 300 890 1234",
+    // ✅ MODIFICADO: Usando las importaciones Com1 - Com5
     imagenes: [
-      { color: "from-red-400 to-orange-500", desc: "Hamburguesa especial" },
-      { color: "from-yellow-400 to-red-500", desc: "Perro caliente completo" },
-      { color: "from-orange-400 to-red-600", desc: "Papas fritas crujientes" },
-      { color: "from-amber-400 to-orange-600", desc: "Kiosco nocturno" },
-      { color: "from-red-500 to-pink-600", desc: "Malteadas artesanales" },
+      { url: Com1, desc: "Hamburguesa especial" },
+      { url: Com2, desc: "Perro caliente completo" },
+      { url: Com3, desc: "Papas fritas crujientes" },
+      { url: Com4, desc: "Kiosco nocturno" },
+      { url: Com5, desc: "Malteadas artesanales" },
     ],
     menuDestacado: [
       {
