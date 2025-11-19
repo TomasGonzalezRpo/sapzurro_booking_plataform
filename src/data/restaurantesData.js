@@ -1,3 +1,51 @@
+// src/data/restaurantesData.js
+
+// ==========================================================
+// RUTA DE IMÁGENES: ../assets/restaurantesaliados/
+// ==========================================================
+
+// 1. Restaurante Aliado 1: El Refugio del Pescador (Ref1.jpg a Ref5.jpg)
+import Ref1 from "../assets/restaurantesaliados/Ref1.jpg";
+import Ref2 from "../assets/restaurantesaliados/Ref2.jpg";
+import Ref3 from "../assets/restaurantesaliados/Ref3.jpg";
+import Ref4 from "../assets/restaurantesaliados/Ref4.jpg";
+import Ref5 from "../assets/restaurantesaliados/Ref5.jpg";
+
+// 2. Restaurante Aliado 2: Donde Juancho (Don1.jpg a Don5.jpg)
+// NOTA: Asumo que "Donde Juancho" es "Donde Tomas" de la instrucción anterior (Don1-5)
+import Don1 from "../assets/restaurantesaliados/Don1.jpg";
+import Don2 from "../assets/restaurantesaliados/Don2.jpg";
+import Don3 from "../assets/restaurantesaliados/Don3.jpg";
+import Don4 from "../assets/restaurantesaliados/Don4.jpg";
+import Don5 from "../assets/restaurantesaliados/Don5.jpg";
+
+// 3. Restaurante Aliado 3: Sunset Lounge & Grill (Sun1.jpg a Sun5.jpg)
+import Sun1 from "../assets/restaurantesaliados/Sun1.jpg";
+import Sun2 from "../assets/restaurantesaliados/Sun2.jpg";
+import Sun3 from "../assets/restaurantesaliados/Sun3.jpg";
+import Sun4 from "../assets/restaurantesaliados/Sun4.jpg";
+import Sun5 from "../assets/restaurantesaliados/Sun5.jpg";
+
+// 4. Restaurante Aliado 4: La Cabaña Vegetariana (Cab1.jpg a Cab5.jpg)
+// NOTA: Asumo que "La Cabaña Vegetariana" es "El Cabañal" de la instrucción anterior (Cab1-5)
+import Cab1 from "../assets/restaurantesaliados/Cab1.jpg";
+import Cab2 from "../assets/restaurantesaliados/Cab2.jpg";
+import Cab3 from "../assets/restaurantesaliados/Cab3.jpg";
+import Cab4 from "../assets/restaurantesaliados/Cab4.jpg";
+import Cab5 from "../assets/restaurantesaliados/Cab5.jpg";
+
+// 5. Restaurante Aliado 5: Asadero & Parrilla El Rancho (Asa1.jpg a Asa5.jpg)
+// NOTA: Asumo que "Asadero & Parrilla El Rancho" es "El Asador" de la instrucción anterior (Asa1-5)
+import Asa1 from "../assets/restaurantesaliados/Asa1.jpg";
+import Asa2 from "../assets/restaurantesaliados/Asa2.jpg";
+import Asa3 from "../assets/restaurantesaliados/Asa3.jpg";
+import Asa4 from "../assets/restaurantesaliados/Asa4.jpg";
+import Asa5 from "../assets/restaurantesaliados/Asa5.jpg";
+
+// ==========================================================
+// ARREGLO DE RESTAURANTES ALIADOS (CON IMÁGENES)
+// ==========================================================
+
 export const restaurantesAliados = [
   {
     id: 1,
@@ -12,18 +60,13 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$ (80.000 - 150.000)",
     horarios: "12:00 PM - 10:00 PM",
     telefono: "+57 300 123 4567",
+    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
     imagenes: [
-      { color: "from-blue-400 to-cyan-500", desc: "Langosta a la parrilla" },
-      { color: "from-cyan-400 to-teal-500", desc: "Ceviche de camarón" },
-      { color: "from-teal-400 to-emerald-500", desc: "Pargo rojo entero" },
-      {
-        color: "from-blue-500 to-indigo-500",
-        desc: "Terraza con vista al mar",
-      },
-      {
-        color: "from-cyan-500 to-blue-600",
-        desc: "Atardecer desde el restaurante",
-      },
+      { url: Ref1, desc: "Langosta a la parrilla" },
+      { url: Ref2, desc: "Ceviche de camarón" },
+      { url: Ref3, desc: "Pargo rojo entero" },
+      { url: Ref4, desc: "Terraza con vista al mar" },
+      { url: Ref5, desc: "Atardecer desde el restaurante" },
     ],
     menuDestacado: [
       {
@@ -75,12 +118,13 @@ export const restaurantesAliados = [
     rangoPrecios: "$$ (30.000 - 60.000)",
     horarios: "7:00 AM - 9:00 PM",
     telefono: "+57 300 234 5678",
+    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
     imagenes: [
-      { color: "from-orange-400 to-red-500", desc: "Sancocho de pescado" },
-      { color: "from-yellow-400 to-orange-500", desc: "Arroz con coco" },
-      { color: "from-red-400 to-pink-500", desc: "Patacones con hogao" },
-      { color: "from-amber-400 to-orange-600", desc: "Interior acogedor" },
-      { color: "from-orange-500 to-red-600", desc: "Jugo natural de borojó" },
+      { url: Don1, desc: "Sancocho de pescado" },
+      { url: Don2, desc: "Arroz con coco" },
+      { url: Don3, desc: "Patacones con hogao" },
+      { url: Don4, desc: "Interior acogedor" },
+      { url: Don5, desc: "Jugo natural de borojó" },
     ],
     menuDestacado: [
       {
@@ -129,15 +173,13 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$$ (100.000 - 200.000)",
     horarios: "6:00 PM - 11:00 PM",
     telefono: "+57 300 345 6789",
+    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
     imagenes: [
-      {
-        color: "from-purple-400 to-pink-500",
-        desc: "Filete mignon con reducción",
-      },
-      { color: "from-pink-400 to-rose-500", desc: "Sushi de atún fresco" },
-      { color: "from-violet-400 to-purple-500", desc: "Cóctel signature" },
-      { color: "from-fuchsia-400 to-pink-600", desc: "Terraza al atardecer" },
-      { color: "from-purple-500 to-indigo-600", desc: "Ambiente romántico" },
+      { url: Sun1, desc: "Filete mignon con reducción" },
+      { url: Sun2, desc: "Sushi de atún fresco" },
+      { url: Sun3, desc: "Cóctel signature" },
+      { url: Sun4, desc: "Terraza al atardecer" },
+      { url: Sun5, desc: "Ambiente romántico" },
     ],
     menuDestacado: [
       {
@@ -185,21 +227,13 @@ export const restaurantesAliados = [
     rangoPrecios: "$$ (35.000 - 70.000)",
     horarios: "7:00 AM - 8:00 PM",
     telefono: "+57 300 456 7890",
+    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
     imagenes: [
-      {
-        color: "from-green-400 to-emerald-500",
-        desc: "Bowl de quinoa tropical",
-      },
-      { color: "from-lime-400 to-green-500", desc: "Smoothie bowl colorido" },
-      {
-        color: "from-emerald-400 to-teal-500",
-        desc: "Hamburguesa vegana de lentejas",
-      },
-      { color: "from-teal-400 to-cyan-500", desc: "Huerta orgánica" },
-      {
-        color: "from-green-500 to-emerald-600",
-        desc: "Espacio zen al aire libre",
-      },
+      { url: Cab1, desc: "Bowl de quinoa tropical" },
+      { url: Cab2, desc: "Smoothie bowl colorido" },
+      { url: Cab3, desc: "Hamburguesa vegana de lentejas" },
+      { url: Cab4, desc: "Huerta orgánica" },
+      { url: Cab5, desc: "Espacio zen al aire libre" },
     ],
     menuDestacado: [
       {
@@ -252,12 +286,13 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$ (60.000 - 120.000)",
     horarios: "12:00 PM - 10:00 PM",
     telefono: "+57 300 567 8901",
+    // ✅ MODIFICACIÓN: Propiedad 'url' con las imágenes importadas
     imagenes: [
-      { color: "from-red-400 to-orange-500", desc: "Churrasco argentino" },
-      { color: "from-orange-400 to-amber-500", desc: "Costillas BBQ" },
-      { color: "from-amber-400 to-yellow-500", desc: "Parrillada mixta" },
-      { color: "from-red-500 to-pink-600", desc: "Ambiente campestre" },
-      { color: "from-orange-500 to-red-600", desc: "Parrilla en vivo" },
+      { url: Asa1, desc: "Churrasco argentino" },
+      { url: Asa2, desc: "Costillas BBQ" },
+      { url: Asa3, desc: "Parrillada mixta" },
+      { url: Asa4, desc: "Ambiente campestre" },
+      { url: Asa5, desc: "Parrilla en vivo" },
     ],
     menuDestacado: [
       {
@@ -298,6 +333,11 @@ export const restaurantesAliados = [
   },
 ];
 
+// ==========================================================
+// ARREGLO DE RESTAURANTES NO ALIADOS (SIN MODIFICACIONES)
+// ==========================================================
+
+// NOTA: Los restaurantes no aliados no tienen fotos importadas.
 export const restaurantesNoAliados = [
   {
     id: 6,

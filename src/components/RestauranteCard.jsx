@@ -39,17 +39,11 @@ const RestauranteCard = ({ restaurante }) => {
     }
 
     // Almuerzo
-    if (!restaurante.horarios.includes("6:00 PM")) {
-      horarios.push("12:00 PM", "1:00 PM", "2:00 PM");
-    }
+    // Se ha simplificado la lógica de horarios ya que el original tenía errores de condición
+    horarios.push("12:00 PM", "1:00 PM", "2:00 PM");
 
     // Cena
-    if (
-      !restaurante.horarios.includes("6:00 PM") ||
-      restaurante.horarios === "24 horas"
-    ) {
-      horarios.push("6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM");
-    }
+    horarios.push("6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM");
 
     return horarios;
   };
@@ -100,35 +94,44 @@ const RestauranteCard = ({ restaurante }) => {
           <span className="text-sm font-semibold">Restaurante Aliado</span>
         </div>
       )}
-      {/* Carrusel de imágenes */}
-      <div className="relative h-64 bg-gradient-to-br overflow-hidden group">
+      {/* Carrusel de imágenes (CORREGIDO PARA MOSTRAR IMAGEN REAL) */}
+      <div className="relative h-64 overflow-hidden group">
+        {/* IMAGEN REAL */}
+        <img
+          src={restaurante.imagenes[currentImageIndex].url}
+          alt={restaurante.imagenes[currentImageIndex].desc}
+          className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
+          onError={(e) => {
+            e.target.style.style = "none";
+          }}
+        />
+
+        {/* Superposición para mostrar el texto descriptivo legible */}
         <div
-          className={`absolute inset-0 bg-gradient-to-br ${restaurante.imagenes[currentImageIndex].color} transition-all duration-500`}
+          className={`absolute inset-0 bg-black/40 transition-all duration-500 flex items-center justify-center`}
         >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center text-white">
-              <UtensilsCrossed className="w-16 h-16 mx-auto mb-2 opacity-50" />
-              <p className="text-sm opacity-75">
-                {restaurante.imagenes[currentImageIndex].desc}
-              </p>
-            </div>
+          <div className="text-center text-white p-4">
+            <UtensilsCrossed className="w-10 h-10 mx-auto mb-2 opacity-50" />
+            <p className="text-sm font-medium opacity-50">
+              {restaurante.imagenes[currentImageIndex].desc}
+            </p>
           </div>
         </div>
 
         <button
           onClick={prevImage}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
+          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={nextImage}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
+          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
+        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
           {restaurante.imagenes.map((_, index) => (
             <button
               key={index}
@@ -140,14 +143,14 @@ const RestauranteCard = ({ restaurante }) => {
           ))}
         </div>
 
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full flex items-center space-x-1">
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full flex items-center space-x-1 z-10">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
           <span className="font-semibold text-gray-800">
             {restaurante.calificacion}
           </span>
         </div>
 
-        <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm">
+        <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm z-10">
           {currentImageIndex + 1} / {restaurante.imagenes.length}
         </div>
       </div>
