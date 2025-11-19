@@ -1,8 +1,10 @@
+// src/data/rutasData.js
+
 // ==========================================================
 // RUTA 1: Sapzurro → La Miel → Playa Soledad
 // Clave: MIEL (Miel1.jpg a Miel5.jpg)
 // ==========================================================
-import Miel1 from "../assets/rutas/Miel1.jpg"; // Asegúrate de que las rutas a tu assets sean correctas
+import Miel1 from "../assets/rutas/Miel1.jpg";
 import Miel2 from "../assets/rutas/Miel2.jpg";
 import Miel3 from "../assets/rutas/Miel3.jpg";
 import Miel4 from "../assets/rutas/Miel4.jpg";
@@ -39,7 +41,7 @@ import Cabo4 from "../assets/rutas/Cabo4.jpg";
 import Cabo5 from "../assets/rutas/Cabo5.jpg";
 
 // ==========================================================
-// ARREGLO DE RUTAS TURÍSTICAS
+// ARREGLO DE RUTAS TURÍSTICAS (PROPIEDAD 'imagenes' AÑADIDA)
 // ==========================================================
 export const rutasTuristicas = [
   // ==========================================================
@@ -55,6 +57,8 @@ export const rutasTuristicas = [
     descripcion:
       "Inicia en Sapzurro subiendo la escalinata fronteriza hacia La Miel (Panamá), donde podrás disfrutar playa tranquila y tiendas libres de impuestos. Luego, regreso por lancha hacia Playa Soledad, una playa paradisíaca perfecta para nadar, descansar y hacer snorkel.",
     idealPara: ["Familias", "Parejas", "Fotografía", "Día completo de playa"],
+    calificacion: 4.9,
+    imagenes: [Miel1, Miel2, Miel3, Miel4, Miel5],
     imagenPlaceholder: {
       color: "from-blue-400 to-cyan-500",
       desc: "Playa Soledad y frontera",
@@ -73,6 +77,8 @@ export const rutasTuristicas = [
     descripcion:
       "Sal de Sapzurro hacia el sendero ecológico que lleva a El Cielo, donde disfrutarás pozas y cascadas naturales. Después del baño en agua dulce, continúa la caminata hacia Capurganá, una ruta rodeada de selva tropical.",
     idealPara: ["Amantes del senderismo", "Turismo ecológico", "Aventureros"],
+    calificacion: 4.4,
+    imagenes: [Cielo1, Cielo2, Cielo3, Cielo4, Cielo5],
     imagenPlaceholder: {
       color: "from-green-600 to-lime-700",
       desc: "Sendero ecológico y cascadas",
@@ -95,6 +101,8 @@ export const rutasTuristicas = [
       "Amantes del mar",
       "Personas que desean un día relajado",
     ],
+    calificacion: 4.3,
+    imagenes: [Agua1, Agua2, Agua3, Agua4, Agua5],
     imagenPlaceholder: {
       color: "from-sky-500 to-indigo-600",
       desc: "Playa Aguacate y Capurganá",
@@ -113,6 +121,8 @@ export const rutasTuristicas = [
     descripcion:
       "Inicia con un tour en lancha por las zonas de snorkel alrededor de Sapzurro, donde podrás ver peces tropicales, corales y estrellas de mar. Después del almuerzo, continúa la caminata hacia Cabo Tiburón, un punto icónico en la frontera entre Colombia y Panamá.",
     idealPara: ["Ecoturismo", "Aventura", "Viajeros que quieren “todo en uno”"],
+    calificacion: 4.7,
+    imagenes: [Cabo1, Cabo2, Cabo3, Cabo4, Cabo5],
     imagenPlaceholder: {
       color: "from-green-500 to-lime-600",
       desc: "Vista de la frontera y snorkel",

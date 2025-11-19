@@ -11,13 +11,17 @@ import AdminPanel from "./components/Admin/AdminPanel";
 import ResetPasswordForm from "./components/Auth/ResetPasswordForm";
 import ActivitiesCard from "./components/ActivitiesCard.jsx";
 import RutaCard from "./components/RutaCard.jsx";
+// ⬅️ 1. IMPORTAR EL MODAL DE DETALLE
+import RutaDetailModal from "./components/RutaDetailModal";
 import { activities } from "./data/Activities.js";
 import { rutasTuristicas } from "./data/rutasData.js";
-import { Compass } from "lucide-react"; // <-- CORREGIDO: Usar Hiking
+import { Compass } from "lucide-react";
 
 const App = () => {
   const { user } = useAuth();
 
+  // ⬅️ 2. ESTADOS AÑADIDOS PARA EL MODAL DE RUTA
+  const [selectedRuta, setSelectedRuta] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("inicio");
   const [isScrolled, setIsScrolled] = useState(false);
@@ -50,6 +54,16 @@ const App = () => {
     const el = document.getElementById(sectionId);
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
+
+  // ⬅️ MANEJADORES DEL MODAL DE RUTA
+  const handleOpenRutaModal = (ruta) => {
+    setSelectedRuta(ruta);
+  };
+
+  const handleCloseRutaModal = () => {
+    setSelectedRuta(null);
+  };
+  // ------------------------------------
 
   const menuItems = [
     { id: "inicio", label: "Inicio" },
@@ -138,7 +152,11 @@ const App = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
             {Array.isArray(rutasTuristicas) && rutasTuristicas.length > 0 ? (
               rutasTuristicas.map((ruta) => (
-                <RutaCard key={ruta.id} ruta={ruta} />
+                <RutaCard
+                  key={ruta.id}
+                  ruta={ruta}
+                  onTitleClick={handleOpenRutaModal} // ⬅️ 3. PASAR MANEJADOR AL HIJO
+                />
               ))
             ) : (
               <div className="col-span-full text-center text-gray-500">
@@ -173,6 +191,9 @@ const App = () => {
         ))}
       <Footer />
       <AuthModal />
+
+      {/* ⬅️ 4. RENDERIZAR EL MODAL DE DETALLE DE RUTA */}
+      <RutaDetailModal ruta={selectedRuta} onClose={handleCloseRutaModal} />
     </div>
   );
 };

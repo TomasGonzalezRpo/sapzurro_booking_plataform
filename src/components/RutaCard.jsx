@@ -3,40 +3,41 @@
 import React, { useState } from "react";
 import {
   Clock,
-  MapPin,
   Check,
   ChevronDown,
-  ChevronUp,
   Compass,
   Award,
-  ChevronLeft, // <-- NUEVA IMPORTACIÓN
-  ChevronRight, // <-- NUEVA IMPORTACIÓN
+  ChevronLeft,
+  ChevronRight,
 } from "lucide-react";
 
-const RutaCard = ({ ruta }) => {
-  const [isExpanded, setIsExpanded] = useState(false);
-  // 1. ESTADO PARA EL CARRUSEL
+/**
+ * Componente que representa una tarjeta individual de ruta turística.
+ * La tarjeta ahora usa onTitleClick (pasado por props) para abrir un modal de detalle
+ * en el componente padre.
+ * * @param {object} props - Propiedades del componente.
+ * @param {object} props.ruta - Objeto con los datos de la ruta turística.
+ * @param {function} props.onTitleClick - Función para abrir el modal de detalle.
+ */
+const RutaCard = ({ ruta, onTitleClick }) => {
+  // Mantenemos solo el estado del carrusel
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
 
-  const handleReservar = () => {
-    setIsExpanded(!isExpanded);
-  };
-
-  // 2. FUNCIONES DE NAVEGACIÓN
   const nextImage = (e) => {
-    e.stopPropagation(); // Evita que se dispare el evento del botón de reserva
+    // Detiene la propagación para evitar que el clic en el botón active onTitleClick
+    e.stopPropagation();
     setCurrentImageIndex((prevIndex) => (prevIndex + 1) % ruta.imagenes.length);
   };
 
   const prevImage = (e) => {
-    e.stopPropagation(); // Evita que se dispare el evento del botón de reserva
+    // Detiene la propagación para evitar que el clic en el botón active onTitleClick
+    e.stopPropagation();
     setCurrentImageIndex(
       (prevIndex) =>
         (prevIndex - 1 + ruta.imagenes.length) % ruta.imagenes.length
     );
   };
 
-  // ... (Tu función getEtiquetaColor se mantiene igual)
   const getEtiquetaColor = (etiqueta) => {
     switch (etiqueta.toLowerCase()) {
       case "playas":
@@ -52,9 +53,14 @@ const RutaCard = ({ ruta }) => {
     }
   };
 
+  // Aseguramos que la calificación sea un número con un decimal, si existe
+  const formattedRating = ruta.calificacion
+    ? ruta.calificacion.toFixed(1)
+    : "N/A";
+
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden transition-all duration-300 flex flex-col h-full">
-      {/* 3. CARRUSEL DE IMÁGENES */}
+      {/* Carrusel de imágenes */}
       <div className="relative h-48 overflow-hidden group">
         {/* Imagen principal */}
         {ruta.imagenes && ruta.imagenes.length > 0 ? (
@@ -64,7 +70,7 @@ const RutaCard = ({ ruta }) => {
             className="w-full h-full object-cover transition-opacity duration-300"
           />
         ) : (
-          // Placeholder si no hay imágenes
+          // Placeholder si no hay imágenes (mantenido como seguro)
           <div
             className={`absolute inset-0 bg-gradient-to-br ${ruta.imagenPlaceholder.color} flex items-center justify-center`}
           >
@@ -106,7 +112,7 @@ const RutaCard = ({ ruta }) => {
           </div>
         )}
 
-        {/* Etiqueta y Calificación (se mantienen igual) */}
+        {/* Etiqueta y Calificación (MODIFICADO) */}
         <span
           className={`absolute top-4 left-4 text-white text-xs font-bold px-3 py-1 rounded-full ${getEtiquetaColor(
             ruta.etiqueta
@@ -116,14 +122,27 @@ const RutaCard = ({ ruta }) => {
         </span>
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-1 rounded-full flex items-center space-x-1 z-10">
           <Award className="w-4 h-4 fill-amber-400 text-amber-400" />
-          <span className="font-semibold text-gray-800 text-sm">4.8</span>
+          {/* ⬅️ USO DE LA PROPIEDAD DINÁMICA DE CALIFICACIÓN */}
+          <span className="font-semibold text-gray-800 text-sm">
+            {formattedRating}
+          </span>
         </div>
       </div>
 
-      {/* Contenido (se mantiene igual) */}
+      {/* Contenido */}
       <div className="p-6 flex flex-col flex-grow">
-        {/* ... (el resto del contenido, duración, precio, etc., se mantiene igual) ... */}
-        <h3 className="text-xl font-bold text-gray-800 mb-1">{ruta.nombre}</h3>
+        {/* TÍTULO: Ahora dispara el modal de detalle */}
+        <div
+          onClick={() => onTitleClick(ruta)} // Llama a la función que abre el modal
+          className="cursor-pointer flex items-center justify-between group mb-1"
+        >
+          <h3 className="text-xl font-bold text-gray-800 group-hover:text-cyan-700 transition-colors">
+            {ruta.nombre}
+          </h3>
+          {/* Icono de información o de expansión (puedes usar una lupa o un info) */}
+          <ChevronDown className="w-5 h-5 text-gray-400 group-hover:text-cyan-600 flex-shrink-0" />
+        </div>
+
         <p className="text-sm text-cyan-600 font-semibold mb-3">
           {ruta.subtitulo}
         </p>
@@ -154,28 +173,16 @@ const RutaCard = ({ ruta }) => {
           ))}
         </div>
 
-        {/* Botón de Reserva con mt-auto */}
+        {/* Botón de Reserva/Detalle: Ahora abre el modal */}
         <button
-          onClick={handleReservar}
+          onClick={() => onTitleClick(ruta)} // Llama a la función que abre el modal
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 mt-auto"
         >
-          <span>{isExpanded ? "Cerrar detalles" : "Reservar ruta"}</span>
-          {isExpanded ? (
-            <ChevronUp className="w-5 h-5" />
-          ) : (
-            <ChevronDown className="w-5 h-5" />
-          )}
+          <span>Ver Detalles y Reservar</span>
+          <ChevronDown className="w-5 h-5" />
         </button>
       </div>
-      {/* Formulario/detalles expandibles */}
-      {isExpanded && (
-        <div className="border-t border-gray-200 bg-gray-50 p-6">
-          <h4 className="font-semibold mb-2">Detalles de la Ruta</h4>
-          <p className="text-sm text-gray-600">
-            Formulario de reserva de ruta o más información.
-          </p>
-        </div>
-      )}
+      {/* El formulario/detalles expandibles internos se eliminan ya que se usa el modal. */}
     </div>
   );
 };
