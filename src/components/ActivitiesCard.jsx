@@ -1,3 +1,5 @@
+// src/components/ActivitiesCard.jsx
+
 import React, { useState } from "react";
 import {
   Star,
@@ -14,7 +16,28 @@ import {
   Calendar,
   Shield,
   Heart,
+  // ÍCONOS CORREGIDOS DE ACTIVIDADES
+  Waves, // Usado para IconoBuceo
+  Mountain, // Usado para IconoSenderismo
+  Sailboat, // Usado para IconoKayak
+  Feather, // Usado para IconoFauna
 } from "lucide-react";
+
+// Función para mapear el string 'icon' a un componente Lucide
+const getIconComponent = (iconName) => {
+  switch (iconName) {
+    case "IconoBuceo":
+      return Waves;
+    case "IconoSenderismo":
+      return Mountain;
+    case "IconoKayak":
+      return Sailboat;
+    case "IconoFauna":
+      return Feather;
+    default:
+      return Heart; // Fallback
+  }
+};
 
 const ActivitiesCard = ({ activity }) => {
   const [isExpanded, setIsExpanded] = useState(false);
@@ -42,14 +65,25 @@ const ActivitiesCard = ({ activity }) => {
     Alta: "bg-red-100 text-red-800",
   };
 
-  const nextImage = () => {
-    setCurrentImageIndex((prev) => (prev + 1) % activity.images.length);
+  // Componente de ícono dinámico
+  const IconComponent = getIconComponent(activity.icon);
+
+  // Asegura que images.length sea seguro (usa activity.imagenes)
+  const imageCount = activity.imagenes ? activity.imagenes.length : 0;
+
+  // Calificación formateada (aseguramos un decimal)
+  const formattedRating = activity.calificacion
+    ? activity.calificacion.toFixed(1)
+    : "N/A";
+
+  const nextImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev + 1) % imageCount);
   };
 
-  const prevImage = () => {
-    setCurrentImageIndex(
-      (prev) => (prev - 1 + activity.images.length) % activity.images.length
-    );
+  const prevImage = (e) => {
+    e.stopPropagation();
+    setCurrentImageIndex((prev) => (prev - 1 + imageCount) % imageCount);
   };
 
   const handleReservar = () => {
@@ -72,61 +106,80 @@ const ActivitiesCard = ({ activity }) => {
   };
 
   return (
-    // 1. Contenedor principal: Cambiado a flex-col y h-full
+    // 1. Contenedor principal
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
       {/* Carrusel de imágenes */}
       <div className="relative h-64 bg-gradient-to-br overflow-hidden group">
-        <div
-          className={`absolute inset-0 bg-gradient-to-br ${activity.images[currentImageIndex].color} transition-all duration-500`}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
+        {/* Lógica de la imagen */}
+        {imageCount > 0 ? (
+          // Si hay imágenes, usa la URL de la imagen
+          <img
+            src={activity.imagenes[currentImageIndex]}
+            alt={`${activity.name} - Foto ${currentImageIndex + 1}`}
+            className="w-full h-full object-cover transition-opacity duration-300"
+          />
+        ) : (
+          // Placeholder (usando el color definido en Activities.js)
+          <div
+            className={`absolute inset-0 bg-gradient-to-br ${activity.color} flex items-center justify-center`}
+          >
             <div className="text-center text-white">
-              <span className="text-4xl mb-2 block">
-                {categoryIcons[activity.category]}
-              </span>
-              <p className="text-sm opacity-75">
-                {activity.images[currentImageIndex].desc}
-              </p>
+              <IconComponent className="w-16 h-16 text-white/50 mb-2" />
+              <p className="text-sm opacity-75">{activity.name}</p>
             </div>
           </div>
-        </div>
-        <button
-          onClick={prevImage}
-          className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
-        >
-          <ChevronLeft className="w-6 h-6" />
-        </button>
-        <button
-          onClick={nextImage}
-          className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300"
-        >
-          <ChevronRight className="w-6 h-6" />
-        </button>
-        <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2">
-          {activity.images.map((_, index) => (
+        )}
+
+        {/* Botones de navegación (si hay más de 1 imagen) */}
+        {imageCount > 1 && (
+          <>
             <button
-              key={index}
-              onClick={() => setCurrentImageIndex(index)}
-              className={`w-2 h-2 rounded-full transition-all duration-300 ${
-                index === currentImageIndex ? "bg-white w-6" : "bg-white/50"
-              }`}
-            />
-          ))}
-        </div>
-        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full flex items-center space-x-1">
+              onClick={prevImage}
+              className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+            >
+              <ChevronLeft className="w-6 h-6" />
+            </button>
+            <button
+              onClick={nextImage}
+              className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+            >
+              <ChevronRight className="w-6 h-6" />
+            </button>
+            <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
+              {activity.imagenes.map((_, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCurrentImageIndex(index)}
+                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                    index === currentImageIndex ? "bg-white w-6" : "bg-white/50"
+                  }`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+
+        {/* Calificación (Usa activity.calificacion) */}
+        <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full flex items-center space-x-1 z-10">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-          <span className="font-semibold text-gray-800">{activity.rating}</span>
+          <span className="font-semibold text-gray-800">{formattedRating}</span>
         </div>
-        <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm">
-          {currentImageIndex + 1} / {activity.images.length}
-        </div>
+
+        {/* Contador de imagen */}
+        {imageCount > 0 && (
+          <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm z-10">
+            {currentImageIndex + 1} / {imageCount}
+          </div>
+        )}
+
         {/* Badge de categoría */}
-        <div className="absolute top-16 left-4 bg-cyan-500 text-white px-3 py-1 rounded-full text-sm font-medium capitalize">
+        {/* Nota: Asumimos que activity.category existe para mostrar el badge */}
+        <div className="absolute top-16 left-4 bg-cyan-500 text-white px-3 py-1 rounded-full text-sm font-medium capitalize z-10">
           {activity.category}
         </div>
       </div>
 
-      {/* 2. Contenido: Agregado flex flex-col flex-grow para ocupar espacio restante */}
+      {/* 2. Contenido */}
       <div className="p-6 flex flex-col flex-grow">
         <button
           onClick={() => setShowInfo(!showInfo)}
@@ -184,7 +237,6 @@ const ActivitiesCard = ({ activity }) => {
         </div>
 
         {/* Precio */}
-        {/* mt-auto y mb-4 se dejan aquí para controlar el espacio antes del botón final */}
         <div className="mt-auto mb-4">
           <p className="text-3xl font-bold text-cyan-600">
             ${activity.price.toLocaleString("es-CO")}
@@ -222,7 +274,7 @@ const ActivitiesCard = ({ activity }) => {
                     <div className="flex items-center space-x-2">
                       <Star className="w-5 h-5 fill-yellow-300 text-yellow-300" />
                       <span className="font-semibold">
-                        {activity.rating} / 5.0
+                        {formattedRating} / 5.0
                       </span>
                     </div>
                     <span className="bg-white/20 px-3 py-1 rounded-full text-sm capitalize">
@@ -439,7 +491,7 @@ const ActivitiesCard = ({ activity }) => {
                 </p>
               </div>
 
-              {/* Bloque de botones CORREGIDO para centrar */}
+              {/* Bloque de botones */}
               <div className="flex justify-center">
                 <div className="flex space-x-3 w-full max-w-sm">
                   <button
@@ -507,7 +559,7 @@ const ActivitiesCard = ({ activity }) => {
                 </div>
               </div>
 
-              {/* Bloque de botones CORREGIDO para centrar */}
+              {/* Bloque de botones */}
               <div className="flex justify-center">
                 <div className="flex space-x-3 w-full max-w-sm">
                   <button

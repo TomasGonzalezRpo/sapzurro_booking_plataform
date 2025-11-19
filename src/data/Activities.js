@@ -1,93 +1,140 @@
 // src/data/Activities.js
 
+// ==========================================================
+// RUTA DE IMÁGENES: ../assets/actividades/
+// ==========================================================
+
+// 1. Snorkel y Buceo (Sno1.jpg a Sno5.jpg)
+import Sno1 from "../assets/actividades/Sno1.jpg";
+import Sno2 from "../assets/actividades/Sno2.jpg";
+import Sno3 from "../assets/actividades/Sno3.jpg";
+import Sno4 from "../assets/actividades/Sno4.jpg";
+import Sno5 from "../assets/actividades/Sno5.jpg";
+
+// 2. Senderismo (Cam1.jpg a Cam5.jpg)
+import Cam1 from "../assets/actividades/Cam1.jpg";
+import Cam2 from "../assets/actividades/Cam2.jpg";
+import Cam3 from "../assets/actividades/Cam3.jpg";
+import Cam4 from "../assets/actividades/Cam4.jpg";
+import Cam5 from "../assets/actividades/Cam5.jpg";
+
+// 3. Kayak y Paddleboard (Kay1.jpg a Kay5.jpg)
+import Kay1 from "../assets/actividades/Kay1.jpg";
+import Kay2 from "../assets/actividades/Kay2.jpg";
+import Kay3 from "../assets/actividades/Kay3.jpg";
+import Kay4 from "../assets/actividades/Kay4.jpg";
+import Kay5 from "../assets/actividades/Kay5.jpg";
+
+// 4. Avistamiento de Flora y Fauna / Biología (Bio1.jpg a Bio5.jpg)
+import Bio1 from "../assets/actividades/Bio1.jpg";
+import Bio2 from "../assets/actividades/Bio2.jpg";
+import Bio3 from "../assets/actividades/Bio3.jpg";
+import Bio4 from "../assets/actividades/Bio4.jpg";
+import Bio5 from "../assets/actividades/Bio5.jpg";
+
+// ==========================================================
+// ARREGLO DE ACTIVIDADES
+// ==========================================================
+
 export const activities = [
   {
-    name: "Snorkel en Playa Soledad",
+    name: "Snorkel y Buceo",
     description:
-      "Explora los arrecifes de coral que rodean Playa Soledad, uno de los puntos más cristalinos del golfo. Durante la actividad podrás observar peces tropicales, estrellas de mar, corales y, con suerte, tortugas marinas. Es una experiencia tranquila, perfecta para quienes desean disfrutar la vida submarina sin necesidad de bucear.",
-    price: 100000,
-    duration: "2-3 horas",
+      "Explora los arrecifes de coral virgen en Sapzurro. Perfecto para principiantes y experimentados.",
+    fullDescription:
+      "Sumérgete en las aguas cristalinas de Sapzurro y descubre un mundo submarino lleno de vida. Nuestros tours incluyen equipo completo de snorkel/buceo y guías expertos. Explora el famoso arrecife 'El Faro' y el barco hundido cercano. ¡Una experiencia inolvidable para todos los niveles!",
+    icon: "IconoBuceo",
+    color: "bg-blue-500",
     category: "acuaticas",
-    image: "snorkel-playa-soledad.jpg",
-    available: true,
-    includes: ["Equipo básico de snorkel", "Bote", "Guía local"],
-    idealFor: ["Turismo ecológico", "Familias", "Fotógrafos", "Aventura suave"],
-    priceRange: "80000-120000",
+    duration: "3-4 horas",
+    location: "Playa Soledad",
     difficulty: "Baja",
-    location: "Playa Soledad, Sapzurro",
-    images: [{ desc: "Vista submarina", color: "from-blue-500 to-cyan-500" }],
-    rating: 4.5,
-    maxParticipants: 15,
-    fullDescription:
-      "Detalles completos de la actividad de snorkel en el arrecife. Incluye un recorrido guiado por el capitán, quien te señalará la vida marina más interesante del área. La visibilidad suele ser excelente.",
-    requirements: ["Saber nadar"],
-  },
-  {
-    name: "Caminata Ecológica Sapzurro → La Miel (Panamá)",
-    description:
-      "Sube los icónicos 300 escalones que conectan Sapzurro con La Miel, en Panamá. Después de la caminata disfrutarás de una de las playas más tranquilas del sector y podrás acceder a las tiendas duty free. Es una de las experiencias más representativas de la zona por su mezcla de naturaleza, cultura fronteriza y vistas panorámicas.",
-    price: 200000,
-    duration: "1 día (ida y vuelta)",
-    category: "senderismo",
-    image: "caminata-sapzurro-la-miel.jpg",
-    available: true,
-    includes: ["Caminata guiada", "Visita a frontera", "Tiempo de playa"],
-    idealFor: ["Senderistas", "Parejas", "Viajeros internacionales"],
-    priceRange: "200000",
-    difficulty: "Media",
-    location: "Sapzurro a La Miel, Frontera Colombia-Panamá",
-    images: [{ desc: "Vista panorámica", color: "from-green-600 to-lime-600" }],
-    rating: 4.9,
-    maxParticipants: 12,
-    fullDescription:
-      "Recorrido completo a través de la selva y la frontera, incluyendo las vistas desde el mirador. La caminata dura aproximadamente 30 minutos y es moderadamente exigente.",
-    requirements: [
-      "Buen estado físico",
-      "Calzado adecuado",
-      "Documento de identidad (pasaporte o cédula)",
-    ],
-  },
-  {
-    name: "Kayak por la Bahía de Sapzurro",
-    description:
-      "La bahía de Sapzurro es perfecta para remar gracias a su mar calmado y protegido. Rema a lo largo de la costa, explora rincones escondidos y disfruta la vista de la selva que rodea el pueblo. Es una actividad segura, relajante y muy fotografiable.",
-    price: 50000,
-    duration: "1-2 horas",
-    category: "acuaticas",
-    image: "kayak-bahia-sapzurro.jpg",
-    available: true,
-    includes: ["Kayak individual o doble", "Chaleco salvavidas"],
-    idealFor: ["Parejas", "Amigos", "Actividad física leve", "Naturaleza"],
-    priceRange: "40000-60000",
-    difficulty: "Baja",
-    location: "Bahía de Sapzurro",
-    images: [
-      { desc: "Remando en la bahía", color: "from-teal-400 to-cyan-400" },
-    ],
-    rating: 4.2,
-    maxParticipants: 8,
-    fullDescription:
-      "Un paseo tranquilo y relajante para disfrutar la tranquilidad de la bahía y su entorno selvático. Ideal para la mañana o el atardecer cuando el mar está más en calma.",
-  },
-  {
-    name: "Visita Nocturna: Bioluminiscencia en Capurganá",
-    description:
-      "En noches de mar tranquilo es posible observar plancton bioluminiscente cerca de Capurganá. La lancha sale desde Sapzurro al anochecer y permite vivir uno de los espectáculos naturales más impresionantes de la región: ¡el mar brillando con cada movimiento!",
-    price: 165000,
-    duration: "2 horas (salida desde Sapzurro en lancha)",
-    category: "nocturnas",
-    image: "bioluminiscencia-capurgana.jpg",
-    available: true,
-    includes: ["Transporte en lancha", "Guía", "Observación nocturna"],
-    idealFor: ["Aventureros", "Parejas", "Fotografía nocturna"],
-    priceRange: "150000-180000",
-    difficulty: "Baja",
-    location: "Capurganá (salida desde Sapzurro)",
-    requirements: ["Reserva previa", "Condiciones climáticas favorables"],
-    images: [{ desc: "Mar brillante", color: "from-indigo-900 to-purple-800" }],
-    rating: 5.0,
     maxParticipants: 10,
+    includes: [
+      "Equipo de Snorkel",
+      "Chaleco salvavidas",
+      "Guía profesional",
+      "Agua y snack",
+    ],
+    idealFor: ["Familias", "Parejas", "Amantes del mar"],
+    requirements: [
+      "Saber nadar (opcional para snorkel)",
+      "Protector solar biodegradable",
+    ],
+    price: 70000,
+    // ⬅️ PROPIEDADES AÑADIDAS
+    calificacion: 4.9,
+    imagenes: [Sno1, Sno2, Sno3, Sno4, Sno5],
+  },
+  {
+    name: "Senderismo Fronterizo",
+    description:
+      "Camina a La Miel (Panamá) o a Capurganá a través de senderos ecológicos y selva tropical.",
     fullDescription:
-      "Una experiencia mágica solo disponible en ciertas condiciones, usualmente noches sin luna. El movimiento del agua ilumina miles de organismos de plancton.",
+      "Embárcate en una caminata por los exuberantes senderos que conectan Sapzurro con La Miel (Panamá) o Capurganá. Esta actividad te permite experimentar la rica selva del Darién y cruzar la frontera natural entre Colombia y Panamá. Asegúrate de llevar tu pasaporte/cédula.",
+    icon: "IconoSenderismo",
+    color: "bg-green-600",
+    category: "senderismo",
+    duration: "2 horas",
+    location: "Frontera",
+    difficulty: "Media",
+    maxParticipants: 15,
+    includes: ["Guía local", "Permiso de paso", "Botella de agua"],
+    idealFor: ["Aventureros", "Fotógrafos", "Exploradores"],
+    requirements: ["Zapatos cómodos para caminar", "Cédula o Pasaporte"],
+    price: 30000,
+    // ⬅️ PROPIEDADES AÑADIDAS
+    calificacion: 4.5,
+    imagenes: [Cam1, Cam2, Cam3, Cam4, Cam5],
+  },
+  {
+    name: "Kayak y Paddleboard",
+    description:
+      "Alquila un kayak o paddleboard y explora tranquilamente las bahías y playas cercanas.",
+    fullDescription:
+      "Alquiler de equipos para explorar la bahía a tu propio ritmo. Ideal para una tarde tranquila, buscando vistas únicas de Sapzurro desde el agua. Puedes visitar pequeñas calas secretas o simplemente relajarte sobre el mar Caribe.",
+    icon: "IconoKayak",
+    color: "bg-cyan-500",
+    category: "acuaticas",
+    duration: "1-5 horas",
+    location: "Bahía de Sapzurro",
+    difficulty: "Baja",
+    maxParticipants: 8,
+    includes: [
+      "Alquiler de Kayak/Paddleboard",
+      "Pala",
+      "Chaleco salvavidas",
+      "Instrucciones básicas",
+    ],
+    idealFor: ["Parejas", "Relajación", "Ejercicio suave"],
+    requirements: ["Ninguno"],
+    price: 50000,
+    // ⬅️ PROPIEDADES AÑADIDAS
+    calificacion: 4.7,
+    imagenes: [Kay1, Kay2, Kay3, Kay4, Kay5],
+  },
+  {
+    name: "Avistamiento de Fauna",
+    description:
+      "Tours guiados para observar aves, monos aulladores y la rica biodiversidad del Darién.",
+    fullDescription:
+      "Un tour temprano en la mañana o al atardecer para observar la increíble vida salvaje de la selva del Darién. Busca monos aulladores, perezosos, tucanes y una gran variedad de aves endémicas. Con guías expertos que conocen los mejores lugares de avistamiento.",
+    icon: "IconoFauna",
+    color: "bg-yellow-600",
+    category: "senderismo",
+    duration: "2.5 horas",
+    location: "Sendero Interior",
+    difficulty: "Media",
+    maxParticipants: 12,
+    includes: ["Guía naturalista", "Binoculares (compartidos)"],
+    idealFor: ["Amantes de la naturaleza", "Biología", "Pájaros"],
+    requirements: [
+      "Ropa oscura (para no asustar la fauna)",
+      "Repelente de insectos",
+    ],
+    price: 45000,
+    // ⬅️ PROPIEDADES AÑADIDAS
+    calificacion: 4.6,
+    imagenes: [Bio1, Bio2, Bio3, Bio4, Bio5],
   },
 ];
