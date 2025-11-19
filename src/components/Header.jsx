@@ -9,6 +9,7 @@ const Header = ({
   activeSection,
   scrollToSection,
   isScrolled,
+  menuItems,
 }) => {
   // debug
   let auth;
@@ -20,16 +21,6 @@ const Header = ({
   }
 
   const { user, openAuthModal } = auth;
-
-  const menuItems = [
-    { id: "inicio", label: "Inicio" },
-    { id: "hoteles", label: "Hoteles" },
-    { id: "restaurantes", label: "Restaurantes" },
-    { id: "actividades", label: "Actividades" },
-    { id: "flora-fauna", label: "Flora y Fauna" },
-    { id: "clima", label: "Clima" },
-    { id: "sobre-sapzurro", label: "Sobre Sapzurro" },
-  ];
 
   // LOG TEMPORAL
   // console.log("Header render - user:", user);

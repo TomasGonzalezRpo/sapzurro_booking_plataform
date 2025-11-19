@@ -99,6 +99,7 @@ const App = () => {
         activeSection={activeSection}
         scrollToSection={scrollToSection}
         isScrolled={isScrolled}
+        menuItems={menuItems}
       />
       <Hero scrollToSection={scrollToSection} />
       <HotelesSection />
