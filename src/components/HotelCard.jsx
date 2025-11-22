@@ -93,24 +93,22 @@ const HotelCard = ({ hotel }) => {
 
     try {
       // 2️⃣ PREPARAR DATOS DE LA RESERVA
+      const precioUnitario =
+        hotel.tiposHabitacion.find((t) => t.tipo === reservaData.tipoHabitacion)
+          ?.precio || 0;
+
       const payload = {
-        id_hotel: hotel.id || hotel.nombre, // Si el hotel tiene ID, usarlo
-        hotel_nombre: hotel.nombre,
-        id_usuario: user.id_usuario,
-        check_in: reservaData.checkIn,
-        check_out: reservaData.checkOut,
-        tipo_habitacion: reservaData.tipoHabitacion,
+        tipo_servicio: "hotel",
+        id_servicio: hotel.id || hotel.nombre,
+        nombre_servicio: hotel.nombre,
+        fecha_inicio: reservaData.checkIn,
+        fecha_fin: reservaData.checkOut,
+        cantidad_personas: reservaData.huespedes,
         cantidad_habitaciones: reservaData.cantidadHabitaciones,
-        cantidad_huespedes: reservaData.huespedes,
-        precio_por_noche:
-          hotel.tiposHabitacion.find(
-            (t) => t.tipo === reservaData.tipoHabitacion
-          )?.precio || 0,
-        precio_total:
-          (hotel.tiposHabitacion.find(
-            (t) => t.tipo === reservaData.tipoHabitacion
-          )?.precio || 0) * reservaData.cantidadHabitaciones,
-        estado: "confirmada",
+        descripcion_servicio: reservaData.tipoHabitacion,
+        precio_unitario: precioUnitario,
+        cantidad: reservaData.cantidadHabitaciones,
+        precio_total: precioUnitario * reservaData.cantidadHabitaciones,
       };
 
       // 3️⃣ ENVIAR AL BACKEND

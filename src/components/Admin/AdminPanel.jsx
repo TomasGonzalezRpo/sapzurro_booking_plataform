@@ -6,6 +6,7 @@ import Dashboard from "./Dashboard";
 import PerfilManagement from "./CRUD/PerfilManagement";
 import PersonaManagement from "./CRUD/PersonaManagement";
 import UsuarioManagement from "./CRUD/UsuarioManagement";
+import ReservasManagement from "./CRUD/ReservasManagement";
 
 const AdminPanel = ({ onBackToHome }) => {
   const { user } = useAuth();
@@ -48,6 +49,8 @@ const AdminPanel = ({ onBackToHome }) => {
         return <PersonaManagement />;
       case "usuarios":
         return <UsuarioManagement />;
+      case "reservas":
+        return <ReservasManagement />;
       default:
         return <Dashboard />;
     }

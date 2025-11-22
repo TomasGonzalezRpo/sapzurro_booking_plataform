@@ -6,6 +6,7 @@ import {
   Shield,
   Home,
   LogOut,
+  Calendar,
 } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 
@@ -14,6 +15,7 @@ const AdminSidebar = ({ activeView, setActiveView, onBackToHome }) => {
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
+    { id: "reservas", label: "Gestión de Reservas", icon: Calendar },
     { id: "perfiles", label: "Gestión de Perfiles", icon: Shield },
     { id: "personas", label: "Gestión de Personas", icon: Users },
     { id: "usuarios", label: "Gestión de Usuarios", icon: UserCog },
