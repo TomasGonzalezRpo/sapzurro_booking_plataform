@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext"; // 🔑 IMPORTAR useAuth
+import axios from "axios";
 import {
   Star,
   Wifi,
@@ -19,10 +21,13 @@ import {
 } from "lucide-react";
 
 const HotelCard = ({ hotel }) => {
+  const { user, isAuthenticated, openAuthModal } = useAuth(); // 🔑 OBTENER USER
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reservaStep, setReservaStep] = useState(1);
+  const [loading, setLoading] = useState(false); // 🔑 NUEVO
+  const [error, setError] = useState(null); // 🔑 NUEVO
   const [reservaData, setReservaData] = useState({
     checkIn: "",
     checkOut: "",
@@ -63,6 +68,7 @@ const HotelCard = ({ hotel }) => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setReservaStep(1);
+      setError(null); // 🔑 LIMPIAR ERRORES
     }
   };
 
@@ -74,8 +80,78 @@ const HotelCard = ({ hotel }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
-  const confirmarReserva = () => {
-    alert("Debe iniciar sesión para completar la reserva");
+  // 🔑 NUEVA FUNCIÓN DE CONFIRMACIÓN
+  const confirmarReserva = async () => {
+    // 1️⃣ VERIFICAR QUE ESTÉ AUTENTICADO
+    if (!isAuthenticated || !user) {
+      openAuthModal(); // Abrir modal de login
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // 2️⃣ PREPARAR DATOS DE LA RESERVA
+      const payload = {
+        id_hotel: hotel.id || hotel.nombre, // Si el hotel tiene ID, usarlo
+        hotel_nombre: hotel.nombre,
+        id_usuario: user.id_usuario,
+        check_in: reservaData.checkIn,
+        check_out: reservaData.checkOut,
+        tipo_habitacion: reservaData.tipoHabitacion,
+        cantidad_habitaciones: reservaData.cantidadHabitaciones,
+        cantidad_huespedes: reservaData.huespedes,
+        precio_por_noche:
+          hotel.tiposHabitacion.find(
+            (t) => t.tipo === reservaData.tipoHabitacion
+          )?.precio || 0,
+        precio_total:
+          (hotel.tiposHabitacion.find(
+            (t) => t.tipo === reservaData.tipoHabitacion
+          )?.precio || 0) * reservaData.cantidadHabitaciones,
+        estado: "confirmada",
+      };
+
+      // 3️⃣ ENVIAR AL BACKEND
+      const response = await axios.post(
+        "http://localhost:5000/api/reservas",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            // El interceptor de axios añadirá el token automáticamente
+          },
+        }
+      );
+
+      // 4️⃣ ÉXITO
+      if (response.data.success) {
+        alert(
+          `✅ Reserva confirmada!\nID: ${response.data.id_reserva}\n\nRecuerda tu ID para futuras consultas.`
+        );
+
+        // Limpiar formulario
+        setReservaData({
+          checkIn: "",
+          checkOut: "",
+          huespedes: 1,
+          tipoHabitacion: "",
+          cantidadHabitaciones: 1,
+        });
+        setIsExpanded(false);
+      }
+    } catch (err) {
+      // 5️⃣ MANEJAR ERRORES
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al procesar la reserva";
+      setError(errorMsg);
+      console.error("Error en reserva:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getMinCheckOut = () => {
@@ -87,7 +163,7 @@ const HotelCard = ({ hotel }) => {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-      {/* Carrusel de imágenes (MODIFICADO AQUÍ) */}
+      {/* Carrusel de imágenes */}
       <div className="relative h-64 overflow-hidden group">
         <img
           src={hotel.imagenes[currentImageIndex].src}
@@ -95,7 +171,6 @@ const HotelCard = ({ hotel }) => {
           className="w-full h-full object-cover transition-opacity duration-500"
         />
 
-        {/* Overlay de degradado y descripción para mantener info del data (OPCIONAL) */}
         <div
           className={`absolute inset-0 bg-gradient-to-br ${hotel.imagenes[currentImageIndex].color} transition-all duration-500 opacity-0 group-hover:opacity-30`}
         >
@@ -313,6 +388,14 @@ const HotelCard = ({ hotel }) => {
       {/* Formulario de reserva expandible */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
+          {/* 🔑 MOSTRAR ERRORES SI LOS HAY */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <p className="font-semibold">Error:</p>
+              <p>{error}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-center mb-6">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
@@ -558,10 +641,20 @@ const HotelCard = ({ hotel }) => {
                 </button>
                 <button
                   onClick={confirmarReserva}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Check className="w-5 h-5" />
-                  <span>Confirmar reserva</span>
+                  {loading ? (
+                    <>
+                      <div className="animate-spin">⏳</div>
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      <span>Confirmar reserva</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

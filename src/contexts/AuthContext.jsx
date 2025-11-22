@@ -1,4 +1,4 @@
-// AuthProvider.jsx
+// AuthProvider.jsx - VERSIÓN MEJORADA
 import React, {
   createContext,
   useContext,
@@ -10,14 +10,22 @@ import axios from "axios";
 
 const AuthContext = createContext();
 const STORAGE_KEY = "sapzurro_user";
+const TOKEN_KEY = "sapzurro_token";
 
-// --- Config EmailJS (reemplaza si es necesario) ---
-// inicializar una vez
-
-// --- Config Backend ---
 const API_URL = "http://localhost:5000/api/auth";
 
-// Usuarios de prueba locales
+// Configurar axios para incluir credenciales en TODAS las peticiones
+axios.defaults.withCredentials = true;
+
+// Interceptor: añade el token a cada petición
+axios.interceptors.request.use((config) => {
+  const token = localStorage.getItem(TOKEN_KEY);
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 const MOCK_USERS = {
   "test@admin.com": {
     password: "123",
@@ -30,14 +38,14 @@ const MOCK_USERS = {
     estado: 1,
   },
   "inactivo@test.com": {
-    password: "cualquier", // no usaremos password; el usuario está inactivo
+    password: "cualquier",
     id_perfil: 2,
     rol: "Usuario",
     username: "inactivo",
     nombres: "Usuario",
     apellidos: "Inactivo",
     correo: "inactivo@test.com",
-    estado: 0, // 0 = inactivo
+    estado: 0,
   },
 };
 
@@ -77,33 +85,27 @@ export const AuthProvider = ({ children }) => {
     else localStorage.removeItem(STORAGE_KEY);
   }, [user]);
 
-  /**
-   * login(email, password)
-   * - Si email coincide con un MOCK_USER: usa la cuenta de prueba (sin llamar al backend)
-   * - Si es 'inactivo@test.com' lanza error de usuario inactivo
-   * - Si no coincide, intenta login contra el backend
-   */
   const login = async (email, password) => {
     setLoading(true);
     try {
-      // Normalizamos email
       const mail = (email || "").toLowerCase().trim();
 
-      // 1) Si es un usuario de prueba
       if (Object.prototype.hasOwnProperty.call(MOCK_USERS, mail)) {
         const mock = MOCK_USERS[mail];
 
-        // Usuario inactivo: rechazado
         if (mock.estado === 0) {
           throw new Error("El usuario está inactivo o ha sido inhabilitado.");
         }
 
-        // Verificamos contraseña (solo para test admin)
         if (mock.password && mock.password !== password) {
           throw new Error(
             "Correo o contraseña incorrectos (usuario de prueba)."
           );
         }
+
+        // ✨ NUEVO: Guardar un token mock para usuarios de prueba
+        const mockToken = `mock_token_${mail}_${Date.now()}`;
+        localStorage.setItem(TOKEN_KEY, mockToken);
 
         const u = buildUser(mock);
         setUser(u);
@@ -111,7 +113,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, from: "mock" };
       }
 
-      // 2) Si no es usuario de prueba -> login real al backend
+      // Login real
       const response = await axios.post(`${API_URL}/login`, {
         correo: email,
         password,
@@ -123,9 +125,13 @@ export const AuthProvider = ({ children }) => {
         throw new Error("Respuesta inválida del servidor.");
       }
 
-      // Si backend indica que el usuario está inactivo (campo 'estado' igual a 0)
       if (userData.estado === 0) {
         throw new Error("El usuario está inactivo o ha sido inhabilitado.");
+      }
+
+      // ✨ NUEVO: Guardar el token del backend
+      if (response.data?.token) {
+        localStorage.setItem(TOKEN_KEY, response.data.token);
       }
 
       const u = buildUser(userData);
@@ -144,9 +150,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * registerUser: intenta registrar en backend y devuelve { success, message, user? }
-   */
   const registerUser = async (formData) => {
     setLoading(true);
     try {
@@ -154,7 +157,6 @@ export const AuthProvider = ({ children }) => {
         usuario: formData.username,
         password: formData.password,
         id_perfil: 2,
-        // Si tu backend crea la persona desde aquí, enviamos los campos personales
         nombres: formData.nombres,
         apellidos: formData.apellidos,
         correo: formData.correo,
@@ -169,50 +171,42 @@ export const AuthProvider = ({ children }) => {
 
       const data = response.data || {};
 
-      // Si el backend devuelve el usuario creado, lo guardamos en el contexto
+      // ✨ NUEVO: Guardar token tras registro
+      if (data.token) {
+        localStorage.setItem(TOKEN_KEY, data.token);
+      }
+
       if (data.user) {
         const newUser = buildUser(data.user);
         setUser(newUser);
         setIsAuthModalOpen(false);
       }
 
-      // Mensaje exitoso (backend puede devolver message)
       return {
         success: true,
         message: data.message || "Usuario registrado exitosamente",
         user: data.user ?? null,
       };
     } catch (err) {
-      // Log completo para debugging en consola
-      console.error(
-        "registerUser error detalle:",
-        err?.response?.data || err.message
-      );
-
-      // Extraer mensaje amigable si viene del backend
+      console.error("registerUser error:", err?.response?.data || err.message);
       const msg =
         err.response?.data?.message ||
         err.response?.data?.error ||
         err.message ||
         "Ocurrió un error al registrar el usuario.";
-
-      // No hacemos throw: devolvemos un objeto consistente que el formulario espera
       return { success: false, message: msg };
     } finally {
       setLoading(false);
     }
   };
 
-  /**
-   * registerAliado: registra solicitud de aliado y devuelve { success, message }
-   */
   const registerAliado = async (formData) => {
     setLoading(true);
     try {
       const payload = {
         usuario: formData.username,
         password: formData.password,
-        id_perfil: 3, // si tus perfiles usan 3 para aliado
+        id_perfil: 3,
         nombres: formData.nombres,
         apellidos: formData.apellidos,
         correo: formData.correo,
@@ -238,7 +232,7 @@ export const AuthProvider = ({ children }) => {
       };
     } catch (err) {
       console.error(
-        "registerAliado error detalle:",
+        "registerAliado error:",
         err?.response?.data || err.message
       );
       const msg =
@@ -251,13 +245,6 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  /**
-   * 🔐 recoverCredentials: Llama SOLO al backend
-   * El backend se encarga de:
-   * 1. Generar el token de recuperación
-   * 2. Guardarlo en BD con expiración
-   * 3. Enviar el correo con EmailJS (BACKEND, no frontend)
-   */
   const recoverCredentials = async (email) => {
     setLoading(true);
     try {
@@ -298,6 +285,7 @@ export const AuthProvider = ({ children }) => {
   const logout = () => {
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
+    localStorage.removeItem(TOKEN_KEY); // ✨ NUEVO
     window.location.href = "/";
   };
 
