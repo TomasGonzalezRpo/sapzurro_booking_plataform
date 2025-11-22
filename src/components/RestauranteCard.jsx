@@ -1,4 +1,6 @@
 import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext";
+import axios from "axios";
 import {
   Star,
   Wifi,
@@ -17,10 +19,13 @@ import {
 } from "lucide-react";
 
 const RestauranteCard = ({ restaurante }) => {
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reservaStep, setReservaStep] = useState(1);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [reservaData, setReservaData] = useState({
     fecha: "",
     hora: "",
@@ -33,16 +38,11 @@ const RestauranteCard = ({ restaurante }) => {
   const horariosDisponibles = () => {
     const horarios = [];
 
-    // Desayuno (si aplica)
     if (restaurante.ofreceDesayuno) {
       horarios.push("7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM");
     }
 
-    // Almuerzo
-    // Se ha simplificado la lógica de horarios ya que el original tenía errores de condición
     horarios.push("12:00 PM", "1:00 PM", "2:00 PM");
-
-    // Cena
     horarios.push("6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM");
 
     return horarios;
@@ -63,6 +63,7 @@ const RestauranteCard = ({ restaurante }) => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setReservaStep(1);
+      setError(null);
     }
   };
 
@@ -74,8 +75,75 @@ const RestauranteCard = ({ restaurante }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
-  const confirmarReserva = () => {
-    alert("Debe iniciar sesión para completar la reserva");
+  const confirmarReserva = async () => {
+    if (!isAuthenticated || !user) {
+      openAuthModal();
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      const payload = {
+        tipo_servicio: "restaurante",
+        id_servicio: restaurante.id,
+        nombre_servicio: restaurante.nombre,
+        fecha_inicio: reservaData.fecha,
+        fecha_fin: null,
+        cantidad_personas: reservaData.personas,
+        cantidad_habitaciones: null,
+        descripcion_servicio: `${reservaData.hora} - ${
+          reservaData.ocasionEspecial
+            ? reservaData.tipoOcasion
+            : "Sin ocasión especial"
+        }`,
+        precio_unitario: 0, // Las comidas se pagan en el lugar
+        cantidad: 1,
+        precio_total: 0, // Se calcula en el restaurante
+      };
+
+      // Agregar comentarios al payload
+      if (reservaData.comentarios) {
+        payload.notas_admin = reservaData.comentarios;
+      }
+
+      const response = await axios.post(
+        "http://localhost:5000/api/reservas",
+        payload
+      );
+
+      if (response.data.success) {
+        alert(
+          `✅ Reserva confirmada!\nID: ${
+            response.data.id_reserva
+          }\n\nRestaurante: ${restaurante.nombre}\nFecha: ${new Date(
+            reservaData.fecha
+          ).toLocaleDateString("es-CO")}\nHora: ${
+            reservaData.hora
+          }\nPersonas: ${reservaData.personas}`
+        );
+
+        setReservaData({
+          fecha: "",
+          hora: "",
+          personas: 2,
+          ocasionEspecial: false,
+          tipoOcasion: "",
+          comentarios: "",
+        });
+        setIsExpanded(false);
+      }
+    } catch (err) {
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al procesar la reserva";
+      setError(errorMsg);
+      console.error("Error en reserva:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const getMinFecha = () => {
@@ -83,33 +151,22 @@ const RestauranteCard = ({ restaurante }) => {
   };
 
   return (
-    // MODIFICADO PARA ALINEACIÓN AL FONDO (1/3)
-    // Añadida: flex flex-col h-full
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
-      {" "}
-      {/* Badge de Aliado */}
       {restaurante.esAliado && (
         <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-4 py-2 flex items-center justify-center space-x-2">
           <Award className="w-4 h-4" />
           <span className="text-sm font-semibold">Restaurante Aliado</span>
         </div>
       )}
-      {/* Carrusel de imágenes (CORREGIDO PARA MOSTRAR IMAGEN REAL) */}
+
       <div className="relative h-64 overflow-hidden group">
-        {/* IMAGEN REAL */}
         <img
           src={restaurante.imagenes[currentImageIndex].url}
           alt={restaurante.imagenes[currentImageIndex].desc}
           className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
-          onError={(e) => {
-            e.target.style.style = "none";
-          }}
         />
 
-        {/* Superposición para mostrar el texto descriptivo legible */}
-        <div
-          className={`absolute inset-0 bg-black/40 transition-all duration-500 flex items-center justify-center`}
-        >
+        <div className="absolute inset-0 bg-black/40 transition-all duration-500 flex items-center justify-center">
           <div className="text-center text-white p-4">
             <UtensilsCrossed className="w-10 h-10 mx-auto mb-2 opacity-50" />
             <p className="text-sm font-medium opacity-50">
@@ -154,11 +211,8 @@ const RestauranteCard = ({ restaurante }) => {
           {currentImageIndex + 1} / {restaurante.imagenes.length}
         </div>
       </div>
-      {/* Contenido */}
-      {/* MODIFICADO PARA ALINEACIÓN AL FONDO (2/3) */}
-      {/* Añadida: flex flex-col flex-grow */}
+
       <div className="p-6 flex flex-col flex-grow">
-        {" "}
         <button
           onClick={() => setShowInfo(!showInfo)}
           className="w-full text-left group"
@@ -169,7 +223,7 @@ const RestauranteCard = ({ restaurante }) => {
           </h3>
         </button>
         <p className="text-gray-600 mb-4">{restaurante.descripcion}</p>
-        {/* Info rápida */}
+
         <div className="space-y-2 mb-4">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <UtensilsCrossed className="w-4 h-4 text-cyan-600" />
@@ -184,7 +238,7 @@ const RestauranteCard = ({ restaurante }) => {
             <span>{restaurante.rangoPrecios}</span>
           </div>
         </div>
-        {/* Menú destacado preview */}
+
         {restaurante.esAliado && (
           <div className="mb-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">
@@ -202,10 +256,9 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           </div>
         )}
+
         <button
           onClick={handleReservar}
-          // MODIFICADO PARA ALINEACIÓN AL FONDO (3/3)
-          // Añadida: mt-auto para empujar el botón al final
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 mt-auto"
         >
           <span>{isExpanded ? "Cerrar reserva" : "Reservar mesa"}</span>
@@ -216,7 +269,7 @@ const RestauranteCard = ({ restaurante }) => {
           )}
         </button>
       </div>
-      {/* Modal de información completa */}
+
       {showInfo && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -286,7 +339,6 @@ const RestauranteCard = ({ restaurante }) => {
                 <p className="text-gray-600">{restaurante.chefEspecialidad}</p>
               </div>
 
-              {/* Menú destacado */}
               <div>
                 <h3 className="text-xl font-bold text-gray-800 mb-3">
                   {restaurante.esAliado
@@ -317,7 +369,6 @@ const RestauranteCard = ({ restaurante }) => {
                 </div>
               </div>
 
-              {/* Link al menú completo */}
               <div className="bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-xl p-4">
                 <div className="flex items-center justify-between">
                   <div>
@@ -353,9 +404,16 @@ const RestauranteCard = ({ restaurante }) => {
           </div>
         </div>
       )}
-      {/* Formulario de reserva expandible */}
+
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <p className="font-semibold">Error:</p>
+              <p>{error}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-center mb-6">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
@@ -379,7 +437,6 @@ const RestauranteCard = ({ restaurante }) => {
             ))}
           </div>
 
-          {/* Step 1: Fecha y hora */}
           {reservaStep === 1 && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">
@@ -450,7 +507,6 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           )}
 
-          {/* Step 2: Ocasión especial */}
           {reservaStep === 2 && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">
@@ -555,7 +611,6 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           )}
 
-          {/* Step 3: Confirmación */}
           {reservaStep === 3 && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">
@@ -612,10 +667,20 @@ const RestauranteCard = ({ restaurante }) => {
                 </button>
                 <button
                   onClick={confirmarReserva}
-                  className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  <Check className="w-5 h-5" />
-                  <span>Confirmar reserva</span>
+                  {loading ? (
+                    <>
+                      <div className="animate-spin">⏳</div>
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      <span>Confirmar reserva</span>
+                    </>
+                  )}
                 </button>
               </div>
             </div>

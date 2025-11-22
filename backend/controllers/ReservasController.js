@@ -43,16 +43,16 @@ exports.crearReserva = async (req, res) => {
       !nombre_servicio ||
       !fecha_inicio ||
       !cantidad_personas ||
-      !precio_unitario ||
-      !precio_total
+      precio_unitario === undefined ||
+      precio_total === undefined
     ) {
       console.error("❌ Faltan datos requeridos:", {
         tipo_servicio: !!tipo_servicio,
         nombre_servicio: !!nombre_servicio,
         fecha_inicio: !!fecha_inicio,
         cantidad_personas: !!cantidad_personas,
-        precio_unitario: !!precio_unitario,
-        precio_total: !!precio_total,
+        precio_unitario: precio_unitario !== undefined,
+        precio_total: precio_total !== undefined,
       });
       return res.status(400).json({
         success: false,
@@ -62,8 +62,8 @@ exports.crearReserva = async (req, res) => {
           nombre_servicio: !!nombre_servicio,
           fecha_inicio: !!fecha_inicio,
           cantidad_personas: !!cantidad_personas,
-          precio_unitario: !!precio_unitario,
-          precio_total: !!precio_total,
+          precio_unitario: precio_unitario !== undefined,
+          precio_total: precio_total !== undefined,
         },
       });
     }
