@@ -98,20 +98,24 @@ const RestauranteCard = ({ restaurante }) => {
             ? reservaData.tipoOcasion
             : "Sin ocasión especial"
         }`,
-        precio_unitario: 0, // Las comidas se pagan en el lugar
+        precio_unitario: 0,
         cantidad: 1,
-        precio_total: 0, // Se calcula en el restaurante
+        precio_total: 0,
       };
 
-      // Agregar comentarios al payload
+      // Agregar comentarios del usuario
       if (reservaData.comentarios) {
         payload.notas_admin = reservaData.comentarios;
       }
+
+      console.log("🚀 PAYLOAD FINAL ENVIADO:", payload);
 
       const response = await axios.post(
         "http://localhost:5000/api/reservas",
         payload
       );
+
+      console.log("✅ Respuesta del servidor:", response.data);
 
       if (response.data.success) {
         alert(

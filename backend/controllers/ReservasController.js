@@ -23,6 +23,7 @@ exports.crearReserva = async (req, res) => {
       precio_unitario,
       cantidad,
       precio_total,
+      notas_admin,
     } = req.body;
 
     const id_usuario = req.user.id_usuario;
@@ -35,6 +36,7 @@ exports.crearReserva = async (req, res) => {
       cantidad_personas,
       precio_unitario,
       precio_total,
+      notas_admin,
     });
 
     // Validar datos requeridos
@@ -101,8 +103,9 @@ exports.crearReserva = async (req, res) => {
         precio_unitario,
         cantidad,
         precio_total,
-        estado
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'confirmada')`,
+        estado,
+        notas_admin
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       {
         replacements: [
           id_usuario,
@@ -117,6 +120,8 @@ exports.crearReserva = async (req, res) => {
           precio_unitario,
           cantidad || 1,
           precio_total,
+          "confirmada",
+          notas_admin || null,
         ],
       }
     );

@@ -523,6 +523,18 @@ const ReservasManagement = () => {
                   <option value="cancelada">Cancelada</option>
                 </select>
               </div>
+
+              {/* Comentarios del usuario */}
+              {selectedReserva.notas_admin && (
+                <div className="bg-blue-50 rounded-lg p-4 border-l-4 border-blue-500">
+                  <h4 className="font-semibold text-gray-800 mb-2">
+                    💬 Comentarios del Usuario
+                  </h4>
+                  <p className="text-gray-700 whitespace-pre-wrap">
+                    {selectedReserva.notas_admin}
+                  </p>
+                </div>
+              )}
             </div>
 
             {/* Footer */}
