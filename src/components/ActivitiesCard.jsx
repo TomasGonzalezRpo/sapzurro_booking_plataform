@@ -1,6 +1,6 @@
-// src/components/ActivitiesCard.jsx
-
 import React, { useState } from "react";
+import { useAuth } from "../contexts/AuthContext"; // 🔑 IMPORTAR useAuth
+import axios from "axios";
 import {
   Star,
   MapPin,
@@ -40,14 +40,18 @@ const getIconComponent = (iconName) => {
 };
 
 const ActivitiesCard = ({ activity }) => {
+  const { user, isAuthenticated, openAuthModal } = useAuth(); // 🔑 OBTENER USER
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reservaStep, setReservaStep] = useState(1);
+  const [loading, setLoading] = useState(false); // 🔑 NUEVO
+  const [error, setError] = useState(null); // 🔑 NUEVO
   const [reservaData, setReservaData] = useState({
     fecha: "",
     participantes: 1,
     horario: "",
+    comentarios: "", // 🔑 NUEVO: para requisitos especiales
   });
 
   const categoryIcons = {
@@ -90,6 +94,7 @@ const ActivitiesCard = ({ activity }) => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setReservaStep(1);
+      setError(null); // 🔑 LIMPIAR ERRORES
     }
   };
 
@@ -101,8 +106,96 @@ const ActivitiesCard = ({ activity }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
-  const confirmarReserva = () => {
-    alert("Debe iniciar sesión para completar la reserva");
+  // 🔑 NUEVA FUNCIÓN DE CONFIRMACIÓN PARA ACTIVIDADES
+  const confirmarReserva = async () => {
+    // 1️⃣ VERIFICAR QUE ESTÉ AUTENTICADO
+    if (!isAuthenticated || !user) {
+      openAuthModal(); // Abrir modal de login
+      return;
+    }
+
+    // 2️⃣ VALIDAR DATOS BÁSICOS
+    if (
+      !reservaData.fecha ||
+      !reservaData.horario ||
+      !reservaData.participantes
+    ) {
+      setError("Por favor completa todos los campos requeridos");
+      return;
+    }
+
+    setLoading(true);
+    setError(null);
+
+    try {
+      // 3️⃣ CONVERTIR HORARIO A HORA (formato 24h)
+      const horaMap = {
+        mañana: "08:00",
+        tarde: "13:00",
+        noche: "18:00",
+      };
+      const hora = horaMap[reservaData.horario] || "10:00";
+
+      // 4️⃣ PREPARAR DATOS DE LA RESERVA
+      const payload = {
+        tipo_servicio: "actividad",
+        id_servicio: activity.id || activity.name,
+        nombre_servicio: activity.name,
+        fecha_inicio: `${reservaData.fecha}T${hora}:00`, // Combinar fecha y hora
+        cantidad_personas: reservaData.participantes,
+        descripcion_servicio: activity.description,
+        precio_unitario: activity.price,
+        cantidad: 1, // Una actividad por reserva
+        precio_total: activity.price * reservaData.participantes,
+        notas_admin: reservaData.comentarios || "Sin comentarios especiales", // Guardar comentarios como notas
+      };
+
+      // 5️⃣ ENVIAR AL BACKEND
+      const response = await axios.post(
+        "http://localhost:5000/api/reservas",
+        payload,
+        {
+          headers: {
+            "Content-Type": "application/json",
+            // El interceptor de axios añadirá el token automáticamente
+          },
+        }
+      );
+
+      // 6️⃣ ÉXITO
+      if (response.data.success) {
+        alert(
+          `✅ Reserva confirmada!\nID: ${
+            response.data.id_reserva
+          }\n\nActividad: ${activity.name}\nFecha: ${new Date(
+            reservaData.fecha
+          ).toLocaleDateString("es-CO")}\nHora: ${
+            reservaData.horario
+          }\nParticipantes: ${reservaData.participantes}\nTotal: $${(
+            activity.price * reservaData.participantes
+          ).toLocaleString("es-CO")}\n\nRecuerda tu ID para futuras consultas.`
+        );
+
+        // Limpiar formulario
+        setReservaData({
+          fecha: "",
+          participantes: 1,
+          horario: "",
+          comentarios: "",
+        });
+        setIsExpanded(false);
+      }
+    } catch (err) {
+      // 7️⃣ MANEJAR ERRORES
+      const errorMsg =
+        err.response?.data?.message ||
+        err.message ||
+        "Error al procesar la reserva";
+      setError(errorMsg);
+      console.error("Error en reserva:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -256,6 +349,7 @@ const ActivitiesCard = ({ activity }) => {
           )}
         </button>
       </div>
+
       {/* Modal de información completa */}
       {showInfo && (
         <div
@@ -385,9 +479,18 @@ const ActivitiesCard = ({ activity }) => {
           </div>
         </div>
       )}
+
       {/* Formulario de reserva expandible */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
+          {/* 🔑 MOSTRAR ERRORES SI LOS HAY */}
+          {error && (
+            <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
+              <p className="font-semibold">Error:</p>
+              <p>{error}</p>
+            </div>
+          )}
+
           <div className="flex items-center justify-center mb-6">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
@@ -419,7 +522,7 @@ const ActivitiesCard = ({ activity }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Fecha de la actividad
+                  Fecha de la actividad *
                 </label>
                 <input
                   type="date"
@@ -437,7 +540,7 @@ const ActivitiesCard = ({ activity }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Horario preferido
+                  Horario preferido *
                 </label>
                 <select
                   value={reservaData.horario}
@@ -471,7 +574,7 @@ const ActivitiesCard = ({ activity }) => {
 
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Número de participantes
+                  Número de participantes *
                 </label>
                 <input
                   type="number"
@@ -491,23 +594,38 @@ const ActivitiesCard = ({ activity }) => {
                 </p>
               </div>
 
-              {/* Bloque de botones */}
-              <div className="flex justify-center">
-                <div className="flex space-x-3 w-full max-w-sm">
-                  <button
-                    onClick={prevStep}
-                    className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                  >
-                    Atrás
-                  </button>
-                  <button
-                    onClick={nextStep}
-                    disabled={!reservaData.participantes}
-                    className="flex-1 bg-cyan-500 text-white py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
-                  >
-                    Continuar
-                  </button>
-                </div>
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Comentarios o requisitos especiales (opcional)
+                </label>
+                <textarea
+                  value={reservaData.comentarios}
+                  onChange={(e) =>
+                    setReservaData({
+                      ...reservaData,
+                      comentarios: e.target.value,
+                    })
+                  }
+                  placeholder="Ej: Alergias, miedo a alturas, necesidades especiales..."
+                  rows="3"
+                  className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent resize-none"
+                />
+              </div>
+
+              <div className="flex space-x-3">
+                <button
+                  onClick={prevStep}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Atrás
+                </button>
+                <button
+                  onClick={nextStep}
+                  disabled={!reservaData.participantes}
+                  className="flex-1 bg-cyan-500 text-white py-3 rounded-lg font-semibold hover:bg-cyan-600 transition-all disabled:bg-gray-300 disabled:cursor-not-allowed"
+                >
+                  Continuar
+                </button>
               </div>
             </div>
           )}
@@ -544,6 +662,15 @@ const ActivitiesCard = ({ activity }) => {
                   </span>
                 </div>
 
+                {reservaData.comentarios && (
+                  <div className="flex justify-between">
+                    <span className="text-gray-600">Comentarios:</span>
+                    <span className="font-semibold text-gray-800 text-right max-w-xs">
+                      {reservaData.comentarios}
+                    </span>
+                  </div>
+                )}
+
                 <div className="border-t pt-3 mt-3">
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-semibold text-gray-800">
@@ -559,23 +686,30 @@ const ActivitiesCard = ({ activity }) => {
                 </div>
               </div>
 
-              {/* Bloque de botones */}
-              <div className="flex justify-center">
-                <div className="flex space-x-3 w-full max-w-sm">
-                  <button
-                    onClick={prevStep}
-                    className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
-                  >
-                    Atrás
-                  </button>
-                  <button
-                    onClick={confirmarReserva}
-                    className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2"
-                  >
-                    <Check className="w-5 h-5" />
-                    <span>Confirmar reserva</span>
-                  </button>
-                </div>
+              <div className="flex space-x-3">
+                <button
+                  onClick={prevStep}
+                  className="flex-1 bg-gray-200 text-gray-700 py-3 rounded-lg font-semibold hover:bg-gray-300 transition-all"
+                >
+                  Atrás
+                </button>
+                <button
+                  onClick={confirmarReserva}
+                  disabled={loading}
+                  className="flex-1 bg-gradient-to-r from-emerald-500 to-cyan-500 text-white py-3 rounded-lg font-semibold hover:from-emerald-600 hover:to-cyan-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {loading ? (
+                    <>
+                      <div className="animate-spin">⏳</div>
+                      <span>Procesando...</span>
+                    </>
+                  ) : (
+                    <>
+                      <Check className="w-5 h-5" />
+                      <span>Confirmar reserva</span>
+                    </>
+                  )}
+                </button>
               </div>
             </div>
           )}

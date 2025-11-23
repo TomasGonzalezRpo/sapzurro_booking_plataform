@@ -1,6 +1,10 @@
 // backend/controllers/ReservasController.js
 const { sequelize } = require("../models/index");
 
+// 🔑 NO se importan datos de validación
+// Las actividades se validan igual que hoteles/restaurantes
+// (sin validaciones en backend - se guardan directamente)
+
 // =============== CREAR RESERVA (genérica para cualquier servicio) ===============
 exports.crearReserva = async (req, res) => {
   try {
@@ -79,16 +83,7 @@ exports.crearReserva = async (req, res) => {
       });
     }
 
-    // Para hoteles, validar fechas
-    if (tipo_servicio === "hotel") {
-      if (!fecha_fin || new Date(fecha_fin) <= new Date(fecha_inicio)) {
-        return res.status(400).json({
-          success: false,
-          message: "La fecha de salida debe ser después de la entrada",
-        });
-      }
-    }
-
+    // 🔑 INSERTAR RESERVA EN LA BASE DE DATOS
     const [result] = await sequelize.query(
       `INSERT INTO reservas (
         id_usuario,
@@ -140,6 +135,7 @@ exports.crearReserva = async (req, res) => {
     return res.status(500).json({
       success: false,
       message: "Error al procesar la reserva",
+      error: error.message,
     });
   }
 };
