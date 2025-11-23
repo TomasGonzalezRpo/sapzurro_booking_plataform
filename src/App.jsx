@@ -8,10 +8,10 @@ import RestaurantesSection from "./components/RestaurantesSection";
 import Footer from "./components/Footer";
 import AuthModal from "./components/Auth/AuthModal";
 import AdminPanel from "./components/Admin/AdminPanel";
+import UserDashboard from "./components/Usuarios/UserDashboard"; // 🔑 IMPORTAR
 import ResetPasswordForm from "./components/Auth/ResetPasswordForm";
 import ActivitiesCard from "./components/ActivitiesCard.jsx";
 import RutaCard from "./components/RutaCard.jsx";
-// ⬅️ 1. IMPORTAR EL MODAL DE DETALLE
 import RutaDetailModal from "./components/RutaDetailModal";
 import { activities } from "./data/Activities.js";
 import { rutasTuristicas } from "./data/rutasData.js";
@@ -20,12 +20,13 @@ import { Compass } from "lucide-react";
 const App = () => {
   const { user } = useAuth();
 
-  // ⬅️ 2. ESTADOS AÑADIDOS PARA EL MODAL DE RUTA
+  // Estados para rutas
   const [selectedRuta, setSelectedRuta] = useState(null);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [activeSection, setActiveSection] = useState("inicio");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAdminView, setIsAdminView] = useState(false);
+  const [isUserDashboardView, setIsUserDashboardView] = useState(false); // 🔑 NUEVO
   const [showResetPassword, setShowResetPassword] = useState(false);
 
   useEffect(() => {
@@ -33,12 +34,21 @@ const App = () => {
     setShowResetPassword(path === "/reset-password");
   }, []);
 
+  // 🔑 FUNCIONES GLOBALES PARA NAVEGACIÓN
   useEffect(() => {
     window.goToAdmin = () => setIsAdminView(true);
-    window.goToHome = () => setIsAdminView(false);
+    window.goToHome = () => {
+      setIsAdminView(false);
+      setIsUserDashboardView(false);
+    };
+    window.goToUserDashboard = () => {
+      setIsUserDashboardView(true);
+    };
+
     return () => {
       delete window.goToAdmin;
       delete window.goToHome;
+      delete window.goToUserDashboard;
     };
   }, []);
 
@@ -55,7 +65,7 @@ const App = () => {
     if (el) el.scrollIntoView({ behavior: "smooth" });
   };
 
-  // ⬅️ MANEJADORES DEL MODAL DE RUTA
+  // Manejadores del modal de ruta
   const handleOpenRutaModal = (ruta) => {
     setSelectedRuta(ruta);
   };
@@ -63,7 +73,6 @@ const App = () => {
   const handleCloseRutaModal = () => {
     setSelectedRuta(null);
   };
-  // ------------------------------------
 
   const menuItems = [
     { id: "inicio", label: "Inicio" },
@@ -76,7 +85,7 @@ const App = () => {
     { id: "sobre-sapzurro", label: "Sobre Sapzurro" },
   ];
 
-  // Mostrar sólo el reset password cuando corresponda
+  // Mostrar solo el reset password cuando corresponda
   if (showResetPassword) {
     return (
       <div className="min-h-screen bg-gradient-to-b from-sky-50 to-blue-50 flex items-center justify-center p-4">
@@ -87,8 +96,21 @@ const App = () => {
     );
   }
 
+  // 🔑 MOSTRAR ADMIN PANEL
   if (isAdminView) {
     return <AdminPanel onBackToHome={() => setIsAdminView(false)} />;
+  }
+
+  // 🔑 MOSTRAR USER DASHBOARD
+  if (isUserDashboardView) {
+    return (
+      <UserDashboard
+        onBackToHome={() => {
+          setIsAdminView(false);
+          setIsUserDashboardView(false);
+        }}
+      />
+    );
   }
 
   return (
@@ -156,7 +178,7 @@ const App = () => {
                 <RutaCard
                   key={ruta.id}
                   ruta={ruta}
-                  onTitleClick={handleOpenRutaModal} // ⬅️ 3. PASAR MANEJADOR AL HIJO
+                  onTitleClick={handleOpenRutaModal}
                 />
               ))
             ) : (
@@ -169,7 +191,6 @@ const App = () => {
       </section>
 
       {/* Renderiza placeholders para los items que no hemos implementado. */}
-      {/* SE HA MODIFICADO EL FILTER PARA EXCLUIR 'rutas' y 'actividades' */}
       {menuItems
         .filter((mi) => mi.id !== "actividades" && mi.id !== "rutas")
         .slice(3)
@@ -193,7 +214,7 @@ const App = () => {
       <Footer />
       <AuthModal />
 
-      {/* ⬅️ 4. RENDERIZAR EL MODAL DE DETALLE DE RUTA */}
+      {/* Modal de detalle de ruta */}
       <RutaDetailModal ruta={selectedRuta} onClose={handleCloseRutaModal} />
     </div>
   );

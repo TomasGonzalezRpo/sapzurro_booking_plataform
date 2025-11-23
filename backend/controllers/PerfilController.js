@@ -26,6 +26,7 @@ exports.obtenerMiDatos = async (req, res) => {
       include: [
         {
           model: Persona,
+          as: "personaInfo", // 🔑 ALIAS CORRECTO
           attributes: [
             "id_persona",
             "nombres",
@@ -40,6 +41,7 @@ exports.obtenerMiDatos = async (req, res) => {
         },
         {
           model: Perfil,
+          as: "perfil", // 🔑 ALIAS CORRECTO
           attributes: ["id_perfil", "nombre", "descripcion"],
         },
       ],
@@ -60,8 +62,8 @@ exports.obtenerMiDatos = async (req, res) => {
         id_usuario: usuario.id_usuario,
         usuario: usuario.usuario,
         estado: usuario.estado,
-        persona: usuario.Persona,
-        perfil: usuario.Perfil,
+        persona: usuario.personaInfo, // 🔑 USA EL ALIAS
+        perfil: usuario.perfil, // 🔑 USA EL ALIAS
       },
     });
   } catch (error) {
@@ -120,6 +122,7 @@ exports.actualizarMisDatos = async (req, res) => {
       include: [
         {
           model: Persona,
+          as: "personaInfo", // 🔑 ALIAS CORRECTO
           attributes: [
             "id_persona",
             "nombres",
@@ -134,6 +137,7 @@ exports.actualizarMisDatos = async (req, res) => {
         },
         {
           model: Perfil,
+          as: "perfil", // 🔑 ALIAS CORRECTO
           attributes: ["id_perfil", "nombre", "descripcion"],
         },
       ],
@@ -146,8 +150,8 @@ exports.actualizarMisDatos = async (req, res) => {
         id_usuario: usuarioActualizado.id_usuario,
         usuario: usuarioActualizado.usuario,
         estado: usuarioActualizado.estado,
-        persona: usuarioActualizado.Persona,
-        perfil: usuarioActualizado.Perfil,
+        persona: usuarioActualizado.personaInfo, // 🔑 USA EL ALIAS
+        perfil: usuarioActualizado.perfil, // 🔑 USA EL ALIAS
       },
     });
   } catch (error) {
