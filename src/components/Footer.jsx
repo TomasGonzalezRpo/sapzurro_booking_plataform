@@ -17,7 +17,7 @@ const Footer = () => {
 
         {/* copyright */}
         <p className="text-cyan-200 text-sm">
-          © 2024 Sapzurro Turismo. Todos los derechos reservados.
+          © 2025 Sapzurro Turismo. Todos los derechos reservados.
         </p>
       </div>
     </footer>
