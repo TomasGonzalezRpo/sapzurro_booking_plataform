@@ -10,28 +10,29 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
   const [success, setSuccess] = useState(false);
 
   const handleSubmit = async (e) => {
-    // 🎯 Hacer la función asíncrona
+    // evitar que la página se recargue
     e.preventDefault();
     setError("");
     setSuccess(false);
 
-    // 1. Validaciones de UI
+    // validar que el email no esté vacío
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!email) {
       setError("Por favor ingresa tu correo electrónico");
       return;
     }
 
+    // validar formato de correo
     if (!emailRegex.test(email)) {
       setError("Por favor ingresa un correo válido");
       return;
     }
 
-    // 2. Llamada a la lógica real del contexto
     try {
+      // llamar la función para recuperar credenciales
       await recoverCredentials(email);
 
-      // Si la llamada es exitosa, mostrar mensaje de éxito.
+      // si todo salió bien mostrar mensaje
       setSuccess(true);
     } catch (err) {
       setError(err.message || "Ocurrió un error al intentar la recuperación.");
@@ -74,7 +75,6 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
             <h3 className="text-lg font-semibold text-green-800 mb-2">
               ¡Correo enviado!
             </h3>
-            {/* 🎯 Mensaje que cumple con el requisito del parcial */}
             <p className="text-sm text-green-700">
               Su **usuario y contraseña** fue enviado al correo registrado:{" "}
               <strong>{email}</strong>
@@ -104,8 +104,7 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 placeholder="tu@email.com"
-                // 🎯 Deshabilitar mientras esté cargando
-                disabled={loading}
+                disabled={loading} // deshabilitar cuando se está enviando
                 className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
               />
             </div>
@@ -116,15 +115,13 @@ const ForgotPasswordForm = ({ onSwitchToLogin }) => {
 
           <button
             type="submit"
-            // 🎯 Deshabilitar si está cargando
-            disabled={loading}
+            disabled={loading} // evita doble clic mientras carga
             className={`w-full text-white py-3 rounded-lg font-semibold transition-all shadow-md ${
               loading
                 ? "bg-gray-400 cursor-not-allowed"
                 : "bg-gradient-to-r from-cyan-500 to-blue-500 hover:from-cyan-600 hover:to-blue-600 hover:shadow-lg"
             }`}
           >
-            {/* 🎯 Mostrar estado de carga */}
             {loading ? "Enviando..." : "Enviar usuario y contraseña"}
           </button>
         </form>

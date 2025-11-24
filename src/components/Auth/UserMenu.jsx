@@ -14,7 +14,7 @@ const UserMenu = () => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef(null);
 
-  // Cerrar menú al hacer click fuera
+  // cerrar menú si se hace clic fuera
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (menuRef.current && !menuRef.current.contains(event.target)) {
@@ -27,11 +27,12 @@ const UserMenu = () => {
   }, []);
 
   const handleLogout = () => {
+    // ejecutar logout y cerrar menú
     logout();
     setIsOpen(false);
   };
 
-  // Determinar color del badge según el rol
+  // elegir color del badge según el rol del usuario
   const getBadgeColor = () => {
     switch (user.rol) {
       case "Administrador":
@@ -45,7 +46,7 @@ const UserMenu = () => {
 
   return (
     <div className="relative" ref={menuRef}>
-      {/* Botón del menú */}
+      {/* botón para abrir/cerrar menú */}
       <button
         onClick={() => setIsOpen(!isOpen)}
         className="flex items-center space-x-3 bg-white hover:bg-gray-50 px-4 py-2 rounded-full border-2 border-gray-200 transition-all shadow-sm hover:shadow-md"
@@ -66,10 +67,9 @@ const UserMenu = () => {
         />
       </button>
 
-      {/* Menú desplegable */}
       {isOpen && (
         <div className="absolute right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl border border-gray-200 py-2 z-50">
-          {/* Header del menú */}
+          {/* encabezado del menú */}
           <div className="px-4 py-3 border-b border-gray-200">
             <div className="flex items-center space-x-3">
               <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
@@ -89,9 +89,8 @@ const UserMenu = () => {
             </div>
           </div>
 
-          {/* Opciones del menú */}
           <div className="py-2">
-            {/* Panel de control (solo para Admin y Aliado) */}
+            {/* acceso al panel de control (solo Admin/Aliado) */}
             {(user.rol === "Administrador" || user.rol === "Aliado") && (
               <button
                 onClick={() => {
@@ -113,7 +112,7 @@ const UserMenu = () => {
               </button>
             )}
 
-            {/* Mi Perfil */}
+            {/* ir a perfil */}
             <button
               onClick={() => {
                 setIsOpen(false);
@@ -132,7 +131,7 @@ const UserMenu = () => {
               </div>
             </button>
 
-            {/* Mis Reservas */}
+            {/* ver reservas */}
             <button
               onClick={() => {
                 setIsOpen(false);
@@ -152,7 +151,7 @@ const UserMenu = () => {
             </button>
           </div>
 
-          {/* Cerrar sesión */}
+          {/* botón cerrar sesión */}
           <div className="border-t border-gray-200 pt-2">
             <button
               onClick={handleLogout}

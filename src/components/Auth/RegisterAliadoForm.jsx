@@ -45,14 +45,17 @@ const BUSINESS_OPTIONS = [
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
 const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
+  // estado principal del formulario
   const [formData, setFormData] = useState(INITIAL_FORM);
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
   const handleChange = (field, value) =>
+    // actualizar campo específico del form
     setFormData((s) => ({ ...s, [field]: value }));
 
   const handleSubmit = async (e) => {
+    // evitar refrescar la página
     e.preventDefault();
     setError("");
     setSuccess("");
@@ -69,6 +72,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
       numero_documento,
     } = formData;
 
+    // validar campos obligatorios
     if (
       !nombres ||
       !apellidos ||
@@ -83,31 +87,36 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
       return;
     }
 
+    // validar que la contraseña sea suficientemente larga
     if (password.length < 6) {
       setError("La contraseña debe tener al menos 6 caracteres");
       return;
     }
 
+    // validar que las contraseñas coincidan
     if (password !== confirmPassword) {
       setError("Las contraseñas no coinciden");
       return;
     }
 
+    // validar formato de correo
     if (!emailRegex.test(correo)) {
       setError("Por favor ingresa un correo válido");
       return;
     }
 
     try {
+      // enviar información al método de registro
       const result = await onRegisterAliado(formData);
       if (result.success) {
         setSuccess(result.message);
-        setFormData(INITIAL_FORM); // Limpiar formulario
+        setFormData(INITIAL_FORM);
         setTimeout(() => onSwitchToLogin(), 3000);
       } else {
         setError(result.message);
       }
     } catch (err) {
+      // error inesperado al registrar
       setError("Error inesperado al registrar el aliado");
       console.error(err);
     }
@@ -115,7 +124,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
 
   return (
     <div className="space-y-6">
-      {/* Título */}
+      {/* sección del título */}
       <div className="text-center">
         <div className="inline-flex items-center justify-center w-16 h-16 bg-gradient-to-r from-emerald-500 to-cyan-500 rounded-full mb-4">
           <Building2 className="w-8 h-8 text-white" />
@@ -126,7 +135,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
         <p className="text-gray-600 mt-2">Inscribe tu negocio en Sapzurro</p>
       </div>
 
-      {/* Info aprobación */}
+      {/* mensaje informativo */}
       <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
         <p className="text-sm text-amber-800">
           <strong>⏳ Proceso de aprobación:</strong> Tu solicitud será revisada
@@ -135,7 +144,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
         </p>
       </div>
 
-      {/* Mensajes */}
+      {/* mensajes de error o éxito */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -150,7 +159,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
       )}
 
       <form onSubmit={handleSubmit} className="space-y-6">
-        {/* Datos personales */}
+        {/* datos personales */}
         <div>
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
             <User className="w-5 h-5 text-cyan-600" />
@@ -223,7 +232,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
           />
         </div>
 
-        {/* Datos del negocio */}
+        {/* datos del negocio */}
         <div className="border-t pt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
             <Building2 className="w-5 h-5 text-emerald-600" />
@@ -271,7 +280,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
           </div>
         </div>
 
-        {/* Credenciales */}
+        {/* credenciales */}
         <div className="border-t pt-6">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
             <Lock className="w-5 h-5 text-cyan-600" />
@@ -327,7 +336,7 @@ const RegisterAliadoForm = ({ onRegisterAliado, onSwitchToLogin }) => {
   );
 };
 
-/* --- pequeños helpers locales --- */
+// componente sencillo para inputs
 function InputField({ label, required, value, onChange, placeholder, type }) {
   return (
     <div>

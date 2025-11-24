@@ -4,6 +4,7 @@ import { Lock, AlertCircle, CheckCircle, Eye, EyeOff } from "lucide-react";
 import axios from "axios";
 
 const ResetPasswordForm = () => {
+  // estado del formulario y UI
   const [formData, setFormData] = useState({
     newPassword: "",
     confirmPassword: "",
@@ -16,8 +17,8 @@ const ResetPasswordForm = () => {
   const [token, setToken] = useState("");
   const [email, setEmail] = useState("");
 
-  // Obtener token y email de los parámetros de URL
   useEffect(() => {
+    // leer token y email desde la URL
     const params = new URLSearchParams(window.location.search);
     const tokenParam = params.get("token");
     const emailParam = params.get("email");
@@ -31,6 +32,7 @@ const ResetPasswordForm = () => {
   }, []);
 
   const handleChange = (e) => {
+    // actualizar campos del formulario
     const { name, value } = e.target;
     setFormData((prev) => ({
       ...prev,
@@ -39,6 +41,7 @@ const ResetPasswordForm = () => {
   };
 
   const validatePassword = (password) => {
+    // validaciones simples de contraseña
     if (password.length < 8) {
       return "La contraseña debe tener al menos 8 caracteres";
     }
@@ -55,11 +58,11 @@ const ResetPasswordForm = () => {
   };
 
   const handleSubmit = async (e) => {
+    // enviar petición para cambiar contraseña
     e.preventDefault();
     setError("");
     setSuccess(false);
 
-    // Validaciones
     if (!formData.newPassword || !formData.confirmPassword) {
       setError("Por favor completa ambos campos");
       return;
@@ -92,7 +95,7 @@ const ResetPasswordForm = () => {
         setSuccess(true);
         setFormData({ newPassword: "", confirmPassword: "" });
 
-        // Redirigir a home después de 3 segundos
+        // redirigir al home luego de mostrar éxito
         setTimeout(() => {
           window.location.href = "/";
         }, 3000);
@@ -110,7 +113,7 @@ const ResetPasswordForm = () => {
     }
   };
 
-  // Si no hay token o email, mostrar error
+  // mostrar mensaje si falta token o email
   if (!token || !email) {
     return (
       <div className="space-y-6">
@@ -171,7 +174,6 @@ const ResetPasswordForm = () => {
 
       {!success && (
         <form onSubmit={handleSubmit} className="space-y-5">
-          {/* Nueva Contraseña */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nueva Contraseña
@@ -204,7 +206,6 @@ const ResetPasswordForm = () => {
             </p>
           </div>
 
-          {/* Confirmar Contraseña */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Confirmar Contraseña
@@ -234,7 +235,6 @@ const ResetPasswordForm = () => {
             </div>
           </div>
 
-          {/* Botón Submit */}
           <button
             type="submit"
             disabled={loading}
@@ -247,7 +247,6 @@ const ResetPasswordForm = () => {
             {loading ? "Actualizando..." : "Actualizar Contraseña"}
           </button>
 
-          {/* Link volver */}
           <button
             type="button"
             onClick={() => (window.location.href = "/")}

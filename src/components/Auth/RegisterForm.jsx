@@ -13,6 +13,7 @@ const RegisterForm = ({
   onSwitchToLogin,
   onSwitchToRegisterAliado,
 }) => {
+  // estado del formulario y mensajes
   const [formData, setFormData] = useState({
     nombres: "",
     apellidos: "",
@@ -28,11 +29,12 @@ const RegisterForm = ({
   const [success, setSuccess] = useState("");
 
   const handleSubmit = async (e) => {
+    // prevenir reload y resetear mensajes
     e.preventDefault();
     setError("");
     setSuccess("");
 
-    // Validaciones
+    // Validaciones básicas del formulario
     if (
       !formData.nombres ||
       !formData.apellidos ||
@@ -54,7 +56,7 @@ const RegisterForm = ({
       return;
     }
 
-    // Validar email
+    // validar email con regex simple
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
     if (!emailRegex.test(formData.correo)) {
       setError("Por favor ingresa un correo válido");
@@ -62,12 +64,12 @@ const RegisterForm = ({
     }
 
     try {
-      // Llamada asíncrona a onRegister
+      // llamar la función externa para registrar
       const result = await onRegister(formData);
 
       if (result.success) {
         setSuccess(result.message || "Usuario creado con éxito");
-        // Limpiar formulario
+        // limpiar formulario después de crear usuario
         setFormData({
           nombres: "",
           apellidos: "",
@@ -90,11 +92,13 @@ const RegisterForm = ({
 
   return (
     <div className="space-y-6">
+      {/* encabezado del formulario */}
       <div className="text-center">
         <h2 className="text-3xl font-bold text-gray-800">Crear Cuenta</h2>
         <p className="text-gray-600 mt-2">Únete a la comunidad de Sapzurro</p>
       </div>
 
+      {/* mostrar errores */}
       {error && (
         <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0" />
@@ -102,6 +106,7 @@ const RegisterForm = ({
         </div>
       )}
 
+      {/* mostrar éxito */}
       {success && (
         <div className="bg-green-50 border border-green-200 rounded-lg p-3 flex items-center space-x-2">
           <CheckCircle className="w-5 h-5 text-green-600 flex-shrink-0" />
@@ -286,7 +291,7 @@ const RegisterForm = ({
         </button>
       </form>
 
-      {/* Botón para aliados */}
+      {/* llamado para registrar aliados */}
       <div className="border-t pt-4">
         <button
           onClick={onSwitchToRegisterAliado}
@@ -297,6 +302,7 @@ const RegisterForm = ({
         </button>
       </div>
 
+      {/* enlace para iniciar sesión */}
       <div className="text-center text-sm text-gray-600">
         ¿Ya tienes cuenta?{" "}
         <button
