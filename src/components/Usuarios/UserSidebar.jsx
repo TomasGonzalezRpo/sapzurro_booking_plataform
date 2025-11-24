@@ -7,11 +7,13 @@ import { useAuth } from "../../contexts/AuthContext";
 const UserSidebar = ({ activeView, setActiveView, onBackToHome }) => {
   const { logout } = useAuth();
 
+  // lista de opciones del menú
   const menuItems = [
     { id: "reservas", label: "Mis Reservas", icon: Calendar },
     { id: "perfil", label: "Mi Perfil", icon: User },
   ];
 
+  // volver al sitio principal
   const handleVolverSitio = () => {
     if (window.goToHome) {
       window.goToHome();
@@ -20,7 +22,7 @@ const UserSidebar = ({ activeView, setActiveView, onBackToHome }) => {
 
   return (
     <aside className="w-64 bg-gradient-to-b from-cyan-600 to-blue-700 text-white flex flex-col">
-      {/* Logo */}
+      {/* sección del logo */}
       <div className="p-6 border-b border-cyan-500/30">
         <div className="flex items-center space-x-2 mb-2">
           <Waves className="w-6 h-6" />
@@ -29,7 +31,7 @@ const UserSidebar = ({ activeView, setActiveView, onBackToHome }) => {
         <p className="text-sm text-cyan-100">Mi Dashboard</p>
       </div>
 
-      {/* Menú */}
+      {/* botones del menú */}
       <nav className="flex-1 p-4 space-y-2">
         {menuItems.map((item) => {
           const Icon = item.icon;
@@ -50,7 +52,7 @@ const UserSidebar = ({ activeView, setActiveView, onBackToHome }) => {
         })}
       </nav>
 
-      {/* Footer del sidebar */}
+      {/* parte de abajo: volver y logout */}
       <div className="p-4 border-t border-cyan-500/30 space-y-2">
         <button
           onClick={handleVolverSitio}

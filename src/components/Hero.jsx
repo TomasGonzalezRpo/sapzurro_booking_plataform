@@ -9,7 +9,7 @@ const Hero = ({ scrollToSection }) => {
           className="relative rounded-3xl overflow-hidden shadow-2xl"
           style={{ height: "600px" }}
         >
-          {/* Background Image Placeholder */}
+          {/* fondo decorativo */}
           <div className="absolute inset-0 bg-gradient-to-br from-cyan-400 via-blue-500 to-emerald-400">
             <div className="absolute inset-0 opacity-20">
               <div className="absolute top-20 left-20 w-32 h-32 bg-white rounded-full blur-3xl"></div>
@@ -18,7 +18,7 @@ const Hero = ({ scrollToSection }) => {
             </div>
           </div>
 
-          {/* Hero Content */}
+          {/* contenido principal del hero */}
           <div className="relative h-full flex items-center justify-center text-center px-4">
             <div className="max-w-4xl">
               <div className="inline-flex items-center space-x-2 bg-white/20 backdrop-blur-md px-4 py-2 rounded-full mb-6">
@@ -55,7 +55,7 @@ const Hero = ({ scrollToSection }) => {
                 </button>
               </div>
 
-              {/* Floating Stats */}
+              {/* estadísticas flotantes simples */}
               <div className="mt-12 flex flex-wrap justify-center gap-6">
                 <div className="bg-white/20 backdrop-blur-md px-6 py-3 rounded-2xl border border-white/30">
                   <div className="flex items-center space-x-2">
@@ -81,7 +81,7 @@ const Hero = ({ scrollToSection }) => {
           </div>
         </div>
 
-        {/* Welcome Section */}
+        {/* sección de bienvenida */}
         <div className="mt-16 max-w-4xl mx-auto">
           <div className="bg-white rounded-2xl shadow-xl p-8 md:p-12">
             <div className="text-center mb-8">

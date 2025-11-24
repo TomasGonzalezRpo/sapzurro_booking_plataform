@@ -17,22 +17,45 @@ import {
   ChevronUp,
 } from "lucide-react";
 
+/**
+ * MisReservasPage
+ * Modal/página que muestra las reservas del usuario, permite filtrar,
+ * ver detalles y cancelar reservas.
+ *
+ * Props:
+ * - onClose: función para cerrar el modal/página
+ *
+ * Requisitos:
+ * - El token de sesión debe estar en localStorage bajo "sapzurro_token"
+ * - Endpoints:
+ *    GET  /api/reservas            -> listar reservas del user
+ *    DELETE /api/reservas/:id     -> cancelar reserva
+ */
+
 const MisReservasPage = ({ onClose }) => {
   const { user } = useAuth();
+  // lista de reservas
   const [reservas, setReservas] = useState([]);
+  // estados de UI
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [filtro, setFiltro] = useState("todas"); // todas, confirmada, pendiente, cancelada
+  // filtro activo: "todas" | "confirmada" | "pendiente" | "cancelada"
+  const [filtro, setFiltro] = useState("todas");
+  // id de reserva expandida (detalles)
   const [expandedId, setExpandedId] = useState(null);
+  // id de reserva que está en proceso de cancelación (para disabled UI)
   const [cancelando, setCancelando] = useState(null);
 
-  // 🔑 OBTENER MIS RESERVAS
+  // ----------------------------
+  // OBTENER RESERVAS (AL MONTAR)
+  // ----------------------------
   useEffect(() => {
     const obtenerReservas = async () => {
       try {
         setLoading(true);
         setError(null);
 
+        // Petición al backend. Asegúrate que el backend valide el token.
         const response = await axios.get("http://localhost:5000/api/reservas", {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("sapzurro_token")}`,
@@ -40,11 +63,14 @@ const MisReservasPage = ({ onClose }) => {
         });
 
         if (response.data.success) {
+          // Guardar la lista (si no viene, dejamos array vacío por seguridad)
           setReservas(response.data.reservas || []);
         } else {
+          // Si el backend responde éxito=false, mostramos el mensaje
           setError(response.data.message || "Error al obtener reservas");
         }
       } catch (err) {
+        // Manejo de errores de red o 500s
         console.error("Error:", err);
         setError(
           err.response?.data?.message ||
@@ -57,19 +83,26 @@ const MisReservasPage = ({ onClose }) => {
     };
 
     obtenerReservas();
-  }, []);
+  }, []); // efecto solo una vez en el montaje
 
-  // 🔑 FILTRAR RESERVAS
+  // -------------------------
+  // FILTRADO DE RESERVAS BASE
+  // -------------------------
+  // Si filtro === "todas" devolvemos todas, si no, filtramos por estado.
   const reservasFiltradas =
     filtro === "todas" ? reservas : reservas.filter((r) => r.estado === filtro);
 
-  // 🔑 CANCELAR RESERVA
+  // ----------------------------
+  // CANCELAR UNA RESERVA (API)
+  // ----------------------------
   const handleCancelarReserva = async (id_reserva) => {
+    // Confirmación simple al usuario
     if (!window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")) {
       return;
     }
 
     try {
+      // mostrar loader/disabled en el botón de la reserva específica
       setCancelando(id_reserva);
 
       const response = await axios.delete(
@@ -82,22 +115,31 @@ const MisReservasPage = ({ onClose }) => {
       );
 
       if (response.data.success) {
-        // Actualizar estado en la lista
-        setReservas(
-          reservas.map((r) =>
+        // Mejor UX: actualizar localmente el estado de la reserva a 'cancelada'
+        // (evitamos volver a traer todo el listado)
+        setReservas((prev) =>
+          prev.map((r) =>
             r.id_reserva === id_reserva ? { ...r, estado: "cancelada" } : r
           )
         );
         alert("Reserva cancelada exitosamente");
+      } else {
+        // Si backend devuelve éxito=false mostramos su mensaje
+        alert(response.data.message || "No se pudo cancelar la reserva");
       }
     } catch (err) {
+      // Mostrar el mensaje de error si existe
       alert(err.response?.data?.message || "Error al cancelar la reserva");
     } finally {
+      // quitar estado de cancelación
       setCancelando(null);
     }
   };
 
-  // 🔑 OBTENER COLOR DEL ESTADO
+  // ----------------------------
+  // FUNCIONES DE UI / UTILIDAD
+  // ----------------------------
+  // Estilos de fondo según estado
   const getEstadoColor = (estado) => {
     switch (estado) {
       case "confirmada":
@@ -111,6 +153,7 @@ const MisReservasPage = ({ onClose }) => {
     }
   };
 
+  // Icono asociado al estado
   const getEstadoIcon = (estado) => {
     switch (estado) {
       case "confirmada":
@@ -118,12 +161,14 @@ const MisReservasPage = ({ onClose }) => {
       case "pendiente":
         return <AlertCircle className="w-5 h-5 text-yellow-600" />;
       case "cancelada":
+        // usamos la X importada como icono de cancelada
         return <X className="w-5 h-5 text-red-600" />;
       default:
         return null;
     }
   };
 
+  // Etiqueta legible para los estados
   const getEstadoLabel = (estado) => {
     switch (estado) {
       case "confirmada":
@@ -137,7 +182,7 @@ const MisReservasPage = ({ onClose }) => {
     }
   };
 
-  // 🔑 OBTENER ÍCONO DEL TIPO DE SERVICIO
+  // Icono representativo del tipo de servicio (hotel, actividad, etc.)
   const getServiceIcon = (tipo) => {
     switch (tipo) {
       case "hotel":
@@ -153,6 +198,9 @@ const MisReservasPage = ({ onClose }) => {
     }
   };
 
+  // ----------------------------
+  // RENDER
+  // ----------------------------
   return (
     <div className="fixed inset-0 z-[9999] bg-black bg-opacity-70 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full my-8">
@@ -167,6 +215,7 @@ const MisReservasPage = ({ onClose }) => {
           <button
             onClick={onClose}
             className="p-2 hover:bg-white/20 rounded-full transition-all"
+            aria-label="Cerrar"
           >
             <X className="w-6 h-6" />
           </button>
@@ -174,7 +223,7 @@ const MisReservasPage = ({ onClose }) => {
 
         {/* Contenido */}
         <div className="p-6">
-          {/* Filtros */}
+          {/* Filtros - botones que actualizan `filtro` */}
           <div className="flex gap-2 mb-6 flex-wrap">
             {["todas", "confirmada", "pendiente", "cancelada"].map((f) => (
               <button
@@ -186,6 +235,7 @@ const MisReservasPage = ({ onClose }) => {
                     : "bg-gray-200 text-gray-700 hover:bg-gray-300"
                 }`}
               >
+                {/* Capitalizamos y mostramos el conteo en cada botón */}
                 {f.charAt(0).toUpperCase() + f.slice(1)} (
                 {reservas.filter((r) => f === "todas" || r.estado === f).length}
                 )
@@ -226,11 +276,12 @@ const MisReservasPage = ({ onClose }) => {
               {reservasFiltradas.map((reserva) => (
                 <div
                   key={reserva.id_reserva}
+                  // Añadimos border/ bg según estado para fácil lectura
                   className={`border rounded-xl p-4 transition-all ${getEstadoColor(
                     reserva.estado
                   )}`}
                 >
-                  {/* Header de la reserva */}
+                  {/* Header: resumen de la reserva (clickable para expandir) */}
                   <div
                     onClick={() =>
                       setExpandedId(
@@ -240,15 +291,18 @@ const MisReservasPage = ({ onClose }) => {
                       )
                     }
                     className="cursor-pointer flex items-start justify-between"
+                    aria-hidden
                   >
                     <div className="flex items-start space-x-4 flex-1">
                       <div className="text-3xl">
                         {getServiceIcon(reserva.tipo_servicio)}
                       </div>
+
                       <div className="flex-1">
                         <h3 className="text-lg font-bold text-gray-800">
                           {reserva.nombre_servicio}
                         </h3>
+
                         <div className="flex items-center space-x-4 text-sm text-gray-600 mt-1">
                           <div className="flex items-center space-x-1">
                             <Calendar className="w-4 h-4" />
@@ -258,10 +312,12 @@ const MisReservasPage = ({ onClose }) => {
                               ).toLocaleDateString("es-CO")}
                             </span>
                           </div>
+
                           <div className="flex items-center space-x-1">
                             <Users className="w-4 h-4" />
                             <span>{reserva.cantidad_personas} personas</span>
                           </div>
+
                           <div className="flex items-center space-x-1">
                             <DollarSign className="w-4 h-4" />
                             <span>
@@ -272,7 +328,7 @@ const MisReservasPage = ({ onClose }) => {
                       </div>
                     </div>
 
-                    {/* Estado y botón expandir */}
+                    {/* Estado + icono expandir */}
                     <div className="flex items-center space-x-3">
                       <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-white/50">
                         {getEstadoIcon(reserva.estado)}
@@ -280,6 +336,7 @@ const MisReservasPage = ({ onClose }) => {
                           {getEstadoLabel(reserva.estado)}
                         </span>
                       </div>
+
                       {expandedId === reserva.id_reserva ? (
                         <ChevronUp className="w-5 h-5" />
                       ) : (
@@ -288,7 +345,7 @@ const MisReservasPage = ({ onClose }) => {
                     </div>
                   </div>
 
-                  {/* Detalles expandidos */}
+                  {/* Detalles expandidos: ID, tipo, fecha de creación, precio unitario, comentarios admin, botón cancelar */}
                   {expandedId === reserva.id_reserva && (
                     <div className="mt-4 pt-4 border-t border-gray-300/50 space-y-3">
                       <div className="grid grid-cols-2 gap-4 text-sm">
@@ -298,12 +355,14 @@ const MisReservasPage = ({ onClose }) => {
                             #{reserva.id_reserva}
                           </p>
                         </div>
+
                         <div>
                           <p className="text-gray-600">Tipo de Servicio</p>
                           <p className="font-semibold text-gray-800 capitalize">
                             {reserva.tipo_servicio}
                           </p>
                         </div>
+
                         <div>
                           <p className="text-gray-600">Fecha de Reserva</p>
                           <p className="font-semibold text-gray-800">
@@ -312,6 +371,7 @@ const MisReservasPage = ({ onClose }) => {
                             )}
                           </p>
                         </div>
+
                         <div>
                           <p className="text-gray-600">Precio Unitario</p>
                           <p className="font-semibold text-gray-800">
@@ -320,6 +380,7 @@ const MisReservasPage = ({ onClose }) => {
                         </div>
                       </div>
 
+                      {/* Comentarios del admin (si existen) */}
                       {reserva.notas_admin && (
                         <div className="bg-white/50 rounded-lg p-3">
                           <p className="text-sm text-gray-600">Comentarios</p>
@@ -327,6 +388,7 @@ const MisReservasPage = ({ onClose }) => {
                         </div>
                       )}
 
+                      {/* Botón cancelar: solo si no está ya cancelada */}
                       {reserva.estado !== "cancelada" && (
                         <button
                           onClick={() =>

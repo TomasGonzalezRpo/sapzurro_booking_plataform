@@ -16,6 +16,7 @@ import {
 } from "lucide-react";
 
 const MisReservasContent = () => {
+  // estados principales
   const [reservas, setReservas] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -23,7 +24,7 @@ const MisReservasContent = () => {
   const [expandedId, setExpandedId] = useState(null);
   const [cancelando, setCancelando] = useState(null);
 
-  // 🔑 OBTENER MIS RESERVAS
+  // obtener reservas del usuario al montar
   useEffect(() => {
     const obtenerReservas = async () => {
       try {
@@ -56,11 +57,11 @@ const MisReservasContent = () => {
     obtenerReservas();
   }, []);
 
-  // 🔑 FILTRAR RESERVAS
+  // aplicar filtro seleccionado
   const reservasFiltradas =
     filtro === "todas" ? reservas : reservas.filter((r) => r.estado === filtro);
 
-  // 🔑 CANCELAR RESERVA
+  // cancelar una reserva
   const handleCancelarReserva = async (id_reserva) => {
     if (!window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")) {
       return;
@@ -93,7 +94,7 @@ const MisReservasContent = () => {
     }
   };
 
-  // 🔑 OBTENER COLOR DEL ESTADO
+  // obtener clases CSS según estado
   const getEstadoColor = (estado) => {
     switch (estado) {
       case "confirmada":
@@ -107,6 +108,7 @@ const MisReservasContent = () => {
     }
   };
 
+  // icono según estado
   const getEstadoIcon = (estado) => {
     switch (estado) {
       case "confirmada":
@@ -120,6 +122,7 @@ const MisReservasContent = () => {
     }
   };
 
+  // etiqueta legible del estado
   const getEstadoLabel = (estado) => {
     switch (estado) {
       case "confirmada":
@@ -133,6 +136,7 @@ const MisReservasContent = () => {
     }
   };
 
+  // emoji por tipo de servicio (visual)
   const getServiceIcon = (tipo) => {
     switch (tipo) {
       case "hotel":
@@ -150,7 +154,7 @@ const MisReservasContent = () => {
 
   return (
     <div className="space-y-8">
-      {/* Título */}
+      {/* encabezado */}
       <div>
         <h1 className="text-3xl font-bold text-gray-800">Mis Reservas</h1>
         <p className="text-gray-600 mt-2">
@@ -158,7 +162,7 @@ const MisReservasContent = () => {
         </p>
       </div>
 
-      {/* Filtros */}
+      {/* filtros rápidos */}
       <div className="flex gap-2 flex-wrap">
         {["todas", "confirmada", "pendiente", "cancelada"].map((f) => (
           <button
@@ -176,7 +180,7 @@ const MisReservasContent = () => {
         ))}
       </div>
 
-      {/* Estado: Cargando */}
+      {/* loading */}
       {loading && (
         <div className="text-center py-12 bg-white rounded-xl shadow-md">
           <Loader className="w-12 h-12 text-cyan-500 mx-auto animate-spin" />
@@ -184,7 +188,7 @@ const MisReservasContent = () => {
         </div>
       )}
 
-      {/* Estado: Error */}
+      {/* error */}
       {error && !loading && (
         <div className="bg-red-50 border-l-4 border-l-red-500 rounded-lg p-4 text-red-700">
           <p className="font-semibold">Error:</p>
@@ -192,7 +196,7 @@ const MisReservasContent = () => {
         </div>
       )}
 
-      {/* Estado: Sin reservas */}
+      {/* sin resultados */}
       {!loading && !error && reservasFiltradas.length === 0 && (
         <div className="text-center py-12 bg-white rounded-xl shadow-md">
           <Calendar className="w-16 h-16 text-gray-300 mx-auto mb-4" />
@@ -203,7 +207,7 @@ const MisReservasContent = () => {
         </div>
       )}
 
-      {/* Lista de reservas */}
+      {/* lista de reservas */}
       {!loading && !error && reservasFiltradas.length > 0 && (
         <div className="grid gap-4">
           {reservasFiltradas.map((reserva) => (
@@ -213,7 +217,7 @@ const MisReservasContent = () => {
                 reserva.estado
               )}`}
             >
-              {/* Header de la reserva */}
+              {/* header reserva (click para expandir) */}
               <div
                 onClick={() =>
                   setExpandedId(
@@ -255,7 +259,7 @@ const MisReservasContent = () => {
                   </div>
                 </div>
 
-                {/* Estado y botón expandir */}
+                {/* estado y toggle */}
                 <div className="flex items-center space-x-3">
                   <div className="flex items-center space-x-2 px-3 py-1 rounded-full bg-white">
                     {getEstadoIcon(reserva.estado)}
@@ -271,7 +275,7 @@ const MisReservasContent = () => {
                 </div>
               </div>
 
-              {/* Detalles expandidos */}
+              {/* detalles cuando está expandido */}
               {expandedId === reserva.id_reserva && (
                 <div className="mt-6 pt-6 border-t border-gray-200 space-y-4">
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">

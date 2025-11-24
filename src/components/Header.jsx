@@ -1,6 +1,6 @@
 import React from "react";
 import { Menu, X, Waves, User as UserIcon } from "lucide-react";
-import { useAuth } from "../contexts/AuthContext"; // desde src/components -> ../contexts
+import { useAuth } from "../contexts/AuthContext"; // hook de auth
 import UserMenu from "./Auth/UserMenu";
 
 const Header = ({
@@ -11,7 +11,7 @@ const Header = ({
   isScrolled,
   menuItems,
 }) => {
-  // debug
+  // intentar obtener auth (proteger si falla)
   let auth;
   try {
     auth = useAuth();
@@ -22,9 +22,7 @@ const Header = ({
 
   const { user, openAuthModal } = auth;
 
-  // LOG TEMPORAL
-  // console.log("Header render - user:", user);
-
+  // header principal
   return (
     <header
       className={`fixed top-0 w-full z-40 transition-all duration-300 ${
@@ -33,7 +31,7 @@ const Header = ({
     >
       <div className="container mx-auto px-4 py-4">
         <div className="flex items-center justify-between">
-          {/* Logo */}
+          {/* logo - ir a sección inicio */}
           <div
             className="flex items-center space-x-2 cursor-pointer"
             onClick={() => scrollToSection("inicio")}
@@ -45,7 +43,7 @@ const Header = ({
             </div>
           </div>
 
-          {/* Desktop Menu */}
+          {/* menú escritorio */}
           <nav className="hidden lg:flex items-center space-x-8">
             {menuItems.map((item) => (
               <button
@@ -59,7 +57,7 @@ const Header = ({
               </button>
             ))}
 
-            {/* botón de ingreso o UserMenu */}
+            {/* mostrar UserMenu si hay usuario, si no botón de login */}
             {user ? (
               <UserMenu />
             ) : (
@@ -74,7 +72,7 @@ const Header = ({
             )}
           </nav>
 
-          {/* Mobile Menu Button */}
+          {/* botón mobile */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="lg:hidden text-gray-700 hover:text-cyan-600 transition-colors"
@@ -88,7 +86,7 @@ const Header = ({
           </button>
         </div>
 
-        {/* Mobile Menu */}
+        {/* menú mobile */}
         {isMenuOpen && (
           <nav className="lg:hidden mt-4 pb-4 space-y-3">
             {menuItems.map((item) => (
@@ -108,6 +106,7 @@ const Header = ({
               </button>
             ))}
 
+            {/* opción de usuario en mobile */}
             {user ? (
               <UserMenu />
             ) : (

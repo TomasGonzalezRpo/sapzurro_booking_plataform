@@ -14,7 +14,7 @@ const HotelesSection = () => {
       className="py-20 px-4 bg-gradient-to-b from-white to-cyan-50"
     >
       <div className="container mx-auto">
-        {/* Header */}
+        {/* Título de la sección */}
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             Hoteles en Sapzurro
@@ -25,7 +25,7 @@ const HotelesSection = () => {
           <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
         </div>
 
-        {/* Filtros */}
+        {/* Controles de filtro */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-12 max-w-4xl mx-auto">
           <h3 className="text-lg font-semibold text-gray-800 mb-4">
             Filtrar por:
@@ -77,7 +77,7 @@ const HotelesSection = () => {
           </div>
         </div>
 
-        {/* Grid de hoteles */}
+        {/* Grid con los hoteles que cumplen los filtros */}
         <div className="grid md:grid-cols-2 gap-8">
           {hotelesDemo
             .filter(
@@ -90,7 +90,7 @@ const HotelesSection = () => {
             ))}
         </div>
 
-        {/* Mensaje si no hay resultados */}
+        {/* Mensaje cuando no hay resultados */}
         {hotelesDemo.filter(
           (hotel) =>
             hotel.precioDesde <= filtros.precioMax &&

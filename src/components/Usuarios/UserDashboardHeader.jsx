@@ -17,19 +17,18 @@ const UserDashboardHeader = () => {
           </p>
         </div>
 
+        {/* botones y usuario */}
         <div className="flex items-center space-x-4">
-          {/* Notificaciones */}
           <button className="relative p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-all">
             <Bell className="w-6 h-6" />
             <span className="absolute top-1 right-1 w-2 h-2 bg-red-500 rounded-full"></span>
           </button>
 
-          {/* Configuración */}
           <button className="p-2 text-gray-600 hover:bg-gray-100 rounded-full transition-all">
             <Settings className="w-6 h-6" />
           </button>
 
-          {/* Usuario */}
+          {/* info del usuario */}
           <div className="flex items-center space-x-3 pl-4 border-l border-gray-200">
             <div className="w-10 h-10 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center">
               <span className="text-white font-bold">

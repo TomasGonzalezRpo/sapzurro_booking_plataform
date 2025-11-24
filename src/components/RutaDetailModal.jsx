@@ -1,6 +1,7 @@
 // src/components/RutaDetailModal.jsx
 
 import React, { useState } from "react";
+import PropTypes from "prop-types";
 import { useAuth } from "../contexts/AuthContext"; // 🔑 IMPORTAR useAuth
 import axios from "axios";
 import {
@@ -17,6 +18,22 @@ import {
   AlertCircle,
 } from "lucide-react";
 
+/**
+ * RutaDetailModal
+ *
+ * Modal con información detallada de una ruta y formulario de reserva.
+ *
+ * Props:
+ * - ruta (object): objeto con la información de la ruta (id, nombre, subtitulo, descripcion, imagenes[], duracion, precio, idealPara[])
+ * - onClose (function): función para cerrar el modal
+ *
+ * Mejoras incluidas:
+ * - Validaciones defensivas (manejo de propiedades inexistentes)
+ * - Indicadores de carga y mensajes de error visibles para el usuario
+ * - Accesibilidad: roles, aria-labels, teclado para acciones importantes
+ * - Prevención de propagación en el modal (click fuera cierra, click dentro no)
+ */
+
 const RutaDetailModal = ({ ruta, onClose }) => {
   const { user, isAuthenticated, openAuthModal } = useAuth(); // 🔑 OBTENER USER
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
@@ -29,26 +46,32 @@ const RutaDetailModal = ({ ruta, onClose }) => {
     comentarios: "",
   });
 
-  // Si la ruta no está definida, no renderizamos el modal
+  // Si la ruta no está definida, no renderizamos el modal (defensivo)
   if (!ruta) return null;
 
-  // 🔑 LÓGICA DEL CARRUSEL
-  const nextImage = () => {
-    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % ruta.imagenes.length);
+  const imageCount = (ruta.imagenes && ruta.imagenes.length) || 0;
+
+  // 🔑 LÓGICA DEL CARRUSEL (defensiva)
+  const nextImage = (e) => {
+    // si el evento viene del botón, prevenir propagación
+    e?.stopPropagation();
+    if (imageCount <= 1) return;
+    setCurrentImageIndex((prevIndex) => (prevIndex + 1) % imageCount);
   };
 
-  const prevImage = () => {
+  const prevImage = (e) => {
+    e?.stopPropagation();
+    if (imageCount <= 1) return;
     setCurrentImageIndex(
-      (prevIndex) =>
-        (prevIndex - 1 + ruta.imagenes.length) % ruta.imagenes.length
+      (prevIndex) => (prevIndex - 1 + imageCount) % imageCount
     );
   };
 
-  // 🔑 MANEJAR CLIC EN BOTÓN DE RESERVA
+  // 🔑 MANEJAR CLIC EN BOTÓN DE RESERVA (muestra/oculta el formulario)
   const handleReservarClick = () => {
-    setShowReservationForm(!showReservationForm);
+    setShowReservationForm((s) => !s);
     if (!showReservationForm) {
-      setError(null); // Limpiar errores
+      setError(null); // Limpiar errores al abrir
     }
   };
 
@@ -56,13 +79,13 @@ const RutaDetailModal = ({ ruta, onClose }) => {
   const confirmarReserva = async () => {
     // 1️⃣ VERIFICAR QUE ESTÉ AUTENTICADO
     if (!isAuthenticated || !user) {
-      openAuthModal();
+      openAuthModal?.();
       return;
     }
 
     // 2️⃣ VALIDAR DATOS BÁSICOS
     if (!reservaData.fecha || !reservaData.cantidad_personas) {
-      setError("Por favor completa todos los campos requeridos");
+      setError("Por favor completa todos los campos requeridos.");
       return;
     }
 
@@ -92,12 +115,13 @@ const RutaDetailModal = ({ ruta, onClose }) => {
         {
           headers: {
             "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("sapzurro_token")}`,
           },
         }
       );
 
       // 5️⃣ ÉXITO
-      if (response.data.success) {
+      if (response.data?.success) {
         alert(
           `✅ Reserva confirmada!\nID: ${response.data.id_reserva}\n\nRuta: ${
             ruta.nombre
@@ -108,17 +132,19 @@ const RutaDetailModal = ({ ruta, onClose }) => {
           ).toLocaleString("es-CO")}\n\nRecuerda tu ID para futuras consultas.`
         );
 
-        // Limpiar formulario
+        // Limpiar formulario y cerrar modal
         setReservaData({
           fecha: "",
           cantidad_personas: 1,
           comentarios: "",
         });
         setShowReservationForm(false);
-        onClose(); // Cerrar modal
+        onClose?.();
+      } else {
+        setError(response.data?.message || "No se pudo confirmar la reserva.");
       }
     } catch (err) {
-      // 6️⃣ MANEJAR ERRORES
+      // 6️⃣ MANEJAR ERRORES (mostrar mensaje util al usuario)
       const errorMsg =
         err.response?.data?.message ||
         err.message ||
@@ -130,31 +156,47 @@ const RutaDetailModal = ({ ruta, onClose }) => {
     }
   };
 
+  // Fecha mínima (hoy) para el input date
   const getMinFecha = () => {
-    return new Date().toISOString().split("T")[0];
+    const hoy = new Date();
+    // Añadir timezone-local safe (convertir a YYYY-MM-DD)
+    const iso = new Date(
+      hoy.getTime() - hoy.getTimezoneOffset() * 60000
+    ).toISOString();
+    return iso.split("T")[0];
   };
 
   return (
     <div
       className="fixed inset-0 z-50 bg-black bg-opacity-70 flex items-center justify-center p-4 backdrop-blur-sm"
-      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby={`ruta-modal-title-${ruta.id}`}
+      onClick={onClose} // click en el backdrop cierra
     >
       <div
         className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()} // evitar que clicks internos cierren
       >
         {/* Cabecera y Botón de Cierre */}
         <div className="sticky top-0 bg-white p-6 border-b border-gray-200 flex justify-between items-start z-10">
           <div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-1">
+            <h2
+              id={`ruta-modal-title-${ruta.id}`}
+              className="text-3xl font-bold text-gray-900 mb-1"
+            >
               {ruta.nombre}
             </h2>
-            <p className="text-xl text-cyan-600 font-semibold">
-              {ruta.subtitulo}
-            </p>
+            {ruta.subtitulo && (
+              <p className="text-xl text-cyan-600 font-semibold">
+                {ruta.subtitulo}
+              </p>
+            )}
           </div>
+
           <button
             onClick={onClose}
+            aria-label="Cerrar modal"
             className="p-2 ml-4 text-gray-500 hover:text-gray-900 transition-colors rounded-full hover:bg-gray-100"
           >
             <X className="w-6 h-6" />
@@ -163,8 +205,8 @@ const RutaDetailModal = ({ ruta, onClose }) => {
 
         {/* Contenido Principal */}
         <div className="p-6 space-y-6">
-          {/* Carrusel */}
-          {ruta.imagenes && ruta.imagenes.length > 0 && (
+          {/* Carrusel (si hay imágenes) */}
+          {imageCount > 0 ? (
             <div className="h-96 rounded-lg overflow-hidden relative group">
               <img
                 src={ruta.imagenes[currentImageIndex]}
@@ -172,35 +214,43 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                 className="w-full h-full object-cover transition-opacity duration-300"
               />
 
-              {ruta.imagenes.length > 1 && (
+              {imageCount > 1 && (
                 <>
                   <button
                     onClick={prevImage}
+                    aria-label="Imagen anterior"
                     className="absolute left-4 top-1/2 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
                   >
                     <ChevronLeft className="w-6 h-6" />
                   </button>
                   <button
                     onClick={nextImage}
+                    aria-label="Siguiente imagen"
                     className="absolute right-4 top-1/2 transform -translate-y-1/2 bg-black/40 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity z-10"
                   >
                     <ChevronRight className="w-6 h-6" />
                   </button>
+
+                  {/* indicadores */}
+                  <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1 z-10">
+                    {ruta.imagenes.map((_, index) => (
+                      <div
+                        key={index}
+                        className={`w-2 h-2 rounded-full transition-all ${
+                          index === currentImageIndex
+                            ? "bg-white"
+                            : "bg-white/50"
+                        }`}
+                        aria-hidden="true"
+                      />
+                    ))}
+                  </div>
                 </>
               )}
-
-              {ruta.imagenes.length > 1 && (
-                <div className="absolute bottom-4 left-0 right-0 flex justify-center space-x-1 z-10">
-                  {ruta.imagenes.map((_, index) => (
-                    <div
-                      key={index}
-                      className={`w-2 h-2 rounded-full transition-all ${
-                        index === currentImageIndex ? "bg-white" : "bg-white/50"
-                      }`}
-                    ></div>
-                  ))}
-                </div>
-              )}
+            </div>
+          ) : (
+            <div className="h-96 rounded-lg bg-gray-100 flex items-center justify-center">
+              <Compass className="w-20 h-20 text-gray-400" />
             </div>
           )}
 
@@ -210,7 +260,7 @@ const RutaDetailModal = ({ ruta, onClose }) => {
               Descripción General
             </h3>
             <p className="text-gray-700 whitespace-pre-line">
-              {ruta.descripcion}
+              {ruta.descripcion || "Descripción no disponible."}
             </p>
           </section>
 
@@ -223,7 +273,7 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                   Duración Total
                 </p>
                 <p className="text-lg font-bold text-cyan-800">
-                  {ruta.duracion}
+                  {ruta.duracion || "N/A"}
                 </p>
               </div>
             </div>
@@ -234,7 +284,7 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                   Precio por persona
                 </p>
                 <p className="text-lg font-bold text-green-800">
-                  ${ruta.precio.toLocaleString("es-CO")}
+                  ${Number(ruta.precio || 0).toLocaleString("es-CO")}
                 </p>
               </div>
             </div>
@@ -246,12 +296,18 @@ const RutaDetailModal = ({ ruta, onClose }) => {
               Ideal Para
             </h3>
             <ul className="grid grid-cols-2 gap-2 text-gray-700">
-              {ruta.idealPara.map((item, index) => (
-                <li key={index} className="flex items-center space-x-2">
-                  <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
-                  <span>{item}</span>
+              {ruta.idealPara && ruta.idealPara.length > 0 ? (
+                ruta.idealPara.map((item, index) => (
+                  <li key={index} className="flex items-center space-x-2">
+                    <Check className="w-4 h-4 text-green-500 flex-shrink-0" />
+                    <span>{item}</span>
+                  </li>
+                ))
+              ) : (
+                <li className="text-sm text-gray-500">
+                  No hay información disponible.
                 </li>
-              ))}
+              )}
             </ul>
           </section>
 
@@ -260,6 +316,8 @@ const RutaDetailModal = ({ ruta, onClose }) => {
             <button
               onClick={handleReservarClick}
               className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold text-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg flex items-center justify-center space-x-2"
+              aria-expanded={showReservationForm}
+              aria-controls={`reserva-section-${ruta.id}`}
             >
               <span>
                 {showReservationForm
@@ -273,10 +331,13 @@ const RutaDetailModal = ({ ruta, onClose }) => {
               )}
             </button>
 
-            {/* 🔑 FORMULARIO EXPANDIBLE */}
+            {/* FORMULARIO EXPANDIBLE */}
             {showReservationForm && (
-              <div className="mt-6 p-6 bg-gray-50 rounded-xl space-y-4">
-                {/* 🔑 MOSTRAR ERRORES */}
+              <div
+                id={`reserva-section-${ruta.id}`}
+                className="mt-6 p-6 bg-gray-50 rounded-xl space-y-4"
+              >
+                {/* ERRORES */}
                 {error && (
                   <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
                     <p className="font-semibold">Error:</p>
@@ -297,6 +358,7 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                       setReservaData({ ...reservaData, fecha: e.target.value })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    aria-required="true"
                   />
                 </div>
 
@@ -313,10 +375,11 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                     onChange={(e) =>
                       setReservaData({
                         ...reservaData,
-                        cantidad_personas: parseInt(e.target.value),
+                        cantidad_personas: parseInt(e.target.value || "1", 10),
                       })
                     }
                     className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+                    aria-required="true"
                   />
                 </div>
 
@@ -344,7 +407,7 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-gray-600">Precio unitario:</span>
                     <span className="font-semibold">
-                      ${ruta.precio.toLocaleString("es-CO")}
+                      ${Number(ruta.precio || 0).toLocaleString("es-CO")}
                     </span>
                   </div>
                   <div className="flex justify-between items-center mb-3">
@@ -360,13 +423,14 @@ const RutaDetailModal = ({ ruta, onClose }) => {
                     <span className="text-2xl font-bold text-cyan-600">
                       $
                       {(
-                        ruta.precio * reservaData.cantidad_personas
+                        Number(ruta.precio || 0) *
+                        (reservaData.cantidad_personas || 0)
                       ).toLocaleString("es-CO")}
                     </span>
                   </div>
                 </div>
 
-                {/* Botones de acción */}
+                {/* Botones */}
                 <div className="flex space-x-3 pt-4">
                   <button
                     onClick={handleReservarClick}
@@ -403,6 +467,33 @@ const RutaDetailModal = ({ ruta, onClose }) => {
       </div>
     </div>
   );
+};
+
+RutaDetailModal.propTypes = {
+  ruta: PropTypes.shape({
+    id: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
+    nombre: PropTypes.string,
+    subtitulo: PropTypes.string,
+    descripcion: PropTypes.string,
+    imagenes: PropTypes.arrayOf(PropTypes.string),
+    duracion: PropTypes.string,
+    precio: PropTypes.number,
+    idealPara: PropTypes.arrayOf(PropTypes.string),
+  }),
+  onClose: PropTypes.func.isRequired,
+};
+
+RutaDetailModal.defaultProps = {
+  ruta: {
+    id: null,
+    nombre: "Ruta",
+    subtitulo: "",
+    descripcion: "",
+    imagenes: [],
+    duracion: "N/A",
+    precio: 0,
+    idealPara: [],
+  },
 };
 
 export default RutaDetailModal;

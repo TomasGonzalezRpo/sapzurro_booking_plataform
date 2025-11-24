@@ -11,7 +11,7 @@ const UserDashboard = ({ onBackToHome }) => {
   const { user } = useAuth();
   const [activeView, setActiveView] = useState("reservas");
 
-  // Verificar que esté autenticado
+  // si no hay usuario, mostrar mensaje de acceso denegado
   if (!user) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
@@ -37,7 +37,7 @@ const UserDashboard = ({ onBackToHome }) => {
     );
   }
 
-  // Renderizar vista según activeView
+  // decidir qué componente mostrar según la vista activa
   const renderContent = () => {
     switch (activeView) {
       case "reservas":
@@ -51,19 +51,16 @@ const UserDashboard = ({ onBackToHome }) => {
 
   return (
     <div className="min-h-screen bg-gray-100 flex">
-      {/* Sidebar */}
+      {/* sidebar con navegación del usuario */}
       <UserSidebar
         activeView={activeView}
         setActiveView={setActiveView}
         onBackToHome={onBackToHome}
       />
 
-      {/* Contenido principal */}
+      {/* área principal: header + contenido */}
       <div className="flex-1 flex flex-col">
-        {/* Header */}
         <UserDashboardHeader />
-
-        {/* Contenido */}
         <main className="flex-1 p-8 overflow-y-auto">{renderContent()}</main>
       </div>
     </div>

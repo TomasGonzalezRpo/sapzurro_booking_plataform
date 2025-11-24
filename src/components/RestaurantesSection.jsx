@@ -1,3 +1,5 @@
+// src/components/RestaurantesSection.jsx
+
 import React, { useState } from "react";
 import RestauranteCard from "./RestauranteCard";
 import {
@@ -7,42 +9,74 @@ import {
 } from "../data/restaurantesData";
 import { Award, UtensilsCrossed } from "lucide-react";
 
+/**
+ * RestaurantesSection
+ *
+ * Sección principal que muestra los restaurantes (aliados y no aliados)
+ * con filtros (tipo de cocina, precio máximo, calificación mínima y "24h").
+ *
+ * - Usa RestauranteCard para renderizar cada tarjeta individual.
+ * - Datos (restaurantesAliados, restaurantesNoAliados, tiposCocina) vienen de ../data/restaurantesData
+ *
+ * Comportamiento:
+ * - Filtra los restaurantes en memoria según los filtros del estado.
+ * - Muestra contador total, dos secciones (Aliados / No Aliados) y un banner final.
+ */
+
 const RestaurantesSection = () => {
+  // Estado local: filtros aplicados por el usuario
   const [filtros, setFiltros] = useState({
-    tipoCocina: "Todos",
-    precioMax: 200000,
-    calificacionMin: 0,
-    horario24h: false,
+    tipoCocina: "Todos", // tipo seleccionado en el select (Todos por defecto)
+    precioMax: 200000, // rango máximo en la UI (valor por defecto)
+    calificacionMin: 0, // calificación mínima aceptada
+    horario24h: false, // si true filtra solo restaurantes con horario "24 horas"
   });
 
+  /**
+   * filtrarRestaurantes()
+   *
+   * Recibe un array de restaurantes y devuelve solo aquellos que cumplan
+   * con los criterios definidos en `filtros`.
+   *
+   * Nota: se asume que `restaurante.rangoPrecios` contiene un texto con números,
+   * por ejemplo "Desde $20.000 - $60.000" y se extrae el último número como precio máximo.
+   */
   const filtrarRestaurantes = (restaurantes) => {
     return restaurantes.filter((restaurante) => {
+      // 1) Tipo de cocina (o "Todos")
       const cumpleTipoCocina =
         filtros.tipoCocina === "Todos" ||
         restaurante.tipoCocina === filtros.tipoCocina;
 
-      // Extraer precio máximo del rango
+      // 2) Precio: extraer el número mayor del campo rangoPrecios
+      // ejemplo: "Desde $20.000 - $60.000" => [20,000, 60,000] -> usamos el último (60,000)
       const precioMaxRestaurante = parseInt(
         restaurante.rangoPrecios.match(/\d+/g)?.pop() || 0
       );
       const cumplePrecio = precioMaxRestaurante <= filtros.precioMax;
 
+      // 3) Calificación mínima
       const cumpleCalificacion =
         restaurante.calificacion >= filtros.calificacionMin;
 
+      // 4) Horario: solo si el filtro horario24h está activo
       const cumpleHorario =
         !filtros.horario24h || restaurante.horarios === "24 horas";
 
+      // Deben cumplirse todas las condiciones
       return (
         cumpleTipoCocina && cumplePrecio && cumpleCalificacion && cumpleHorario
       );
     });
   };
 
+  // Aplicamos filtros a ambas listas (aliados y no aliados)
   const restaurantesAliadosFiltrados = filtrarRestaurantes(restaurantesAliados);
   const restaurantesNoAliadosFiltrados = filtrarRestaurantes(
     restaurantesNoAliados
   );
+
+  // Conteo total mostrado al usuario
   const totalRestaurantes =
     restaurantesAliadosFiltrados.length + restaurantesNoAliadosFiltrados.length;
 
@@ -52,7 +86,7 @@ const RestaurantesSection = () => {
       className="py-20 px-4 bg-gradient-to-b from-cyan-50 to-white"
     >
       <div className="container mx-auto">
-        {/* Header */}
+        {/* Header principal */}
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold text-gray-800 mb-4">
             Restaurantes en Sapzurro
@@ -63,7 +97,7 @@ const RestaurantesSection = () => {
           <div className="w-20 h-1 bg-gradient-to-r from-cyan-500 to-blue-500 mx-auto mt-4 rounded-full"></div>
         </div>
 
-        {/* Filtros */}
+        {/* Filtros: tarjeta con controles */}
         <div className="bg-white rounded-2xl shadow-lg p-6 mb-12 max-w-6xl mx-auto">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center space-x-2">
             <UtensilsCrossed className="w-5 h-5 text-cyan-600" />
@@ -91,7 +125,7 @@ const RestaurantesSection = () => {
               </select>
             </div>
 
-            {/* Precio máximo */}
+            {/* Precio máximo (slider) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Precio máximo: ${filtros.precioMax.toLocaleString("es-CO")}
@@ -112,7 +146,7 @@ const RestaurantesSection = () => {
               />
             </div>
 
-            {/* Calificación mínima */}
+            {/* Calificación mínima (slider) */}
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Calificación mínima:{" "}
@@ -136,7 +170,7 @@ const RestaurantesSection = () => {
               />
             </div>
 
-            {/* Abierto 24 horas */}
+            {/* Filtro 24 horas (checkbox) */}
             <div className="flex items-center">
               <label className="flex items-center space-x-3 cursor-pointer">
                 <input
@@ -154,7 +188,7 @@ const RestaurantesSection = () => {
             </div>
           </div>
 
-          {/* Botón limpiar filtros */}
+          {/* Botón para limpiar filtros (aparece solo si hay filtros no por defecto) */}
           {(filtros.tipoCocina !== "Todos" ||
             filtros.precioMax !== 200000 ||
             filtros.calificacionMin !== 0 ||
@@ -186,7 +220,7 @@ const RestaurantesSection = () => {
           </p>
         </div>
 
-        {/* Sección de Restaurantes Aliados */}
+        {/* Sección: Restaurantes Aliados */}
         {restaurantesAliadosFiltrados.length > 0 && (
           <div className="mb-16">
             <div className="flex items-center justify-center space-x-3 mb-8">
@@ -199,6 +233,8 @@ const RestaurantesSection = () => {
               Restaurantes con los que tenemos alianza. Disfruta de menús más
               completos, promociones especiales y beneficios exclusivos.
             </p>
+
+            {/* Grid de aliados -> usa RestauranteCard */}
             <div className="grid md:grid-cols-2 gap-8">
               {restaurantesAliadosFiltrados.map((restaurante) => (
                 <RestauranteCard
@@ -210,7 +246,7 @@ const RestaurantesSection = () => {
           </div>
         )}
 
-        {/* Sección de Restaurantes No Aliados */}
+        {/* Sección: Restaurantes No Aliados */}
         {restaurantesNoAliadosFiltrados.length > 0 && (
           <div>
             <div className="flex items-center justify-center space-x-3 mb-8">
@@ -223,6 +259,8 @@ const RestaurantesSection = () => {
               Excelentes opciones gastronómicas en Sapzurro. Información básica
               disponible.
             </p>
+
+            {/* Grid de no-aliados -> usa RestauranteCard */}
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
               {restaurantesNoAliadosFiltrados.map((restaurante) => (
                 <RestauranteCard
@@ -234,7 +272,7 @@ const RestaurantesSection = () => {
           </div>
         )}
 
-        {/* Mensaje si no hay resultados */}
+        {/* Mensaje cuando no hay resultados */}
         {totalRestaurantes === 0 && (
           <div className="text-center py-12">
             <UtensilsCrossed className="w-16 h-16 text-gray-400 mx-auto mb-4" />
@@ -257,7 +295,7 @@ const RestaurantesSection = () => {
           </div>
         )}
 
-        {/* Banner informativo */}
+        {/* Banner / CTA para dueños de restaurantes */}
         <div className="mt-16 bg-gradient-to-r from-cyan-100 to-blue-100 border-2 border-cyan-300 rounded-2xl p-8 text-center">
           <h4 className="text-2xl font-bold text-gray-800 mb-3">
             ¿Eres propietario de un restaurante?

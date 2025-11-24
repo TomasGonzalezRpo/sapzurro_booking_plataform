@@ -17,6 +17,8 @@ import {
   Shield,
 } from "lucide-react";
 
+// Página/modal para ver y editar el perfil del usuario.
+// Comentarios escritos de forma simple, como los pondría un dev junior.
 const MiPerfilPage = ({ onClose }) => {
   const { user } = useAuth();
   const [loading, setLoading] = useState(true);
@@ -39,7 +41,7 @@ const MiPerfilPage = ({ onClose }) => {
 
   const [datosCopia, setDatosCopia] = useState({});
 
-  // 🔑 OBTENER MIS DATOS
+  // Obtener los datos del perfil al montar el componente
   useEffect(() => {
     const obtenerMiPerfil = async () => {
       try {
@@ -88,27 +90,27 @@ const MiPerfilPage = ({ onClose }) => {
     obtenerMiPerfil();
   }, []);
 
-  // 🔑 MANEJAR CAMBIOS EN INPUTS
+  // Manejar cambios en los inputs del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDatos({ ...datos, [name]: value });
   };
 
-  // 🔑 CANCELAR EDICIÓN
+  // Cancelar edición y restaurar datos originales
   const handleCancelar = () => {
     setDatos(datosCopia);
     setIsEditing(false);
     setError(null);
   };
 
-  // 🔑 GUARDAR CAMBIOS
+  // Guardar cambios en el perfil
   const handleGuardar = async () => {
     try {
       setSaving(true);
       setError(null);
       setSuccess(null);
 
-      // Validar campos requeridos
+      // validación básica
       if (!datos.nombres || !datos.apellidos || !datos.correo) {
         setError("Nombres, apellidos y correo son obligatorios");
         setSaving(false);
@@ -138,7 +140,7 @@ const MiPerfilPage = ({ onClose }) => {
         setDatosCopia(datos);
         setIsEditing(false);
 
-        // Limpiar mensaje de éxito después de 3 segundos
+        // limpiar mensaje luego de un tiempo
         setTimeout(() => setSuccess(null), 3000);
       } else {
         setError(response.data.message || "Error al actualizar perfil");
@@ -153,6 +155,7 @@ const MiPerfilPage = ({ onClose }) => {
     }
   };
 
+  // Mostrar loader mientras carga los datos
   if (loading) {
     return (
       <div className="fixed inset-0 z-[9999] bg-black bg-opacity-70 flex items-center justify-center p-4 backdrop-blur-sm">
@@ -164,10 +167,11 @@ const MiPerfilPage = ({ onClose }) => {
     );
   }
 
+  // Render del modal/página de perfil
   return (
     <div className="fixed inset-0 z-[9999] bg-black bg-opacity-70 flex items-center justify-center p-4 backdrop-blur-sm overflow-y-auto">
       <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full my-8">
-        {/* Encabezado */}
+        {/* Encabezado con título y cerrar */}
         <div className="sticky top-0 bg-gradient-to-r from-cyan-500 to-blue-500 text-white p-6 flex justify-between items-start rounded-t-2xl">
           <div>
             <h2 className="text-3xl font-bold mb-1">Mi Perfil</h2>
@@ -183,9 +187,9 @@ const MiPerfilPage = ({ onClose }) => {
           </button>
         </div>
 
-        {/* Contenido */}
+        {/* Contenido principal */}
         <div className="p-6 space-y-6">
-          {/* Mensajes */}
+          {/* Mensajes de error o éxito */}
           {error && (
             <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start space-x-3">
               <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -206,7 +210,7 @@ const MiPerfilPage = ({ onClose }) => {
             </div>
           )}
 
-          {/* Información de rol y usuario */}
+          {/* Info de usuario y rol */}
           <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-4 border border-cyan-200">
             <div className="flex items-start space-x-4">
               <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -225,7 +229,7 @@ const MiPerfilPage = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Formulario */}
+          {/* Formulario con los campos del perfil */}
           <div className="space-y-4">
             <h3 className="text-lg font-bold text-gray-800">
               Información Personal
@@ -304,7 +308,7 @@ const MiPerfilPage = ({ onClose }) => {
                 </div>
               </div>
 
-              {/* Tipo Documento */}
+              {/* Tipo de documento (solo lectura) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Tipo de Documento
@@ -320,7 +324,7 @@ const MiPerfilPage = ({ onClose }) => {
                 </div>
               </div>
 
-              {/* Número Documento */}
+              {/* Número de documento (solo lectura) */}
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Número de Documento
@@ -356,7 +360,7 @@ const MiPerfilPage = ({ onClose }) => {
             </div>
           </div>
 
-          {/* Botones de acción */}
+          {/* Botones de acción: editar / cancelar / guardar */}
           <div className="flex space-x-3 pt-4">
             {!isEditing ? (
               <button

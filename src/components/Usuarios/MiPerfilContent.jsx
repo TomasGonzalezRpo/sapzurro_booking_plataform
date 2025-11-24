@@ -1,5 +1,3 @@
-// src/components/MiPerfilContent.jsx
-
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import {
@@ -17,12 +15,14 @@ import {
 } from "lucide-react";
 
 const MiPerfilContent = () => {
+  // estados de UI
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isEditing, setIsEditing] = useState(false);
   const [saving, setSaving] = useState(false);
 
+  // datos del usuario
   const [datos, setDatos] = useState({
     nombres: "",
     apellidos: "",
@@ -37,7 +37,7 @@ const MiPerfilContent = () => {
 
   const [datosCopia, setDatosCopia] = useState({});
 
-  // 🔑 OBTENER MIS DATOS
+  // obtener perfil al montar
   useEffect(() => {
     const obtenerMiPerfil = async () => {
       try {
@@ -86,20 +86,20 @@ const MiPerfilContent = () => {
     obtenerMiPerfil();
   }, []);
 
-  // 🔑 MANEJAR CAMBIOS EN INPUTS
+  // actualizar campos del formulario
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDatos({ ...datos, [name]: value });
   };
 
-  // 🔑 CANCELAR EDICIÓN
+  // cancelar edición y restaurar valores
   const handleCancelar = () => {
     setDatos(datosCopia);
     setIsEditing(false);
     setError(null);
   };
 
-  // 🔑 GUARDAR CAMBIOS
+  // guardar cambios en el servidor
   const handleGuardar = async () => {
     try {
       setSaving(true);
@@ -162,7 +162,7 @@ const MiPerfilContent = () => {
 
   return (
     <div className="space-y-8">
-      {/* Título */}
+      {/* encabezado */}
       <div>
         <h1 className="text-3xl font-bold text-gray-800">Mi Perfil</h1>
         <p className="text-gray-600 mt-2">
@@ -170,7 +170,7 @@ const MiPerfilContent = () => {
         </p>
       </div>
 
-      {/* Mensajes */}
+      {/* alertas */}
       {error && (
         <div className="bg-red-50 border-l-4 border-l-red-500 rounded-lg p-4 flex items-start space-x-3">
           <AlertCircle className="w-5 h-5 text-red-600 flex-shrink-0 mt-0.5" />
@@ -191,7 +191,7 @@ const MiPerfilContent = () => {
         </div>
       )}
 
-      {/* Información de rol y usuario */}
+      {/* resumen usuario */}
       <div className="bg-gradient-to-r from-cyan-50 to-blue-50 rounded-xl p-6 border border-cyan-200">
         <div className="flex items-start space-x-4">
           <div className="w-12 h-12 bg-gradient-to-r from-cyan-500 to-blue-500 rounded-full flex items-center justify-center flex-shrink-0">
@@ -208,14 +208,14 @@ const MiPerfilContent = () => {
         </div>
       </div>
 
-      {/* Formulario */}
+      {/* formulario principal */}
       <div className="bg-white rounded-xl shadow-md p-6">
         <h3 className="text-lg font-bold text-gray-800 mb-6">
           Información Personal
         </h3>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Nombres */}
+          {/* nombres */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Nombres *
@@ -233,7 +233,7 @@ const MiPerfilContent = () => {
             </div>
           </div>
 
-          {/* Apellidos */}
+          {/* apellidos */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Apellidos *
@@ -251,7 +251,7 @@ const MiPerfilContent = () => {
             </div>
           </div>
 
-          {/* Correo */}
+          {/* correo */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Correo Electrónico *
@@ -269,7 +269,7 @@ const MiPerfilContent = () => {
             </div>
           </div>
 
-          {/* Teléfono */}
+          {/* teléfono */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Teléfono
@@ -287,7 +287,7 @@ const MiPerfilContent = () => {
             </div>
           </div>
 
-          {/* Tipo Documento */}
+          {/* tipo documento */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Tipo de Documento
@@ -303,7 +303,7 @@ const MiPerfilContent = () => {
             </div>
           </div>
 
-          {/* Número Documento */}
+          {/* número documento */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">
               Número de Documento
@@ -320,7 +320,7 @@ const MiPerfilContent = () => {
           </div>
         </div>
 
-        {/* Dirección (full width) */}
+        {/* dirección */}
         <div className="mt-6">
           <label className="block text-sm font-medium text-gray-700 mb-2">
             Dirección
@@ -338,7 +338,7 @@ const MiPerfilContent = () => {
           </div>
         </div>
 
-        {/* Botones de acción */}
+        {/* acciones */}
         <div className="flex space-x-3 pt-8 mt-8 border-t border-gray-200">
           {!isEditing ? (
             <button

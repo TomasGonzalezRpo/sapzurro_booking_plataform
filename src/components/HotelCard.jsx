@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext"; // 🔑 IMPORTAR useAuth
+import { useAuth } from "../contexts/AuthContext"; // auth hook
 import axios from "axios";
 import {
   Star,
@@ -21,13 +21,14 @@ import {
 } from "lucide-react";
 
 const HotelCard = ({ hotel }) => {
-  const { user, isAuthenticated, openAuthModal } = useAuth(); // 🔑 OBTENER USER
+  // auth y estados
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reservaStep, setReservaStep] = useState(1);
-  const [loading, setLoading] = useState(false); // 🔑 NUEVO
-  const [error, setError] = useState(null); // 🔑 NUEVO
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [reservaData, setReservaData] = useState({
     checkIn: "",
     checkOut: "",
@@ -36,6 +37,7 @@ const HotelCard = ({ hotel }) => {
     cantidadHabitaciones: 1,
   });
 
+  // íconos de amenidades
   const amenityIcons = {
     Wifi: <Wifi className="w-4 h-4" />,
     Desayuno: <Coffee className="w-4 h-4" />,
@@ -54,6 +56,7 @@ const HotelCard = ({ hotel }) => {
     "Huerta orgánica": <Sun className="w-4 h-4" />,
   };
 
+  // carrusel
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % hotel.imagenes.length);
   };
@@ -64,11 +67,12 @@ const HotelCard = ({ hotel }) => {
     );
   };
 
+  // abrir/cerrar formulario
   const handleReservar = () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setReservaStep(1);
-      setError(null); // 🔑 LIMPIAR ERRORES
+      setError(null);
     }
   };
 
@@ -80,11 +84,10 @@ const HotelCard = ({ hotel }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
-  // 🔑 NUEVA FUNCIÓN DE CONFIRMACIÓN
+  // enviar reserva al backend
   const confirmarReserva = async () => {
-    // 1️⃣ VERIFICAR QUE ESTÉ AUTENTICADO
     if (!isAuthenticated || !user) {
-      openAuthModal(); // Abrir modal de login
+      openAuthModal();
       return;
     }
 
@@ -92,7 +95,6 @@ const HotelCard = ({ hotel }) => {
     setError(null);
 
     try {
-      // 2️⃣ PREPARAR DATOS DE LA RESERVA
       const precioUnitario =
         hotel.tiposHabitacion.find((t) => t.tipo === reservaData.tipoHabitacion)
           ?.precio || 0;
@@ -111,25 +113,21 @@ const HotelCard = ({ hotel }) => {
         precio_total: precioUnitario * reservaData.cantidadHabitaciones,
       };
 
-      // 3️⃣ ENVIAR AL BACKEND
       const response = await axios.post(
         "http://localhost:5000/api/reservas",
         payload,
         {
           headers: {
             "Content-Type": "application/json",
-            // El interceptor de axios añadirá el token automáticamente
           },
         }
       );
 
-      // 4️⃣ ÉXITO
       if (response.data.success) {
         alert(
           `✅ Reserva confirmada!\nID: ${response.data.id_reserva}\n\nRecuerda tu ID para futuras consultas.`
         );
 
-        // Limpiar formulario
         setReservaData({
           checkIn: "",
           checkOut: "",
@@ -140,7 +138,6 @@ const HotelCard = ({ hotel }) => {
         setIsExpanded(false);
       }
     } catch (err) {
-      // 5️⃣ MANEJAR ERRORES
       const errorMsg =
         err.response?.data?.message ||
         err.message ||
@@ -152,6 +149,7 @@ const HotelCard = ({ hotel }) => {
     }
   };
 
+  // mínimo para check-out
   const getMinCheckOut = () => {
     if (!reservaData.checkIn) return "";
     const checkInDate = new Date(reservaData.checkIn);
@@ -161,7 +159,7 @@ const HotelCard = ({ hotel }) => {
 
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300">
-      {/* Carrusel de imágenes */}
+      {/* carrusel de imágenes */}
       <div className="relative h-64 overflow-hidden group">
         <img
           src={hotel.imagenes[currentImageIndex].src}
@@ -216,7 +214,7 @@ const HotelCard = ({ hotel }) => {
         </div>
       </div>
 
-      {/* Contenido */}
+      {/* contenido del card */}
       <div className="p-6">
         <button
           onClick={() => setShowInfo(!showInfo)}
@@ -267,7 +265,7 @@ const HotelCard = ({ hotel }) => {
         </button>
       </div>
 
-      {/* Modal de información completa */}
+      {/* modal info completa */}
       {showInfo && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -383,10 +381,9 @@ const HotelCard = ({ hotel }) => {
         </div>
       )}
 
-      {/* Formulario de reserva expandible */}
+      {/* formulario expandible */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
-          {/* 🔑 MOSTRAR ERRORES SI LOS HAY */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
               <p className="font-semibold">Error:</p>

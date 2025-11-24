@@ -1,3 +1,5 @@
+// src/components/RestauranteCard.jsx
+
 import React, { useState } from "react";
 import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
@@ -18,14 +20,38 @@ import {
   Award,
 } from "lucide-react";
 
+/**
+ * RestauranteCard
+ *
+ * Componente que muestra la tarjeta de un restaurante con:
+ * - Carrusel de imágenes
+ * - Información corta (tipo de cocina, horarios, rango de precios)
+ * - Modal con información completa
+ * - Formulario multi-step para reservar mesa (3 pasos)
+ *
+ * Props:
+ * - restaurante: objeto con la información del restaurante (id, nombre, imagenes, calificacion, etc.)
+ *
+ * Dependencias:
+ * - useAuth() para obtener user, isAuthenticated y openAuthModal
+ * - axios para llamar a /api/reservas
+ *
+ * Nota: asume que el backend devuelve { success, id_reserva } al crear reserva.
+ */
+
 const RestauranteCard = ({ restaurante }) => {
+  // auth (usuario + helpers)
   const { user, isAuthenticated, openAuthModal } = useAuth();
-  const [isExpanded, setIsExpanded] = useState(false);
-  const [showInfo, setShowInfo] = useState(false);
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  const [reservaStep, setReservaStep] = useState(1);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
+
+  // Estados UI
+  const [isExpanded, setIsExpanded] = useState(false); // muestra/oculta el formulario expandible
+  const [showInfo, setShowInfo] = useState(false); // modal info completa
+  const [currentImageIndex, setCurrentImageIndex] = useState(0); // índice del carrusel
+  const [reservaStep, setReservaStep] = useState(1); // paso del wizard (1..3)
+  const [loading, setLoading] = useState(false); // estado cuando se procesa la reserva
+  const [error, setError] = useState(null); // mensaje de error a mostrar
+
+  // Datos del formulario de reserva
   const [reservaData, setReservaData] = useState({
     fecha: "",
     hora: "",
@@ -35,19 +61,23 @@ const RestauranteCard = ({ restaurante }) => {
     comentarios: "",
   });
 
+  // --- Helpers: horarios disponibles (puede depender del restaurante) ---
   const horariosDisponibles = () => {
     const horarios = [];
 
+    // si el restaurante abre para desayuno, añadimos franjas matutinas
     if (restaurante.ofreceDesayuno) {
       horarios.push("7:00 AM", "8:00 AM", "9:00 AM", "10:00 AM");
     }
 
+    // franjas comunes de almuerzo y cena
     horarios.push("12:00 PM", "1:00 PM", "2:00 PM");
     horarios.push("6:00 PM", "7:00 PM", "8:00 PM", "9:00 PM");
 
     return horarios;
   };
 
+  // --- Carrusel: siguiente / anterior imagen ---
   const nextImage = () => {
     setCurrentImageIndex((prev) => (prev + 1) % restaurante.imagenes.length);
   };
@@ -59,6 +89,7 @@ const RestauranteCard = ({ restaurante }) => {
     );
   };
 
+  // Abrir / cerrar formulario expandible (reserva inline)
   const handleReservar = () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
@@ -67,6 +98,7 @@ const RestauranteCard = ({ restaurante }) => {
     }
   };
 
+  // Navegación entre pasos del wizard
   const nextStep = () => {
     if (reservaStep < 3) setReservaStep(reservaStep + 1);
   };
@@ -75,7 +107,9 @@ const RestauranteCard = ({ restaurante }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
+  // --- Función principal: confirmar reserva ---
   const confirmarReserva = async () => {
+    // 1) Si no está autenticado, abrir modal de login/registro
     if (!isAuthenticated || !user) {
       openAuthModal();
       return;
@@ -85,6 +119,8 @@ const RestauranteCard = ({ restaurante }) => {
     setError(null);
 
     try {
+      // Construimos el payload que envía la app al backend.
+      // Nota: el backend espera campos como tipo_servicio, nombre_servicio, fecha_inicio, cantidad_personas, etc.
       const payload = {
         tipo_servicio: "restaurante",
         id_servicio: restaurante.id,
@@ -103,13 +139,15 @@ const RestauranteCard = ({ restaurante }) => {
         precio_total: 0,
       };
 
-      // Agregar comentarios del usuario
+      // Añadimos las notas/comentarios si el usuario las indicó
       if (reservaData.comentarios) {
         payload.notas_admin = reservaData.comentarios;
       }
 
+      // Debug en consola (útil en desarrollo)
       console.log("🚀 PAYLOAD FINAL ENVIADO:", payload);
 
+      // Petición al backend (POST /api/reservas)
       const response = await axios.post(
         "http://localhost:5000/api/reservas",
         payload
@@ -117,6 +155,7 @@ const RestauranteCard = ({ restaurante }) => {
 
       console.log("✅ Respuesta del servidor:", response.data);
 
+      // Éxito: alert y limpieza del formulario
       if (response.data.success) {
         alert(
           `✅ Reserva confirmada!\nID: ${
@@ -128,6 +167,7 @@ const RestauranteCard = ({ restaurante }) => {
           }\nPersonas: ${reservaData.personas}`
         );
 
+        // limpiar formulario y cerrar sección de reserva
         setReservaData({
           fecha: "",
           hora: "",
@@ -137,8 +177,12 @@ const RestauranteCard = ({ restaurante }) => {
           comentarios: "",
         });
         setIsExpanded(false);
+      } else {
+        // si backend devuelve success=false, mostrar mensaje provisto
+        setError(response.data.message || "Error al confirmar la reserva");
       }
     } catch (err) {
+      // Manejo de errores: mostrar mensaje amigable (y loguear)
       const errorMsg =
         err.response?.data?.message ||
         err.message ||
@@ -150,12 +194,17 @@ const RestauranteCard = ({ restaurante }) => {
     }
   };
 
+  // Fecha mínima permitida (hoy)
   const getMinFecha = () => {
     return new Date().toISOString().split("T")[0];
   };
 
+  // ---------------------------
+  // RENDERIZADO del componente
+  // ---------------------------
   return (
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
+      {/* Badge de aliado (si aplica) */}
       {restaurante.esAliado && (
         <div className="bg-gradient-to-r from-emerald-500 to-cyan-500 text-white px-4 py-2 flex items-center justify-center space-x-2">
           <Award className="w-4 h-4" />
@@ -163,6 +212,7 @@ const RestauranteCard = ({ restaurante }) => {
         </div>
       )}
 
+      {/* Carrusel de imágenes */}
       <div className="relative h-64 overflow-hidden group">
         <img
           src={restaurante.imagenes[currentImageIndex].url}
@@ -170,6 +220,7 @@ const RestauranteCard = ({ restaurante }) => {
           className="absolute inset-0 w-full h-full object-cover transition-opacity duration-500"
         />
 
+        {/* Overlay con info breve */}
         <div className="absolute inset-0 bg-black/40 transition-all duration-500 flex items-center justify-center">
           <div className="text-center text-white p-4">
             <UtensilsCrossed className="w-10 h-10 mx-auto mb-2 opacity-50" />
@@ -179,19 +230,23 @@ const RestauranteCard = ({ restaurante }) => {
           </div>
         </div>
 
+        {/* Controles del carrusel (prev/next) */}
         <button
           onClick={prevImage}
           className="absolute left-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+          aria-label="Imagen anterior"
         >
           <ChevronLeft className="w-6 h-6" />
         </button>
         <button
           onClick={nextImage}
           className="absolute right-2 top-1/2 -translate-y-1/2 bg-black/50 hover:bg-black/70 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-all duration-300 z-10"
+          aria-label="Siguiente imagen"
         >
           <ChevronRight className="w-6 h-6" />
         </button>
 
+        {/* Indicadores de página del carrusel */}
         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex space-x-2 z-10">
           {restaurante.imagenes.map((_, index) => (
             <button
@@ -200,10 +255,12 @@ const RestauranteCard = ({ restaurante }) => {
               className={`w-2 h-2 rounded-full transition-all duration-300 ${
                 index === currentImageIndex ? "bg-white w-6" : "bg-white/50"
               }`}
+              aria-label={`Ir a la imagen ${index + 1}`}
             />
           ))}
         </div>
 
+        {/* Rating y contador de imagen */}
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full flex items-center space-x-1 z-10">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
           <span className="font-semibold text-gray-800">
@@ -216,6 +273,7 @@ const RestauranteCard = ({ restaurante }) => {
         </div>
       </div>
 
+      {/* Contenido principal */}
       <div className="p-6 flex flex-col flex-grow">
         <button
           onClick={() => setShowInfo(!showInfo)}
@@ -226,8 +284,10 @@ const RestauranteCard = ({ restaurante }) => {
             <Info className="w-5 h-5 text-cyan-600 group-hover:scale-110 transition-transform" />
           </h3>
         </button>
+
         <p className="text-gray-600 mb-4">{restaurante.descripcion}</p>
 
+        {/* Datos rápidos */}
         <div className="space-y-2 mb-4">
           <div className="flex items-center space-x-2 text-sm text-gray-600">
             <UtensilsCrossed className="w-4 h-4 text-cyan-600" />
@@ -243,6 +303,7 @@ const RestauranteCard = ({ restaurante }) => {
           </div>
         </div>
 
+        {/* Si es aliado, mostrar platos destacados */}
         {restaurante.esAliado && (
           <div className="mb-4">
             <p className="text-sm font-semibold text-gray-700 mb-2">
@@ -261,6 +322,7 @@ const RestauranteCard = ({ restaurante }) => {
           </div>
         )}
 
+        {/* Botón para abrir/cerrar el formulario de reserva inline */}
         <button
           onClick={handleReservar}
           className="w-full bg-gradient-to-r from-cyan-500 to-blue-500 text-white py-3 rounded-xl font-semibold hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md hover:shadow-lg flex items-center justify-center space-x-2 mt-auto"
@@ -274,6 +336,7 @@ const RestauranteCard = ({ restaurante }) => {
         </button>
       </div>
 
+      {/* Modal con información completa */}
       {showInfo && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -299,6 +362,7 @@ const RestauranteCard = ({ restaurante }) => {
                 <button
                   onClick={() => setShowInfo(false)}
                   className="bg-white/20 hover:bg-white/30 p-2 rounded-full transition-all"
+                  aria-label="Cerrar información"
                 >
                   <X className="w-6 h-6" />
                 </button>
@@ -409,8 +473,10 @@ const RestauranteCard = ({ restaurante }) => {
         </div>
       )}
 
+      {/* Formulario expandible de reserva (inline) */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
+          {/* Mensaje de error general */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
               <p className="font-semibold">Error:</p>
@@ -418,6 +484,7 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           )}
 
+          {/* Indicador de pasos */}
           <div className="flex items-center justify-center mb-6">
             {[1, 2, 3].map((step) => (
               <div key={step} className="flex items-center">
@@ -441,6 +508,7 @@ const RestauranteCard = ({ restaurante }) => {
             ))}
           </div>
 
+          {/* Paso 1: fecha y hora */}
           {reservaStep === 1 && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">
@@ -511,6 +579,7 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           )}
 
+          {/* Paso 2: ocasión especial + comentarios */}
           {reservaStep === 2 && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">
@@ -615,6 +684,7 @@ const RestauranteCard = ({ restaurante }) => {
             </div>
           )}
 
+          {/* Paso 3: confirmación y envío */}
           {reservaStep === 3 && (
             <div className="space-y-4">
               <h4 className="text-lg font-semibold text-gray-800 mb-4">

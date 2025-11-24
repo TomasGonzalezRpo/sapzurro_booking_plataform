@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext"; // 🔑 IMPORTAR useAuth
+import { useAuth } from "../contexts/AuthContext"; // importar hook de auth
 import axios from "axios";
 import {
   Star,
@@ -16,14 +16,13 @@ import {
   Calendar,
   Shield,
   Heart,
-  // ÍCONOS CORREGIDOS DE ACTIVIDADES
-  Waves, // Usado para IconoBuceo
-  Mountain, // Usado para IconoSenderismo
-  Sailboat, // Usado para IconoKayak
-  Feather, // Usado para IconoFauna
+  Waves,
+  Mountain,
+  Sailboat,
+  Feather,
 } from "lucide-react";
 
-// Función para mapear el string 'icon' a un componente Lucide
+// mapear nombre de icono a componente
 const getIconComponent = (iconName) => {
   switch (iconName) {
     case "IconoBuceo":
@@ -35,23 +34,25 @@ const getIconComponent = (iconName) => {
     case "IconoFauna":
       return Feather;
     default:
-      return Heart; // Fallback
+      return Heart;
   }
 };
 
 const ActivitiesCard = ({ activity }) => {
-  const { user, isAuthenticated, openAuthModal } = useAuth(); // 🔑 OBTENER USER
+  // obtener usuario y helpers de auth
+  const { user, isAuthenticated, openAuthModal } = useAuth();
+  // estados del componente
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reservaStep, setReservaStep] = useState(1);
-  const [loading, setLoading] = useState(false); // 🔑 NUEVO
-  const [error, setError] = useState(null); // 🔑 NUEVO
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [reservaData, setReservaData] = useState({
     fecha: "",
     participantes: 1,
     horario: "",
-    comentarios: "", // 🔑 NUEVO: para requisitos especiales
+    comentarios: "",
   });
 
   const categoryIcons = {
@@ -69,17 +70,18 @@ const ActivitiesCard = ({ activity }) => {
     Alta: "bg-red-100 text-red-800",
   };
 
-  // Componente de ícono dinámico
+  // componente de icono dinámico
   const IconComponent = getIconComponent(activity.icon);
 
-  // Asegura que images.length sea seguro (usa activity.imagenes)
+  // asegurar cantidad de imágenes
   const imageCount = activity.imagenes ? activity.imagenes.length : 0;
 
-  // Calificación formateada (aseguramos un decimal)
+  // calificación formateada
   const formattedRating = activity.calificacion
     ? activity.calificacion.toFixed(1)
     : "N/A";
 
+  // navegación del carrusel
   const nextImage = (e) => {
     e.stopPropagation();
     setCurrentImageIndex((prev) => (prev + 1) % imageCount);
@@ -90,11 +92,12 @@ const ActivitiesCard = ({ activity }) => {
     setCurrentImageIndex((prev) => (prev - 1 + imageCount) % imageCount);
   };
 
+  // abrir/cerrar formulario de reserva
   const handleReservar = () => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setReservaStep(1);
-      setError(null); // 🔑 LIMPIAR ERRORES
+      setError(null);
     }
   };
 
@@ -106,15 +109,15 @@ const ActivitiesCard = ({ activity }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
-  // 🔑 NUEVA FUNCIÓN DE CONFIRMACIÓN PARA ACTIVIDADES
+  // confirmar reserva (envío al backend)
   const confirmarReserva = async () => {
-    // 1️⃣ VERIFICAR QUE ESTÉ AUTENTICADO
+    // comprobar auth
     if (!isAuthenticated || !user) {
-      openAuthModal(); // Abrir modal de login
+      openAuthModal();
       return;
     }
 
-    // 2️⃣ VALIDAR DATOS BÁSICOS
+    // validar campos
     if (
       !reservaData.fecha ||
       !reservaData.horario ||
@@ -128,7 +131,7 @@ const ActivitiesCard = ({ activity }) => {
     setError(null);
 
     try {
-      // 3️⃣ CONVERTIR HORARIO A HORA (formato 24h)
+      // mapear horario a hora
       const horaMap = {
         mañana: "08:00",
         tarde: "13:00",
@@ -136,33 +139,32 @@ const ActivitiesCard = ({ activity }) => {
       };
       const hora = horaMap[reservaData.horario] || "10:00";
 
-      // 4️⃣ PREPARAR DATOS DE LA RESERVA
+      // preparar payload
       const payload = {
         tipo_servicio: "actividad",
         id_servicio: activity.id || activity.name,
         nombre_servicio: activity.name,
-        fecha_inicio: `${reservaData.fecha}T${hora}:00`, // Combinar fecha y hora
+        fecha_inicio: `${reservaData.fecha}T${hora}:00`,
         cantidad_personas: reservaData.participantes,
         descripcion_servicio: activity.description,
         precio_unitario: activity.price,
-        cantidad: 1, // Una actividad por reserva
+        cantidad: 1,
         precio_total: activity.price * reservaData.participantes,
-        notas_admin: reservaData.comentarios || "Sin comentarios especiales", // Guardar comentarios como notas
+        notas_admin: reservaData.comentarios || "Sin comentarios especiales",
       };
 
-      // 5️⃣ ENVIAR AL BACKEND
+      // enviar al backend
       const response = await axios.post(
         "http://localhost:5000/api/reservas",
         payload,
         {
           headers: {
             "Content-Type": "application/json",
-            // El interceptor de axios añadirá el token automáticamente
           },
         }
       );
 
-      // 6️⃣ ÉXITO
+      // en caso de éxito mostrar confirmación
       if (response.data.success) {
         alert(
           `✅ Reserva confirmada!\nID: ${
@@ -176,7 +178,7 @@ const ActivitiesCard = ({ activity }) => {
           ).toLocaleString("es-CO")}\n\nRecuerda tu ID para futuras consultas.`
         );
 
-        // Limpiar formulario
+        // limpiar formulario
         setReservaData({
           fecha: "",
           participantes: 1,
@@ -186,7 +188,7 @@ const ActivitiesCard = ({ activity }) => {
         setIsExpanded(false);
       }
     } catch (err) {
-      // 7️⃣ MANEJAR ERRORES
+      // manejar error
       const errorMsg =
         err.response?.data?.message ||
         err.message ||
@@ -199,20 +201,15 @@ const ActivitiesCard = ({ activity }) => {
   };
 
   return (
-    // 1. Contenedor principal
     <div className="bg-white rounded-2xl shadow-xl overflow-hidden hover:shadow-2xl transition-all duration-300 flex flex-col h-full">
-      {/* Carrusel de imágenes */}
       <div className="relative h-64 bg-gradient-to-br overflow-hidden group">
-        {/* Lógica de la imagen */}
         {imageCount > 0 ? (
-          // Si hay imágenes, usa la URL de la imagen
           <img
             src={activity.imagenes[currentImageIndex]}
             alt={`${activity.name} - Foto ${currentImageIndex + 1}`}
             className="w-full h-full object-cover transition-opacity duration-300"
           />
         ) : (
-          // Placeholder (usando el color definido en Activities.js)
           <div
             className={`absolute inset-0 bg-gradient-to-br ${activity.color} flex items-center justify-center`}
           >
@@ -223,7 +220,6 @@ const ActivitiesCard = ({ activity }) => {
           </div>
         )}
 
-        {/* Botones de navegación (si hay más de 1 imagen) */}
         {imageCount > 1 && (
           <>
             <button
@@ -252,27 +248,22 @@ const ActivitiesCard = ({ activity }) => {
           </>
         )}
 
-        {/* Calificación (Usa activity.calificacion) */}
         <div className="absolute top-4 right-4 bg-white/90 backdrop-blur-sm px-3 py-2 rounded-full flex items-center space-x-1 z-10">
           <Star className="w-4 h-4 fill-yellow-400 text-yellow-400" />
           <span className="font-semibold text-gray-800">{formattedRating}</span>
         </div>
 
-        {/* Contador de imagen */}
         {imageCount > 0 && (
           <div className="absolute top-4 left-4 bg-black/50 backdrop-blur-sm px-3 py-1 rounded-full text-white text-sm z-10">
             {currentImageIndex + 1} / {imageCount}
           </div>
         )}
 
-        {/* Badge de categoría */}
-        {/* Nota: Asumimos que activity.category existe para mostrar el badge */}
         <div className="absolute top-16 left-4 bg-cyan-500 text-white px-3 py-1 rounded-full text-sm font-medium capitalize z-10">
           {activity.category}
         </div>
       </div>
 
-      {/* 2. Contenido */}
       <div className="p-6 flex flex-col flex-grow">
         <button
           onClick={() => setShowInfo(!showInfo)}
@@ -288,7 +279,6 @@ const ActivitiesCard = ({ activity }) => {
           {activity.description}
         </p>
 
-        {/* Información rápida */}
         <div className="grid grid-cols-2 gap-4 mb-4">
           <div className="flex items-center space-x-2 text-gray-600">
             <Clock className="w-4 h-4" />
@@ -300,7 +290,6 @@ const ActivitiesCard = ({ activity }) => {
           </div>
         </div>
 
-        {/* Dificultad */}
         <div className="mb-4">
           <span
             className={`px-3 py-1 rounded-full text-sm font-medium ${
@@ -311,7 +300,6 @@ const ActivitiesCard = ({ activity }) => {
           </span>
         </div>
 
-        {/* Incluye */}
         <div className="flex flex-wrap gap-2 mb-4">
           {activity.includes.slice(0, 3).map((item, index) => (
             <div
@@ -329,7 +317,6 @@ const ActivitiesCard = ({ activity }) => {
           )}
         </div>
 
-        {/* Precio */}
         <div className="mt-auto mb-4">
           <p className="text-3xl font-bold text-cyan-600">
             ${activity.price.toLocaleString("es-CO")}
@@ -350,7 +337,6 @@ const ActivitiesCard = ({ activity }) => {
         </button>
       </div>
 
-      {/* Modal de información completa */}
       {showInfo && (
         <div
           className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
@@ -480,10 +466,8 @@ const ActivitiesCard = ({ activity }) => {
         </div>
       )}
 
-      {/* Formulario de reserva expandible */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
-          {/* 🔑 MOSTRAR ERRORES SI LOS HAY */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
               <p className="font-semibold">Error:</p>
