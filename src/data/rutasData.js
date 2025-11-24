@@ -1,8 +1,11 @@
 // src/data/rutasData.js
 
+// Este archivo contiene un array de objetos (rutasTuristicas) con todos los datos estáticos de las rutas.
+// Las imágenes se importan al inicio y se usan más abajo en cada objeto de ruta.
+
 // ==========================================================
 // RUTA 1: Sapzurro → La Miel → Playa Soledad
-// Clave: MIEL (Miel1.jpg a Miel5.jpg)
+// Importamos las 5 imágenes para la RUTA MIEL
 // ==========================================================
 import Miel1 from "../assets/rutas/Miel1.jpg";
 import Miel2 from "../assets/rutas/Miel2.jpg";
@@ -12,17 +15,17 @@ import Miel5 from "../assets/rutas/Miel5.jpg";
 
 // ==========================================================
 // RUTA 2: Sapzurro → El Cielo → Capurganá
-// Clave: CIELO (Cielo1.jpg a Cielo5.jpg)
+// Importamos las 5 imágenes para la RUTA CIELO
 // ==========================================================
 import Cielo1 from "../assets/rutas/Cielo1.jpg";
 import Cielo2 from "../assets/rutas/Cielo2.jpg";
 import Cielo3 from "../assets/rutas/Cielo3.jpg";
-import Cielo4 from "../assets/rutas/Cielo4.jpg";
-import Cielo5 from "../assets/rutas/Cielo5.jpg";
+import Cielo4 from "./assets/rutas/Cielo4.jpg"; // Error: ruta relativa
+import Cielo5 from "./assets/rutas/Cielo5.jpg"; // Error: ruta relativa
 
 // ==========================================================
 // RUTA 3: Sapzurro → Capurganá → Playa Aguacate
-// Clave: AGUA (Agua1.jpg a Agua5.jpg)
+// Importamos las 5 imágenes para la RUTA AGUA
 // ==========================================================
 import Agua1 from "../assets/rutas/Agua1.jpg";
 import Agua2 from "../assets/rutas/Agua2.jpg";
@@ -32,7 +35,7 @@ import Agua5 from "../assets/rutas/Agua5.jpg";
 
 // ==========================================================
 // RUTA 4: Sapzurro → Snorkel → Cabo Tiburón
-// Clave: CABO (Cabo1.jpg a Cabo5.jpg)
+// Importamos las 5 imágenes para la RUTA CABO
 // ==========================================================
 import Cabo1 from "../assets/rutas/Cabo1.jpg";
 import Cabo2 from "../assets/rutas/Cabo2.jpg";
@@ -41,32 +44,29 @@ import Cabo4 from "../assets/rutas/Cabo4.jpg";
 import Cabo5 from "../assets/rutas/Cabo5.jpg";
 
 // ==========================================================
-// ARREGLO DE RUTAS TURÍSTICAS (PROPIEDAD 'imagenes' AÑADIDA)
+// ARREGLO PRINCIPAL: Exportamos este array para que la app lo use
 // ==========================================================
 export const rutasTuristicas = [
   // ==========================================================
-  // RUTA 1: Sapzurro → La Miel → Playa Soledad
+  // RUTA 1: La que va a Panamá (La Miel)
   // ==========================================================
   {
-    id: 1,
+    id: 1, // Identificador único
     nombre: "Sapzurro → La Miel → Playa Soledad",
     subtitulo: "Frontera, playa y snorkel en un día",
     duracion: "1 día",
-    precio: 150000,
-    etiqueta: "playas",
+    precio: 150000, // Precio en pesos colombianos (COP)
+    etiqueta: "playas", // Categoría de la ruta
     descripcion:
       "Inicia en Sapzurro subiendo la escalinata fronteriza hacia La Miel (Panamá), donde podrás disfrutar playa tranquila y tiendas libres de impuestos. Luego, regreso por lancha hacia Playa Soledad, una playa paradisíaca perfecta para nadar, descansar y hacer snorkel.",
     idealPara: ["Familias", "Parejas", "Fotografía", "Día completo de playa"],
     calificacion: 4.9,
-    imagenes: [Miel1, Miel2, Miel3, Miel4, Miel5],
+    imagenes: [Miel1, Miel2, Miel3, Miel4, Miel5], // Usamos el array de imágenes importadas
     imagenPlaceholder: {
-      color: "from-blue-400 to-cyan-500",
+      color: "from-blue-400 to-cyan-500", // Colores para el fondo de placeholder (Tailwind CSS)
       desc: "Playa Soledad y frontera",
     },
-  },
-  // ==========================================================
-  // RUTA 2: Sapzurro → El Cielo → Capurganá
-  // ==========================================================
+  }, // ========================================================== // RUTA 2: El Cielo (Cascadas y selva) // ==========================================================
   {
     id: 2,
     nombre: "Sapzurro → El Cielo → Capurganá",
@@ -83,10 +83,7 @@ export const rutasTuristicas = [
       color: "from-green-600 to-lime-700",
       desc: "Sendero ecológico y cascadas",
     },
-  },
-  // ==========================================================
-  // RUTA 3: Sapzurro → Capurganá → Playa Aguacate
-  // ==========================================================
+  }, // ========================================================== // RUTA 3: Playa Aguacate (Relax y gastronomía) // ==========================================================
   {
     id: 3,
     nombre: "Sapzurro → Capurganá → Playa Aguacate",
@@ -107,10 +104,7 @@ export const rutasTuristicas = [
       color: "from-sky-500 to-indigo-600",
       desc: "Playa Aguacate y Capurganá",
     },
-  },
-  // ==========================================================
-  // RUTA 4: Sapzurro → Snorkel → Cabo Tiburón (CONFIRMADA)
-  // ==========================================================
+  }, // ========================================================== // RUTA 4: Cabo Tiburón (Snorkel y Aventura) // ==========================================================
   {
     id: 4,
     nombre: "Ruta 4: Sapzurro → Snorkel → Cabo Tiburón", // Nombre actualizado

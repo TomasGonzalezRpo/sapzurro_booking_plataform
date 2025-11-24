@@ -1,38 +1,56 @@
 // src/data/restaurantesData.js
 
 // ==========================================================
-// RUTA DE IMÁGENES: ../assets/restaurantesaliados/
+// DATOS DE RESTAURANTES (ALIADOS Y NO ALIADOS)
+// ----------------------------------------------------------
+// Este archivo exporta:
+// - `restaurantesAliados`: array con restaurantes aliados (con más datos).
+// - `restaurantesNoAliados`: array con restaurantes no aliados.
+// - `tiposCocina`: lista para llenar select/filtrado de tipos de cocina.
+// - `ocasionesEspeciales`: lista de opciones para reservas en restaurantes.
+//
+// Notas importantes:
+// - Las rutas de las imágenes deben existir en ../assets/restaurantesaliados/
+//   y ../assets/restaurantesnoaliados/ respectivamente.
+// - Cada restaurante tiene campos usados por los componentes UI:
+//   id, nombre, descripcion, descripcionCompleta, esAliado, calificacion,
+//   tipoCocina, rangoPrecios, horarios, telefono, imagenes (array de {url,desc}),
+//   menuDestacado (array de platos), chefEspecialidad, linkMenu, y flags como
+//   ofreceDesayuno cuando aplique.
+// - Mantén la estructura de objetos para que los componentes (RestauranteCard,
+//   RestaurantesSection, etc.) funcionen sin cambios.
 // ==========================================================
 
-// 1. Restaurante Aliado 1: El Refugio del Pescador (Ref1.jpg a Ref5.jpg)
+// ==========================================================
+// IMPORTS DE IMÁGENES - RESTAURANTES ALIADOS
+// ----------------------------------------------------------
+// Asegúrate de que los archivos Ref1.jpg .. Ref5.jpg, Don1..Don5.jpg, etc.,
+// existan en la carpeta ../assets/restaurantesaliados/
+// ==========================================================
 import Ref1 from "../assets/restaurantesaliados/Ref1.jpg";
 import Ref2 from "../assets/restaurantesaliados/Ref2.jpg";
 import Ref3 from "../assets/restaurantesaliados/Ref3.jpg";
 import Ref4 from "../assets/restaurantesaliados/Ref4.jpg";
 import Ref5 from "../assets/restaurantesaliados/Ref5.jpg";
 
-// 2. Restaurante Aliado 2: Donde Juancho (Don1.jpg a Don5.jpg)
 import Don1 from "../assets/restaurantesaliados/Don1.jpg";
 import Don2 from "../assets/restaurantesaliados/Don2.jpg";
 import Don3 from "../assets/restaurantesaliados/Don3.jpg";
 import Don4 from "../assets/restaurantesaliados/Don4.jpg";
 import Don5 from "../assets/restaurantesaliados/Don5.jpg";
 
-// 3. Restaurante Aliado 3: Sunset Lounge & Grill (Sun1.jpg a Sun5.jpg)
 import Sun1 from "../assets/restaurantesaliados/Sun1.jpg";
 import Sun2 from "../assets/restaurantesaliados/Sun2.jpg";
 import Sun3 from "../assets/restaurantesaliados/Sun3.jpg";
 import Sun4 from "../assets/restaurantesaliados/Sun4.jpg";
 import Sun5 from "../assets/restaurantesaliados/Sun5.jpg";
 
-// 4. Restaurante Aliado 4: La Cabaña Vegetariana (Cab1.jpg a Cab5.jpg)
 import Cab1 from "../assets/restaurantesaliados/Cab1.jpg";
 import Cab2 from "../assets/restaurantesaliados/Cab2.jpg";
 import Cab3 from "../assets/restaurantesaliados/Cab3.jpg";
 import Cab4 from "../assets/restaurantesaliados/Cab4.jpg";
 import Cab5 from "../assets/restaurantesaliados/Cab5.jpg";
 
-// 5. Restaurante Aliado 5: Asadero & Parrilla El Rancho (Asa1.jpg a Asa5.jpg)
 import Asa1 from "../assets/restaurantesaliados/Asa1.jpg";
 import Asa2 from "../assets/restaurantesaliados/Asa2.jpg";
 import Asa3 from "../assets/restaurantesaliados/Asa3.jpg";
@@ -40,24 +58,23 @@ import Asa4 from "../assets/restaurantesaliados/Asa4.jpg";
 import Asa5 from "../assets/restaurantesaliados/Asa5.jpg";
 
 // ==========================================================
-// RUTA DE IMÁGENES: ../assets/restaurantesnoaliados/ (NUEVAS IMPORTACIONES)
+// IMPORTS DE IMÁGENES - RESTAURANTES NO ALIADOS
+// ----------------------------------------------------------
+// Verificar que los archivos Piz1..Piz5, Caf1..Caf5, Comi1..Comi5 existan en
+// ../assets/restaurantesnoaliados/
 // ==========================================================
-
-// 6. Restaurante No Aliado 1: Pizzería Bella Italia (Piz1.jpg a Piz5.jpg)
 import Piz1 from "../assets/restaurantesnoaliados/Piz1.jpg";
 import Piz2 from "../assets/restaurantesnoaliados/Piz2.jpg";
 import Piz3 from "../assets/restaurantesnoaliados/Piz3.jpg";
 import Piz4 from "../assets/restaurantesnoaliados/Piz4.jpg";
 import Piz5 from "../assets/restaurantesnoaliados/Piz5.jpg";
 
-// 7. Restaurante No Aliado 2: Café del Puerto (Caf1.jpg a Caf5.jpg)
 import Caf1 from "../assets/restaurantesnoaliados/Caf1.jpg";
 import Caf2 from "../assets/restaurantesnoaliados/Caf2.jpg";
 import Caf3 from "../assets/restaurantesnoaliados/Caf3.jpg";
 import Caf4 from "../assets/restaurantesnoaliados/Caf4.jpg";
 import Caf5 from "../assets/restaurantesnoaliados/Caf5.jpg";
 
-// 8. Restaurante No Aliado 3: Comidas Rápidas El Kiosco (Com1.jpg a Com5.jpg)
 import Com1 from "../assets/restaurantesnoaliados/Comi1.jpg";
 import Com2 from "../assets/restaurantesnoaliados/Comi2.jpg";
 import Com3 from "../assets/restaurantesnoaliados/Comi3.jpg";
@@ -65,11 +82,14 @@ import Com4 from "../assets/restaurantesnoaliados/Comi4.jpg";
 import Com5 from "../assets/restaurantesnoaliados/Comi5.jpg";
 
 // ==========================================================
-// ARREGLO DE RESTAURANTES ALIADOS (CON IMÁGENES)
+// RESTAURANTES ALIADOS
+// ----------------------------------------------------------
+// Cada objeto incluye suficientes campos para:
+// - Listados (card): nombre, descripcion, calificacion, tipoCocina, imagenes.
+// - Página/Modal detalle: descripcionCompleta, menuDestacado, chefEspecialidad,
+//   linkMenu, horarios, telefono, etc.
 // ==========================================================
-
 export const restaurantesAliados = [
-  // ... (El contenido de los 5 restaurantes aliados se mantiene igual)
   {
     id: 1,
     nombre: "El Refugio del Pescador",
@@ -83,7 +103,6 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$ (80.000 - 150.000)",
     horarios: "12:00 PM - 10:00 PM",
     telefono: "+57 300 123 4567",
-    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Ref1, desc: "Langosta a la parrilla" },
       { url: Ref2, desc: "Ceviche de camarón" },
@@ -141,7 +160,6 @@ export const restaurantesAliados = [
     rangoPrecios: "$$ (30.000 - 60.000)",
     horarios: "7:00 AM - 9:00 PM",
     telefono: "+57 300 234 5678",
-    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Don1, desc: "Sancocho de pescado" },
       { url: Don2, desc: "Arroz con coco" },
@@ -196,7 +214,6 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$$ (100.000 - 200.000)",
     horarios: "6:00 PM - 11:00 PM",
     telefono: "+57 300 345 6789",
-    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Sun1, desc: "Filete mignon con reducción" },
       { url: Sun2, desc: "Sushi de atún fresco" },
@@ -250,7 +267,6 @@ export const restaurantesAliados = [
     rangoPrecios: "$$ (35.000 - 70.000)",
     horarios: "7:00 AM - 8:00 PM",
     telefono: "+57 300 456 7890",
-    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Cab1, desc: "Bowl de quinoa tropical" },
       { url: Cab2, desc: "Smoothie bowl colorido" },
@@ -309,7 +325,6 @@ export const restaurantesAliados = [
     rangoPrecios: "$$$ (60.000 - 120.000)",
     horarios: "12:00 PM - 10:00 PM",
     telefono: "+57 300 567 8901",
-    // IMÁGENES MANTENIDAS
     imagenes: [
       { url: Asa1, desc: "Churrasco argentino" },
       { url: Asa2, desc: "Costillas BBQ" },
@@ -357,9 +372,11 @@ export const restaurantesAliados = [
 ];
 
 // ==========================================================
-// ARREGLO DE RESTAURANTES NO ALIADOS (CON MODIFICACIONES DE IMAGEN)
+// RESTAURANTES NO ALIADOS
+// ----------------------------------------------------------
+// Menos metadatos que los aliados pero suficientes para listados y
+// reservas básicas. Se han añadido ejemplos con imágenes locales.
 // ==========================================================
-
 export const restaurantesNoAliados = [
   {
     id: 6,
@@ -374,7 +391,6 @@ export const restaurantesNoAliados = [
     rangoPrecios: "$$ (40.000 - 80.000)",
     horarios: "5:00 PM - 10:00 PM",
     telefono: "+57 300 678 9012",
-    // ✅ MODIFICADO: Usando las importaciones Piz1 - Piz5
     imagenes: [
       { url: Piz1, desc: "Pizza margarita" },
       { url: Piz2, desc: "Pizza cuatro quesos" },
@@ -403,7 +419,6 @@ export const restaurantesNoAliados = [
     rangoPrecios: "$ (15.000 - 35.000)",
     horarios: "6:00 AM - 6:00 PM",
     telefono: "+57 300 789 0123",
-    // ✅ MODIFICADO: Usando las importaciones Caf1 - Caf5
     imagenes: [
       { url: Caf1, desc: "Café latte art" },
       { url: Caf2, desc: "Croissants frescos" },
@@ -433,7 +448,6 @@ export const restaurantesNoAliados = [
     rangoPrecios: "$ (10.000 - 30.000)",
     horarios: "24 horas",
     telefono: "+57 300 890 1234",
-    // ✅ MODIFICADO: Usando las importaciones Com1 - Com5
     imagenes: [
       { url: Com1, desc: "Hamburguesa especial" },
       { url: Com2, desc: "Perro caliente completo" },
@@ -459,6 +473,11 @@ export const restaurantesNoAliados = [
   },
 ];
 
+// ==========================================================
+// LISTAS UTILES PARA LA UI
+// - tiposCocina: opciones para filtros / selects
+// - ocasionesEspeciales: opciones para reservas
+// ==========================================================
 export const tiposCocina = [
   "Todos",
   "Mariscos",

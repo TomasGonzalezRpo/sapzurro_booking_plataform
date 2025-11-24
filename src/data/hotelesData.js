@@ -1,3 +1,19 @@
+// src/data/hotelesData.js
+
+// ==========================================================
+// HOTELES DEMO - Datos estáticos con imágenes
+// ----------------------------------------------------------
+// Este archivo contiene una lista de hoteles (hotelesDemo) usada
+// por los componentes de UI (HotelCard, HotelesSection, etc.).
+// - Las imágenes se importan desde ../assets/hotels/...
+// - Cada hotel es un objeto con metadatos (id, nombre, descripciones,
+//   precioDesde, calificacion, imagenes, amenidades, servicios,
+//   tiposHabitacion).
+// - El array `imagenes` para cada hotel contiene objetos con:
+//    { src: <import>, color: "<clases tailwind gradient>", desc: "texto" }
+//   que se usan para el carrusel y placeholders cuando sea necesario.
+// ==========================================================
+
 // =============================
 // IMPORTS DE IMÁGENES
 // =============================
@@ -32,6 +48,19 @@ import Chileno5 from "../assets/hotels/chileno/Chileno5.jpg";
 
 // =======================================================
 // LISTA DE HOTELES COMPLETA — CON IMÁGENES YA ASIGNADAS
+// -------------------------------------------------------
+// Cada entrada del array `hotelesDemo` representa un hotel/hostal
+// con campos utilizados por los componentes del frontend.
+// - id: identificador único (número).
+// - nombre: nombre mostrado.
+// - descripcion: texto corto para cards/listados.
+// - descripcionCompleta: texto largo para la vista detallada/modal.
+// - precioDesde: número (COP) utilizado como referencia en listados.
+// - calificacion: número (float) entre 0 y 5.
+// - imagenes: array de objetos { src, color, desc } usado por carruseles.
+// - amenidades: array de strings (se mapean a íconos en UI).
+// - servicios: array de strings (lista de servicios ofrecidos).
+// - tiposHabitacion: array de objetos { tipo, precio, disponibles }.
 // =======================================================
 console.log("[hotelesData] imports comprobación:", {
   Mariela1,
