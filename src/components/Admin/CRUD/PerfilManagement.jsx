@@ -1,24 +1,26 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { Plus, Edit2, Trash2, Search, X, AlertCircle } from "lucide-react";
-import axios from "axios";
+import { Plus, Edit2, Trash2, Search, X, AlertCircle } from "lucide-react"; // Iconos modernos
+import axios from "axios"; // Cliente HTTP para interactuar con la API
 
+// Objeto de estado inicial para un nuevo perfil
 const emptyForm = { nombre: "", descripcion: "", estado: 1 };
+// URL base de la API para la entidad Perfil
 const API_BASE_URL = "http://localhost:5000/api/perfiles";
 
 const PerfilManagement = () => {
-  // 2. Nuevos Estados para API
-  const [perfiles, setPerfiles] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
-  const [apiError, setApiError] = useState(null);
+  // ====================================================================
+  // ESTADOS DE DATOS Y API
+  // ====================================================================
+  const [perfiles, setPerfiles] = useState([]); // Almacena la lista de perfiles
+  const [isLoading, setIsLoading] = useState(true); // Indica si los datos están siendo cargados
+  const [apiError, setApiError] = useState(null); // Almacena errores de conexión con el backend // ==================================================================== // ESTADOS DE UI Y FORMULARIO // ====================================================================
 
-  // Estados de UI (sin cambios)
-  const [searchTerm, setSearchTerm] = useState("");
-  const [showModal, setShowModal] = useState(false);
-  const [editingPerfil, setEditingPerfil] = useState(null);
-  const [formData, setFormData] = useState(emptyForm);
-  const [formError, setFormError] = useState(""); // Error de validación de formulario
+  const [searchTerm, setSearchTerm] = useState(""); // Valor del campo de búsqueda
+  const [showModal, setShowModal] = useState(false); // Controla la visibilidad del modal CRUD
+  const [editingPerfil, setEditingPerfil] = useState(null); // Almacena el perfil que se está editando
+  const [formData, setFormData] = useState(emptyForm); // Datos del formulario (Crear/Editar)
+  const [formError, setFormError] = useState(""); // Error de validación o de API específico del formulario // ==================================================================== // OPERACIONES API (CRUD) // ==================================================================== // Función para OBTENER todos los perfiles (GET)
 
-  // Función para OBTENER todos los perfiles (GET)
   const fetchPerfiles = async () => {
     setIsLoading(true);
     setApiError(null);
@@ -26,63 +28,61 @@ const PerfilManagement = () => {
       const response = await axios.get(API_BASE_URL);
       setPerfiles(response.data);
     } catch (err) {
-      console.error("Error al obtener perfiles:", err);
+      console.error("Error al obtener perfiles:", err); // Mensaje de error amigable para el usuario
       setApiError(
         "No se pudo conectar con el servidor o cargar los perfiles. Asegúrese de que el backend esté corriendo."
       );
-      setPerfiles([]);
+      setPerfiles([]); // Vaciar la lista si hay error
     } finally {
       setIsLoading(false);
     }
-  };
+  }; // Cargar los datos al montar el componente
 
-  // useEffect para cargar los datos al montar (Reemplaza INITIAL_PERFILES)
   useEffect(() => {
     fetchPerfiles();
-  }, []);
+  }, []); // ==================================================================== // LÓGICA DE UI Y FILTRADO // ==================================================================== // Filtra la lista de perfiles en tiempo real usando useMemo para optimización
 
   const filteredPerfiles = useMemo(() => {
     const q = searchTerm.trim().toLowerCase();
-    if (!q) return perfiles;
+    if (!q) return perfiles; // Si no hay búsqueda, devuelve todos
     return perfiles.filter(
       (p) =>
         p.nombre.toLowerCase().includes(q) ||
         p.descripcion.toLowerCase().includes(q)
     );
-  }, [perfiles, searchTerm]);
+  }, [perfiles, searchTerm]); // Se recalcula solo si perfiles o searchTerm cambian // Manejadores del Modal
 
-  // Abrir modal, cerrar modal, handleChange
   const openModal = (perfil = null) => {
     setEditingPerfil(perfil);
     setFormData(
       perfil
         ? {
+            // Carga los datos del perfil si está en modo edición
             nombre: perfil.nombre,
             descripcion: perfil.descripcion,
             estado: perfil.estado,
           }
-        : emptyForm
+        : emptyForm // Usa el formulario vacío si es un nuevo perfil
     );
     setFormError("");
     setShowModal(true);
   };
 
   const closeModal = () => {
-    setShowModal(false);
+    setShowModal(false); // Limpiar estados después de la transición del modal
     setTimeout(() => {
       setEditingPerfil(null);
       setFormData(emptyForm);
       setFormError("");
     }, 200);
-  };
+  }; // Manejador genérico para la entrada de datos del formulario
 
   const handleChange = (field, value) => {
     setFormData((s) => ({ ...s, [field]: value }));
-  };
+  }; // Función para CREAR o ACTUALIZAR (POST / PUT)
 
-  // Función para CREAR o ACTUALIZAR (POST / PUT)
   const handleGuardar = async () => {
-    setFormError("");
+    setFormError(""); // Validación básica
     if (!formData.nombre.trim()) {
       setFormError("El nombre es obligatorio");
       return;
@@ -90,18 +90,19 @@ const PerfilManagement = () => {
 
     try {
       if (editingPerfil) {
-        // Actualizar (PUT)
-        await axios.put(`${API_BASE_URL}/${editingPerfil.id_perfil}`, formData);
+        // PUT: Actualiza un perfil existente
+        await axios.put(`${API_BASE_URL}/${editingPerfil.id_perfil}`, formData); // NOTE: Se recomienda usar un componente de notificación en lugar de alert()
         alert("Perfil actualizado exitosamente");
       } else {
-        // Crear (POST)
-        await axios.post(API_BASE_URL, formData);
+        // POST: Crea un nuevo perfil
+        await axios.post(API_BASE_URL, formData); // NOTE: Se recomienda usar un componente de notificación en lugar de alert()
         alert("Perfil creado exitosamente");
       }
 
       closeModal();
-      fetchPerfiles(); // Recargar la lista después de la operación
+      fetchPerfiles(); // Recarga la lista para mostrar los cambios
     } catch (error) {
+      // Intenta extraer el mensaje de error del backend
       const msg =
         error.response?.data?.message ||
         `Error en el servidor al ${
@@ -110,33 +111,33 @@ const PerfilManagement = () => {
       setFormError(msg);
       console.error(error);
     }
-  };
+  }; // Función para HABILITAR/INHABILITAR (PUT)
 
-  // Función para HABILITAR/INHABILITAR (PUT)
   const handleToggleEstado = async (perfil) => {
     const nuevoEstado = perfil.estado === 1 ? 0 : 1;
-    const accion = perfil.estado === 1 ? "inhabilitar" : "habilitar";
+    const accion = perfil.estado === 1 ? "inhabilitar" : "habilitar"; // NOTE: Reemplazar 'confirm' por un modal de confirmación personalizado
 
     if (!confirm(`¿Está seguro de ${accion} el perfil ${perfil.nombre}?`))
       return;
 
     try {
+      // Solo envía el campo 'estado' para actualizar
       await axios.put(`${API_BASE_URL}/${perfil.id_perfil}`, {
         estado: nuevoEstado,
-      });
+      }); // NOTE: Reemplazar 'alert' por una notificación personalizada
 
       alert(`Perfil ${accion}do exitosamente`);
       fetchPerfiles(); // Recargar la lista para mostrar el cambio
     } catch (error) {
       const msg =
-        error.response?.data?.message || `Error al ${accion} el perfil.`;
+        error.response?.data?.message || `Error al ${accion} el perfil.`; // NOTE: Reemplazar 'alert' por una notificación personalizada
       alert(`Error: ${msg}`);
       console.error(error);
     }
-  };
+  }; // Función para ELIMINAR (DELETE)
 
-  // Función para ELIMINAR (DELETE)
   const handleEliminar = async (perfil) => {
+    // NOTE: Reemplazar 'confirm' por un modal de confirmación personalizado
     if (
       !confirm(
         `¿Está seguro de ELIMINAR PERMANENTEMENTE el perfil ${perfil.nombre}? Esta acción no se puede deshacer.`
@@ -145,119 +146,138 @@ const PerfilManagement = () => {
       return;
 
     try {
-      // Petición DELETE
-      await axios.delete(`${API_BASE_URL}/${perfil.id_perfil}`);
+      await axios.delete(`${API_BASE_URL}/${perfil.id_perfil}`); // Petición DELETE // NOTE: Reemplazar 'alert' por una notificación personalizada
 
       alert("Perfil eliminado exitosamente");
       fetchPerfiles(); // Recargar la lista
     } catch (error) {
       const msg =
         error.response?.data?.message ||
-        "Error al eliminar el perfil. Puede que tenga usuarios asociados.";
+        "Error al eliminar el perfil. Puede que tenga usuarios asociados."; // NOTE: Reemplazar 'alert' por una notificación personalizada
       alert(`Error: ${msg}`);
       console.error(error);
     }
-  };
+  }; // ==================================================================== // RENDERIZADO CONDICIONAL DE ESTADOS // ==================================================================== // Mensaje de Carga
 
-  // --- Renderizado y Lógica de UI ---
-
-  // Mensajes de Carga y Error Global de la API
   if (isLoading) {
     return (
       <div className="text-center py-20">
+               {" "}
         <p className="text-xl text-cyan-600 font-semibold">
-          Cargando perfiles desde el servidor...
+                    Cargando perfiles desde el servidor...        {" "}
         </p>
+             {" "}
       </div>
     );
-  }
+  } // Mensaje de Error de Conexión
 
   if (apiError) {
     return (
       <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-        <strong className="font-bold">Error de Conexión: </strong>
-        <span className="block sm:inline">{apiError}</span>
+                <strong className="font-bold">Error de Conexión: </strong>     
+          <span className="block sm:inline">{apiError}</span>       {" "}
         <button
           onClick={fetchPerfiles}
           className="ml-4 underline font-semibold"
         >
-          Intentar Recargar
+                    Intentar Recargar        {" "}
         </button>
+             {" "}
       </div>
     );
-  }
+  } // ==================================================================== // RENDERIZADO PRINCIPAL // ====================================================================
 
   return (
-    <div className="space-y-6">
-      {/* Header */}
+    <div className="space-y-6 p-4 md:p-8 bg-gray-50 min-h-screen">
+            {/* Header y Botón Crear */}     {" "}
       <div className="flex items-center justify-between">
+               {" "}
         <div>
+                   {" "}
           <h1 className="text-3xl font-bold text-gray-800">
-            Gestión de Perfiles
+                        Gestión de Perfiles          {" "}
           </h1>
+                   {" "}
           <p className="text-gray-600 mt-2">Administra los roles del sistema</p>
+                 {" "}
         </div>
-
+               {" "}
         <button
           onClick={() => openModal()}
-          className="flex items-center space-x-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md"
+          className="flex items-center space-x-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white px-6 py-3 rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-lg shadow-cyan-500/50"
           title="Nuevo Perfil"
         >
-          <Plus className="w-5 h-5" />
-          <span>Nuevo Perfil</span>
+                    <Plus className="w-5 h-5" />         {" "}
+          <span>Nuevo Perfil</span>       {" "}
         </button>
+             {" "}
       </div>
-
-      {/* Buscador */}
+            {/* Buscador */}     {" "}
       <div className="bg-white rounded-xl shadow-md p-4">
+               {" "}
         <div className="relative">
+                   {" "}
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+                   {" "}
           <input
             type="text"
-            placeholder="Buscar perfil..."
+            placeholder="Buscar perfil por nombre o descripción..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
           />
+                 {" "}
         </div>
+             {" "}
       </div>
-
-      {/* Tabla */}
-      <div className="bg-white rounded-xl shadow-md overflow-hidden">
-        <table className="w-full">
+            {/* Tabla de Perfiles */}     {" "}
+      <div className="bg-white rounded-xl shadow-md overflow-x-auto">
+               {" "}
+        <table className="min-w-full divide-y divide-gray-200">
+                   {" "}
           <thead className="bg-gray-50 border-b border-gray-200">
+                       {" "}
             <tr>
+                           {" "}
               {["ID", "Nombre", "Descripción", "Estado", "Acciones"].map(
                 (h) => (
                   <th
                     key={h}
-                    className={`px-6 py-4 text-left text-sm font-semibold text-gray-700 ${
+                    className={`px-6 py-4 text-left text-sm font-semibold text-gray-700 whitespace-nowrap ${
                       h === "Acciones" ? "text-center" : ""
                     }`}
                   >
-                    {h}
+                                        {h}                 {" "}
                   </th>
                 )
               )}
+                         {" "}
             </tr>
+                     {" "}
           </thead>
-
+                   {" "}
           <tbody className="divide-y divide-gray-200">
+                       {" "}
             {filteredPerfiles.map((perfil) => (
               <tr
                 key={perfil.id_perfil}
                 className="hover:bg-gray-50 transition-colors"
               >
+                               {" "}
                 <td className="px-6 py-4 text-sm text-gray-800">
-                  {perfil.id_perfil}
+                                    {perfil.id_perfil}               {" "}
                 </td>
+                               {" "}
                 <td className="px-6 py-4 text-sm font-medium text-gray-800">
-                  {perfil.nombre}
+                                    {perfil.nombre}               {" "}
                 </td>
-                <td className="px-6 py-4 text-sm text-gray-600">
-                  {perfil.descripcion}
+                               {" "}
+                <td className="px-6 py-4 text-sm text-gray-600 max-w-xs truncate">
+                                    {perfil.descripcion}               {" "}
                 </td>
+                               {" "}
                 <td className="px-6 py-4">
+                                   {" "}
                   <span
                     className={`inline-flex px-3 py-1 rounded-full text-xs font-semibold ${
                       perfil.estado === 1
@@ -265,22 +285,27 @@ const PerfilManagement = () => {
                         : "bg-red-100 text-red-700"
                     }`}
                   >
-                    {perfil.estado === 1 ? "Activo" : "Inactivo"}
+                                       {" "}
+                    {perfil.estado === 1 ? "Activo" : "Inactivo"}               
+                     {" "}
                   </span>
+                                 {" "}
                 </td>
-
-                {/* ACCIONES */}
+                                {/* ACCIONES */}               {" "}
                 <td className="px-6 py-4">
+                                   {" "}
                   <div className="flex items-center justify-center space-x-2">
+                                       {" "}
                     <button
                       onClick={() => openModal(perfil)}
                       className="p-2 text-blue-600 hover:bg-blue-50 rounded-lg transition-all"
                       title="Editar"
                     >
-                      <Edit2 className="w-4 h-4" />
+                                            <Edit2 className="w-4 h-4" />       
+                                 {" "}
                     </button>
-
-                    {/* Botón Inhabilitar/Habilitar */}
+                                        {/* Botón Inhabilitar/Habilitar */}     
+                                 {" "}
                     <button
                       onClick={() => handleToggleEstado(perfil)}
                       className={`px-3 py-1 rounded-lg text-xs font-semibold transition-all ${
@@ -290,70 +315,87 @@ const PerfilManagement = () => {
                       }`}
                       title={perfil.estado === 1 ? "Inhabilitar" : "Habilitar"}
                     >
-                      {perfil.estado === 1 ? "Inhabilitar" : "Habilitar"}
+                                           {" "}
+                      {perfil.estado === 1 ? "Inhabilitar" : "Habilitar"}       
+                                 {" "}
                     </button>
-
-                    {/* Botón Eliminar */}
+                                        {/* Botón Eliminar */}                 
+                     {" "}
                     <button
                       onClick={() => handleEliminar(perfil)}
                       className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-all"
                       title="Eliminar permanentemente"
                     >
-                      <Trash2 className="w-4 h-4" />
+                                            <Trash2 className="w-4 h-4" />     
+                                   {" "}
                     </button>
+                                     {" "}
                   </div>
+                                 {" "}
                 </td>
-                {/* FIN ACCIONES */}
+                                {/* FIN ACCIONES */}             {" "}
               </tr>
             ))}
+                     {" "}
           </tbody>
+                 {" "}
         </table>
-
+               {" "}
         {filteredPerfiles.length === 0 && (
           <div className="text-center py-12">
-            <p className="text-gray-500">No se encontraron perfiles</p>
+                       {" "}
+            <p className="text-gray-500">No se encontraron perfiles</p>         {" "}
           </div>
         )}
+             {" "}
       </div>
-
-      {/* Modal */}
+            {/* Modal de Creación/Edición */}     {" "}
       {showModal && (
         <div
-          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 backdrop-blur-sm z-50 flex items-center justify-center p-4 transition-opacity"
           onClick={closeModal}
         >
+                   {" "}
           <div
-            className="bg-white rounded-2xl max-w-md w-full shadow-2xl"
+            className="bg-white rounded-2xl max-w-md w-full shadow-2xl transition-transform"
             onClick={(e) => e.stopPropagation()}
           >
-            {/* Header */}
+                        {/* Header del Modal */}           {" "}
             <div className="flex items-center justify-between p-6 border-b border-gray-200">
+                           {" "}
               <h3 className="text-xl font-bold text-gray-800">
-                {editingPerfil ? "Editar Perfil" : "Nuevo Perfil"}
+                               {" "}
+                {editingPerfil ? "Editar Perfil" : "Nuevo Perfil"}             {" "}
               </h3>
+                           {" "}
               <button
                 onClick={closeModal}
                 className="text-gray-400 hover:text-gray-600 transition-colors"
                 aria-label="Cerrar"
               >
-                <X className="w-6 h-6" />
+                                <X className="w-6 h-6" />             {" "}
               </button>
+                         {" "}
             </div>
-
-            {/* Body */}
+                        {/* Cuerpo del Formulario */}           {" "}
             <div className="p-6 space-y-4">
-              {/* Muestra el error del formulario o de la API */}
+                            {/* Muestra el error del formulario */}             {" "}
               {formError && (
                 <div className="bg-red-50 border border-red-200 rounded-lg p-3 flex items-center space-x-2">
-                  <AlertCircle className="w-5 h-5 text-red-600" />
-                  <p className="text-sm text-red-600">{formError}</p>
+                                   {" "}
+                  <AlertCircle className="w-5 h-5 text-red-600" />             
+                      <p className="text-sm text-red-600">{formError}</p>       
+                         {" "}
                 </div>
               )}
-
+                            {/* Campo Nombre */}             {" "}
               <div>
+                               {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Nombre del perfil <span className="text-red-500">*</span>
+                                    Nombre del perfil{" "}
+                  <span className="text-red-500">*</span>               {" "}
                 </label>
+                               {" "}
                 <input
                   type="text"
                   value={formData.nombre}
@@ -361,12 +403,15 @@ const PerfilManagement = () => {
                   placeholder="Ej: Moderador"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
+                             {" "}
               </div>
-
+                            {/* Campo Descripción */}             {" "}
               <div>
+                               {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Descripción
+                                    Descripción                {" "}
                 </label>
+                               {" "}
                 <textarea
                   value={formData.descripcion}
                   onChange={(e) => handleChange("descripcion", e.target.value)}
@@ -374,43 +419,54 @@ const PerfilManagement = () => {
                   rows="3"
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 />
+                             {" "}
               </div>
-
+                            {/* Campo Estado */}             {" "}
               <div>
+                               {" "}
                 <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Estado
+                                    Estado                {" "}
                 </label>
+                               {" "}
                 <select
-                  value={String(formData.estado)}
-                  onChange={(e) =>
-                    handleChange("estado", parseInt(e.target.value))
+                  value={String(formData.estado)} // Convertir a string para el select
+                  onChange={
+                    (e) => handleChange("estado", parseInt(e.target.value)) // Convertir de nuevo a número
                   }
                   className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
                 >
-                  <option value="1">Activo</option>
-                  <option value="0">Inactivo</option>
+                                    <option value="1">Activo</option>           
+                        <option value="0">Inactivo</option>               {" "}
                 </select>
+                             {" "}
               </div>
+                         {" "}
             </div>
-
-            {/* Footer */}
+                        {/* Footer y Botones de Acción */}           {" "}
             <div className="flex items-center justify-end space-x-3 p-6 border-t border-gray-200">
+                           {" "}
               <button
                 onClick={closeModal}
                 className="px-6 py-2 border border-gray-300 rounded-lg text-gray-700 hover:bg-gray-50 transition-all"
               >
-                Cancelar
+                                Cancelar              {" "}
               </button>
+                           {" "}
               <button
                 onClick={handleGuardar}
                 className="px-6 py-2 bg-gradient-to-r from-cyan-500 to-blue-500 text-white rounded-lg hover:from-cyan-600 hover:to-blue-600 transition-all shadow-md"
               >
-                {editingPerfil ? "Actualizar" : "Crear"}
+                                {editingPerfil ? "Actualizar" : "Crear"}       
+                     {" "}
               </button>
+                         {" "}
             </div>
+                     {" "}
           </div>
+                 {" "}
         </div>
       )}
+         {" "}
     </div>
   );
 };
