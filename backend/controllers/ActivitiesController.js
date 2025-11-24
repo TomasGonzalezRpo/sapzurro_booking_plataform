@@ -1,16 +1,18 @@
 // src/controllers/ActivitiesController.js
 
-import { activities } from "../data/Activities.js"; // 🔑 IMPORTAR ACTIVIDADES
+import { activities } from "../data/Activities.js"; // Traemos la lista de actividades
 
-// 🔑 OBTENER TODAS LAS ACTIVIDADES
+// Función para obtener todas las actividades
 const getActivities = async (req, res) => {
   try {
+    // Devolver la lista de actividades en formato JSON
     res.json({
       success: true,
-      data: activities,
-      count: activities.length,
+      data: activities, // La data de las actividades
+      count: activities.length, // Cuantas actividades hay
     });
   } catch (error) {
+    // Si algo falla, devolver un error 500
     res.status(500).json({
       success: false,
       message: "Error al obtener actividades",
@@ -19,28 +21,29 @@ const getActivities = async (req, res) => {
   }
 };
 
-// 🔑 OBTENER ACTIVIDAD POR ID O NOMBRE
+// Función para buscar una actividad por su ID o nombre
 const getActivityById = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // Obtenemos el ID de los parámetros de la URL // Buscamos la actividad en la lista
 
-    // Buscar por nombre o por id
     const activity = activities.find(
-      (act) => act.name === id || act.name.toLowerCase() === id.toLowerCase()
+      (act) => act.name === id || act.name.toLowerCase() === id.toLowerCase() // Compara por nombre y también ignorando mayúsculas
     );
 
     if (!activity) {
+      // Si no la encuentra, devuelve un error 404
       return res.status(404).json({
         success: false,
         message: "Actividad no encontrada",
       });
-    }
+    } // Si la encuentra, devuelve la actividad
 
     res.json({
       success: true,
       data: activity,
     });
   } catch (error) {
+    // Si hay un error de servidor
     res.status(500).json({
       success: false,
       message: "Error al obtener la actividad",
@@ -49,46 +52,45 @@ const getActivityById = async (req, res) => {
   }
 };
 
-// 🔑 VALIDAR DISPONIBILIDAD DE ACTIVIDAD
-// (Útil para futuras integraciones con calendario/disponibilidad)
+// Función para verificar si la actividad está disponible
 const checkAvailability = async (req, res) => {
   try {
-    const { id, fecha, horario, cantidad_personas } = req.body;
+    // Obtenemos los datos que envía el usuario
+    const { id, fecha, horario, cantidad_personas } = req.body; // Buscamos la actividad por ID o nombre
 
-    // 1️⃣ Buscar la actividad
     const activity = activities.find(
       (act) => act.name === id || act.name.toLowerCase() === id.toLowerCase()
     );
 
     if (!activity) {
+      // Si no existe, error 404
       return res.status(404).json({
         success: false,
         message: "Actividad no encontrada",
       });
-    }
+    } // Revisamos que la cantidad de personas no exceda el máximo
 
-    // 2️⃣ Validar cantidad de personas
     if (cantidad_personas > activity.maxParticipants) {
+      // Si excede, error 400
       return res.status(400).json({
         success: false,
         message: `La cantidad de personas (${cantidad_personas}) excede el máximo permitido (${activity.maxParticipants})`,
         maxAllowed: activity.maxParticipants,
       });
-    }
+    } // Validamos que la fecha no sea en el pasado
 
-    // 3️⃣ Validar fecha (no en el pasado)
-    const fechaReserva = new Date(fecha);
+    const fechaReserva = new Date(fecha); // Convertimos la fecha del body a objeto Date
     const hoy = new Date();
-    hoy.setHours(0, 0, 0, 0);
+    hoy.setHours(0, 0, 0, 0); // Ponemos la hora de hoy a 00:00:00
 
     if (fechaReserva < hoy) {
+      // Si la fecha es pasada, error 400
       return res.status(400).json({
         success: false,
         message: "La fecha de la reserva no puede ser en el pasado",
       });
-    }
+    } // Si todo está OK, decimos que está disponible
 
-    // 4️⃣ Si llegó aquí, está disponible
     res.json({
       success: true,
       available: true,
@@ -96,10 +98,11 @@ const checkAvailability = async (req, res) => {
       activity: {
         name: activity.name,
         price: activity.price,
-        totalPrice: activity.price * cantidad_personas,
+        totalPrice: activity.price * cantidad_personas, // Calculamos el precio total
       },
     });
   } catch (error) {
+    // Error de servidor
     res.status(500).json({
       success: false,
       message: "Error al verificar disponibilidad",
@@ -108,33 +111,34 @@ const checkAvailability = async (req, res) => {
   }
 };
 
-// 🔑 OBTENER DETALLES DE UNA ACTIVIDAD (COMPLETO)
+// Función para obtener todos los detalles de una actividad
 const getActivityDetails = async (req, res) => {
   try {
-    const { id } = req.params;
+    const { id } = req.params; // ID o nombre de la actividad // Buscamos la actividad
 
     const activity = activities.find(
       (act) => act.name === id || act.name.toLowerCase() === id.toLowerCase()
     );
 
     if (!activity) {
+      // Error 404 si no existe
       return res.status(404).json({
         success: false,
         message: "Actividad no encontrada",
       });
-    }
+    } // Sacamos la propiedad 'imagenes' para no devolver los imports
 
-    // Retornar detalles completos sin las imágenes (ya que son imports)
-    const { imagenes, ...activityData } = activity;
+    const { imagenes, ...activityData } = activity; // Devolvemos el resto de los detalles
 
     res.json({
       success: true,
       data: {
-        ...activityData,
-        imageCount: imagenes ? imagenes.length : 0,
+        ...activityData, // Todos los datos de la actividad
+        imageCount: imagenes ? imagenes.length : 0, // Contamos cuántas imágenes tiene
       },
     });
   } catch (error) {
+    // Error de servidor
     res.status(500).json({
       success: false,
       message: "Error al obtener detalles de la actividad",
@@ -143,19 +147,18 @@ const getActivityDetails = async (req, res) => {
   }
 };
 
-// 🔑 VALIDAR DATOS DE RESERVA DE ACTIVIDAD
-// (Llamado antes de crear la reserva)
+// Función para validar los datos antes de hacer una reserva real
 const validateActivityReservation = async (req, res) => {
   try {
+    // Obtenemos todos los datos que vienen en el body
     const {
-      id_servicio,
+      id_servicio, // El ID de la actividad que queremos reservar
       fecha_inicio,
       cantidad_personas,
       precio_unitario,
       precio_total,
-    } = req.body;
+    } = req.body; // Buscamos la actividad
 
-    // 1️⃣ Buscar actividad
     const activity = activities.find(
       (act) =>
         act.name === id_servicio ||
@@ -163,19 +166,19 @@ const validateActivityReservation = async (req, res) => {
     );
 
     if (!activity) {
+      // Error si no se encuentra
       return res.status(404).json({
         success: false,
         message: "Actividad no encontrada",
       });
-    }
+    } // Validamos que haya al menos 1 persona
 
-    // 2️⃣ Validar cantidad de personas
     if (cantidad_personas < 1) {
       return res.status(400).json({
         success: false,
         message: "Cantidad de personas debe ser al menos 1",
       });
-    }
+    } // Validamos el límite máximo de personas
 
     if (cantidad_personas > activity.maxParticipants) {
       return res.status(400).json({
@@ -183,11 +186,11 @@ const validateActivityReservation = async (req, res) => {
         message: `Cantidad de personas excede el máximo: ${activity.maxParticipants}`,
         maxAllowed: activity.maxParticipants,
       });
-    }
+    } // Creamos un objeto Date para validar la fecha
 
-    // 3️⃣ Validar fecha (formato ISO y no en pasado)
     const fecha = new Date(fecha_inicio);
     if (isNaN(fecha.getTime())) {
+      // Si no es una fecha válida
       return res.status(400).json({
         success: false,
         message: "Formato de fecha inválido",
@@ -196,13 +199,13 @@ const validateActivityReservation = async (req, res) => {
 
     const ahora = new Date();
     if (fecha < ahora) {
+      // Si la fecha es en el pasado
       return res.status(400).json({
         success: false,
         message: "La fecha no puede ser en el pasado",
       });
-    }
+    } // Validamos que el precio total sea correcto
 
-    // 4️⃣ Validar precio
     const precioEsperado = activity.price * cantidad_personas;
     if (precio_total !== precioEsperado) {
       return res.status(400).json({
@@ -210,7 +213,7 @@ const validateActivityReservation = async (req, res) => {
         message: `Precio total incorrecto. Esperado: ${precioEsperado}, Recibido: ${precio_total}`,
         expectedPrice: precioEsperado,
       });
-    }
+    } // Validamos que el precio unitario sea correcto
 
     if (precio_unitario !== activity.price) {
       return res.status(400).json({
@@ -218,9 +221,8 @@ const validateActivityReservation = async (req, res) => {
         message: `Precio unitario incorrecto. Esperado: ${activity.price}, Recibido: ${precio_unitario}`,
         expectedPrice: activity.price,
       });
-    }
+    } // Todo validado, enviamos un OK
 
-    // 5️⃣ Si llegó aquí, todo es válido
     res.json({
       success: true,
       valid: true,
@@ -233,6 +235,7 @@ const validateActivityReservation = async (req, res) => {
       },
     });
   } catch (error) {
+    // Error de servidor
     res.status(500).json({
       success: false,
       message: "Error validando reserva",
@@ -241,6 +244,7 @@ const validateActivityReservation = async (req, res) => {
   }
 };
 
+// Exportamos todas las funciones para que se puedan usar en las rutas
 export {
   getActivities,
   getActivityById,

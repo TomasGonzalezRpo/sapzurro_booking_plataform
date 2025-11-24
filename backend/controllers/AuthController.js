@@ -1,23 +1,23 @@
 // backend/controllers/AuthController.js
-const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
-const crypto = require("crypto");
-const { Usuario, Persona, Perfil } = require("../models/index");
-const emailService = require("../services/emailService");
+const bcrypt = require("bcrypt"); // Para encriptar contraseñas
+const jwt = require("jsonwebtoken"); // Para generar tokens
+const crypto = require("crypto"); // Para generar tokens seguros
+const { Usuario, Persona, Perfil } = require("../models/index"); // Importamos los modelos
+const emailService = require("../services/emailService"); // Para enviar correos
 
-const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
-const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
+const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret"; // El secreto para JWT
+const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d"; // Tiempo de expiración del token
 
-// Helper: construir payload de usuario
+// Función para armar el objeto de usuario que se devuelve al frontend
 const buildUserPayload = (usuarioInstance) => {
-  if (!usuarioInstance) return null;
+  if (!usuarioInstance) return null; // Si no hay usuario, devolver null
   const persona = usuarioInstance.personaInfo || {};
   const perfil = usuarioInstance.perfil || {};
   return {
     id_usuario: usuarioInstance.id_usuario,
     username: usuarioInstance.usuario,
     id_perfil: usuarioInstance.id_perfil,
-    rol: perfil.nombre || "Usuario",
+    rol: perfil.nombre || "Usuario", // Nombre del perfil o rol
     nombres: persona.nombres || "",
     apellidos: persona.apellidos || "",
     correo: persona.correo || "",
@@ -28,9 +28,9 @@ const buildUserPayload = (usuarioInstance) => {
 /* =============== REGISTRO =============== */
 exports.register = async (req, res) => {
   const sequelize = Usuario.sequelize;
-  const t = await sequelize.transaction();
+  const t = await sequelize.transaction(); // Iniciamos una transacción para que todo vaya junto
   try {
-    console.log("AuthController.register payload:", req.body);
+    console.log("AuthController.register payload:", req.body); // Ver lo que llegó // Desestructuramos los datos del body
 
     const {
       usuario,
@@ -46,16 +46,16 @@ exports.register = async (req, res) => {
       id_perfil,
     } = req.body;
 
-    const plainPassword = password || contrasena;
+    const plainPassword = password || contrasena; // Aceptar 'password' o 'contrasena' // Validamos que los campos obligatorios existan
 
     if (!usuario || !plainPassword || !nombres || !apellidos || !correo) {
-      await t.rollback();
+      await t.rollback(); // Deshacer si falta algo
       return res.status(400).json({
         success: false,
         message:
           "Faltan campos obligatorios (usuario, contraseña, nombres, apellidos, correo).",
       });
-    }
+    } // 1. Verificar si el nombre de usuario ya existe
 
     const existingUser = await Usuario.findOne({
       where: { usuario },
@@ -67,13 +67,14 @@ exports.register = async (req, res) => {
         success: false,
         message: "El nombre de usuario ya está en uso.",
       });
-    }
+    } // 2. Verificar si ya existe una persona con ese correo
 
     const existingPersona = await Persona.findOne({
       where: { correo },
       transaction: t,
     });
     if (existingPersona) {
+      // Revisar si esa persona ya tiene un usuario asociado
       const usuarioRelacionado = await Usuario.findOne({
         where: { id_persona: existingPersona.id_persona },
         transaction: t,
@@ -85,7 +86,7 @@ exports.register = async (req, res) => {
           message: "Ya existe un usuario asociado a ese correo.",
         });
       }
-    }
+    } // 3. Crear la Persona si no existe (o usar la existente)
 
     let personaInstance = existingPersona;
     if (!personaInstance) {
@@ -98,43 +99,42 @@ exports.register = async (req, res) => {
           direccion: direccion || null,
           tipo_documento: tipo_documento || "",
           numero_documento: numero_documento || "",
-          estado: 1,
+          estado: 1, // Persona activa
         },
         { transaction: t }
       );
-    }
+    } // Encriptamos la contraseña
 
-    const hashed = await bcrypt.hash(plainPassword, 10);
+    const hashed = await bcrypt.hash(plainPassword, 10); // 4. Crear el Usuario
 
     const nuevoUsuario = await Usuario.create(
       {
         usuario,
         password: hashed,
         id_persona: personaInstance.id_persona,
-        id_perfil: id_perfil || 2,
-        estado: 1,
-        provider: "local",
+        id_perfil: id_perfil || 2, // Por defecto, perfil 2 (cliente/usuario)
+        estado: 1, // Usuario activo
+        provider: "local", // Indica que se registró localmente
       },
       { transaction: t }
     );
 
-    await t.commit();
+    await t.commit(); // Confirmamos la transacción // 5. Buscar el usuario recién creado con toda la información
 
     const usuarioFull = await Usuario.findByPk(nuevoUsuario.id_usuario, {
       include: [
         { model: Persona, as: "personaInfo" },
         { model: Perfil, as: "perfil" },
       ],
-      attributes: { exclude: ["password"] },
+      attributes: { exclude: ["password"] }, // No devolver el hash de la contraseña
     });
 
-    const payload = buildUserPayload(usuarioFull);
-
+    const payload = buildUserPayload(usuarioFull); // Creamos el objeto de respuesta // Generamos el Token
     const token = jwt.sign(
       { id_usuario: payload.id_usuario, username: payload.username },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
-    );
+    ); // Respuesta de éxito
 
     return res.status(201).json({
       success: true,
@@ -143,9 +143,10 @@ exports.register = async (req, res) => {
       token,
     });
   } catch (error) {
-    await t.rollback();
-    console.error("AuthController.register error:", error);
+    await t.rollback(); // Deshacemos la transacción si hay error
+    console.error("AuthController.register error:", error); // Imprimir el error
     if (error.name === "SequelizeUniqueConstraintError") {
+      // Manejar errores de campos duplicados (ej: usuario duplicado)
       const msg =
         error.errors?.map((e) => e.message).join("; ") || "Valor duplicado";
       return res.status(400).json({ success: false, message: msg });
@@ -160,10 +161,11 @@ exports.register = async (req, res) => {
 /* =============== LOGIN =============== */
 exports.login = async (req, res) => {
   try {
+    // Obtenemos datos del body
     const { correo, password, contrasena, usuario: usuarioInput } = req.body;
-    const plainPassword = password || contrasena;
+    const plainPassword = password || contrasena; // El identificador puede ser correo o nombre de usuario
     const identifier =
-      correo || usuarioInput || req.body.username || req.body.email;
+      correo || usuarioInput || req.body.username || req.body.email; // Validamos que hayan enviado los datos necesarios
 
     if (!identifier || !plainPassword) {
       return res
@@ -173,8 +175,10 @@ exports.login = async (req, res) => {
 
     let usuario = null;
     if (correo) {
+      // Buscar primero por correo
       const persona = await Persona.findOne({ where: { correo } });
       if (persona) {
+        // Si existe la persona, buscar su usuario asociado con sus datos de perfil
         usuario = await Usuario.findOne({
           where: { id_persona: persona.id_persona },
           include: [
@@ -183,7 +187,7 @@ exports.login = async (req, res) => {
           ],
         });
       }
-    }
+    } // Si no se encontró por correo, intentar buscar por nombre de usuario
 
     if (!usuario) {
       usuario = await Usuario.findOne({
@@ -196,28 +200,30 @@ exports.login = async (req, res) => {
     }
 
     if (!usuario) {
+      // Si no se encuentra el usuario, credenciales inválidas
       return res.status(400).json({ message: "Credenciales inválidas." });
-    }
+    } // Comparar la contraseña ingresada con el hash guardado
 
     const match = await bcrypt.compare(plainPassword, usuario.password);
     if (!match) {
+      // Si no coinciden, contraseña incorrecta
       return res.status(401).json({ message: "Contraseña incorrecta." });
-    }
+    } // Verificar si el usuario está activo (estado = 1)
 
     if (usuario.estado !== 1) {
       return res.status(403).json({ message: "Usuario inactivo." });
-    }
+    } // Construir payload y generar token
 
     const payload = buildUserPayload(usuario);
     const token = jwt.sign(
       { id_usuario: payload.id_usuario, username: payload.username },
       JWT_SECRET,
       { expiresIn: JWT_EXPIRES_IN }
-    );
+    ); // Respuesta exitosa con datos de usuario y token
 
     return res.status(200).json({ user: payload, token });
   } catch (error) {
-    console.error("AuthController.login error:", error);
+    console.error("AuthController.login error:", error); // Imprimir error
     return res
       .status(500)
       .json({ message: "Error al autenticar", error: error.message });
@@ -227,8 +233,9 @@ exports.login = async (req, res) => {
 /* =============== REGISTRO ALIADO =============== */
 exports.registerAliado = async (req, res) => {
   const sequelize = Usuario.sequelize;
-  const t = await sequelize.transaction();
+  const t = await sequelize.transaction(); // Iniciar transacción
   try {
+    // Obtener datos del aliado
     const {
       usuario,
       password,
@@ -245,7 +252,7 @@ exports.registerAliado = async (req, res) => {
       descripcionNegocio,
     } = req.body;
 
-    const plainPassword = password || contrasena;
+    const plainPassword = password || contrasena; // Validar campos obligatorios para el registro de aliado
 
     if (
       !usuario ||
@@ -261,7 +268,7 @@ exports.registerAliado = async (req, res) => {
         success: false,
         message: "Faltan campos obligatorios para registro de aliado.",
       });
-    }
+    } // 1. Verificar nombre de usuario
 
     const userExists = await Usuario.findOne({
       where: { usuario },
@@ -272,13 +279,14 @@ exports.registerAliado = async (req, res) => {
       return res
         .status(400)
         .json({ success: false, message: "Nombre de usuario ya existe." });
-    }
+    } // 2. Verificar correo
 
     const personaExist = await Persona.findOne({
       where: { correo },
       transaction: t,
     });
     if (personaExist) {
+      // Si existe la persona, verificar que no tenga usuario activo
       const usuarioRelacionado = await Usuario.findOne({
         where: { id_persona: personaExist.id_persona },
         transaction: t,
@@ -290,7 +298,7 @@ exports.registerAliado = async (req, res) => {
           message: "Ya existe un usuario asociado a ese correo.",
         });
       }
-    }
+    } // 3. Crear el registro de Persona
 
     const nuevaPersona = await Persona.create(
       {
@@ -301,35 +309,38 @@ exports.registerAliado = async (req, res) => {
         direccion: direccion || null,
         tipo_documento: tipo_documento || "",
         numero_documento: numero_documento || "",
-        estado: 1,
+        estado: 1, // Persona activa
       },
       { transaction: t }
-    );
+    ); // Encriptar la contraseña
 
-    const hashed = await bcrypt.hash(plainPassword, 10);
+    const hashed = await bcrypt.hash(plainPassword, 10); // 4. Crear el Usuario para el aliado
 
     await Usuario.create(
       {
         usuario,
         password: hashed,
         id_persona: nuevaPersona.id_persona,
-        id_perfil: 3,
-        estado: 0,
+        id_perfil: 3, // Perfil 3 es para Aliados
+        estado: 0, // Estado 0: Pendiente de aprobación
         provider: "local",
       },
       { transaction: t }
     );
 
-    await t.commit();
+    // Aquí iría la lógica para guardar la info del negocio (se omite si no hay un modelo Negocio)
+
+    await t.commit(); // Confirmamos la transacción // Respuesta de éxito (pendiente de aprobación)
 
     return res.status(201).json({
       success: true,
       message: "Solicitud de aliado enviada. Pendiente de aprobación.",
     });
   } catch (error) {
-    await t.rollback();
+    await t.rollback(); // Deshacemos la transacción
     console.error("AuthController.registerAliado error:", error);
     if (error.name === "SequelizeUniqueConstraintError") {
+      // Error de duplicidad
       const msg =
         error.errors?.map((e) => e.message).join("; ") || "Valor duplicado";
       return res.status(400).json({ success: false, message: msg });
@@ -348,16 +359,17 @@ exports.forgotPassword = async (req, res) => {
     if (!email)
       return res
         .status(400)
-        .json({ success: false, message: "Email requerido" });
+        .json({ success: false, message: "Email requerido" }); // Buscar si existe una persona con ese correo
 
     const persona = await Persona.findOne({ where: { correo: email } });
     if (!persona) {
+      // Responder siempre con éxito (para no dar pistas sobre emails existentes)
       return res.status(200).json({
         success: true,
         message:
           "Si existe una cuenta con ese correo, recibirás un enlace de recuperación.",
       });
-    }
+    } // Buscar el usuario asociado a esa persona
 
     const usuario = await Usuario.findOne({
       where: { id_persona: persona.id_persona },
@@ -365,32 +377,30 @@ exports.forgotPassword = async (req, res) => {
     });
 
     if (!usuario) {
+      // Responder con éxito si no hay usuario (caso borde)
       return res.status(200).json({
         success: true,
         message:
           "Si existe una cuenta con ese correo, recibirás un enlace de recuperación.",
       });
-    }
+    } // Generar un token de recuperación aleatorio
 
-    // Generar token de recuperación
-    const rawToken = crypto.randomBytes(32).toString("hex");
+    const rawToken = crypto.randomBytes(32).toString("hex"); // Hashear el token antes de guardarlo en la base de datos
     const hashedToken = crypto
       .createHash("sha256")
       .update(rawToken)
       .digest("hex");
-    const expires = Date.now() + 60 * 60 * 1000;
+    const expires = Date.now() + 60 * 60 * 1000; // Expira en 1 hora // Guardar el token hasheado y la expiración en el usuario
 
     usuario.resetPasswordToken = hashedToken;
     usuario.resetPasswordExpires = expires;
-    await usuario.save();
+    await usuario.save(); // Construir el enlace que se enviará por correo
 
-    // Construir enlace de recuperación
     const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
     const recoveryLink = `${FRONTEND_URL}/reset-password?token=${rawToken}&email=${encodeURIComponent(
       email
-    )}`;
+    )}`; // Llamar al servicio de correo para enviar el email
 
-    // 📧 ENVIAR CORREO DESDE BACKEND
     try {
       const userName =
         usuario.personaInfo?.nombres || usuario.usuario || "Usuario";
@@ -398,7 +408,7 @@ exports.forgotPassword = async (req, res) => {
       console.log("✅ Correo de recuperación enviado a:", email);
     } catch (emailError) {
       console.error("⚠️ Error enviando correo:", emailError.message);
-    }
+    } // Respuesta final (siempre positiva)
 
     return res.status(200).json({
       success: true,
@@ -416,56 +426,58 @@ exports.forgotPassword = async (req, res) => {
 /* =============== RESTABLECER CONTRASEÑA =============== */
 exports.resetPassword = async (req, res) => {
   try {
+    // Obtener los datos del body
     const { token, email, newPassword } = req.body;
     if (!token || !email || !newPassword) {
       return res.status(400).json({
         success: false,
         message: "Faltan datos (token, email, newPassword).",
       });
-    }
+    } // 1. Buscar la persona por email
 
     const persona = await Persona.findOne({ where: { correo: email } });
     if (!persona) {
       return res
         .status(400)
         .json({ success: false, message: "Token inválido o expirado." });
-    }
+    } // 2. Buscar el usuario asociado
 
     const usuario = await Usuario.findOne({
       where: { id_persona: persona.id_persona },
       include: [{ model: Persona, as: "personaInfo" }],
-    });
+    }); // 3. Verificar si el usuario tiene un token de recuperación
 
     if (!usuario || !usuario.resetPasswordToken) {
       return res
         .status(400)
         .json({ success: false, message: "Token inválido o expirado." });
-    }
+    } // 4. Hashear el token recibido para compararlo con el guardado
 
     const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
     if (hashedToken !== usuario.resetPasswordToken) {
       return res
         .status(400)
         .json({ success: false, message: "Token inválido." });
-    }
+    } // 5. Verificar si el token ha expirado
 
     if (
       !usuario.resetPasswordExpires ||
       Date.now() > Number(usuario.resetPasswordExpires)
     ) {
+      // Limpiar token expirado y notificar
       usuario.resetPasswordToken = null;
       usuario.resetPasswordExpires = null;
       await usuario.save();
       return res
         .status(400)
         .json({ success: false, message: "Token expirado." });
-    }
+    } // 6. Si todo está OK, encriptar y actualizar la nueva contraseña
 
     const hashedPassword = await bcrypt.hash(newPassword, 10);
-    usuario.password = hashedPassword;
+    usuario.password = hashedPassword; // Limpiar el token y la fecha de expiración
     usuario.resetPasswordToken = null;
     usuario.resetPasswordExpires = null;
-    await usuario.save();
+    await usuario.save(); // Respuesta de éxito
 
     return res.status(200).json({
       success: true,
