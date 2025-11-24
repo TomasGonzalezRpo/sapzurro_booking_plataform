@@ -11,7 +11,7 @@ const Footer = () => {
         </div>
         <p className="text-cyan-100 mb-4">Tu puerta al paraíso caribeño</p>
         <p className="text-cyan-200 text-sm">
-          © 2024 Sapzurro Turismo. Todos los derechos reservados.
+          © 2025 Sapzurro Turismo. Todos los derechos reservados.
         </p>
       </div>
     </footer>
