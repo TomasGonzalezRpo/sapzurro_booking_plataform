@@ -6,17 +6,27 @@ require("dotenv").config();
 
 const { sequelize } = require("./models/index");
 
+// ====================================================================
+// IMPORTAR TODAS LAS RUTAS
+// ====================================================================
 const perfilRoutes = require("./routes/perfil.routes");
 const personaRoutes = require("./routes/persona.routes");
 const usuarioRoutes = require("./routes/usuario.routes");
 const authRoutes = require("./routes/auth.routes");
 const reservasRoutes = require("./routes/reservas.routes");
 
+// NUEVAS RUTAS
+const tipoPersonaRoutes = require("./routes/tipo-persona.routes");
+const alojamientoRoutes = require("./routes/alojamiento.routes");
+const rutaRoutes = require("./routes/ruta.routes");
+const tipoActividadRoutes = require("./routes/tipo-actividad.routes");
+const actividadRoutes = require("./routes/actividad.routes");
+
 const app = express();
 const PORT = process.env.PORT || 5000;
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 
-// ✅ MIDDLEWARE CORS MANUAL (funciona mejor que la librería cors)
+// MIDDLEWARE CORS MANUAL (funciona mejor que la librería cors)
 app.use((req, res, next) => {
   const origin = "http://localhost:5173";
   res.header("Access-Control-Allow-Origin", origin);
@@ -47,7 +57,7 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ✅ MIDDLEWARE DE AUTENTICACIÓN
+// MIDDLEWARE DE AUTENTICACIÓN
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
   const token = authHeader && authHeader.split(" ")[1]; // "Bearer TOKEN"
@@ -59,7 +69,7 @@ const authenticateToken = (req, res, next) => {
     console.log("❌ No hay token");
     return res.status(401).json({
       success: false,
-      message: "Debe iniciar sesión para completar la reserva",
+      message: "Debe iniciar sesión para completar la acción",
     });
   }
 
@@ -81,13 +91,21 @@ const authenticateToken = (req, res, next) => {
 // Mapeo de Rutas
 // ====================================================================
 
+// RUTAS PÚBLICAS
 app.use("/api/perfiles", perfilRoutes);
 app.use("/api/personas", personaRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/auth", authRoutes);
 
-// 🔒 RUTAS PROTEGIDAS
+// RUTAS PROTEGIDAS (requieren autenticación)
 app.use("/api/reservas", authenticateToken, reservasRoutes);
+
+// NUEVAS RUTAS PROTEGIDAS
+app.use("/api/tipos-persona", authenticateToken, tipoPersonaRoutes);
+app.use("/api/alojamientos", authenticateToken, alojamientoRoutes);
+app.use("/api/rutas", authenticateToken, rutaRoutes);
+app.use("/api/tipos-actividad", authenticateToken, tipoActividadRoutes);
+app.use("/api/actividades", authenticateToken, actividadRoutes);
 
 // 🔍 Ruta de prueba (para verificar que el servidor está corriendo)
 app.get("/health", (req, res) => {
@@ -114,7 +132,7 @@ const startServer = async () => {
 
     await sequelize.sync({ alter: false });
     console.log(
-      "🛠️ Modelos (Perfil, Persona, Usuario) sincronizados con la base de datos."
+      "🛠️ Modelos sincronizados con la base de datos (Perfil, TipoPersona, Persona, Usuario, Alojamiento, Ruta, TipoActividad, Actividad)."
     );
 
     app.listen(PORT, () => {
@@ -122,17 +140,61 @@ const startServer = async () => {
         `\n🚀 Servidor Express corriendo en http://localhost:${PORT}`
       );
       console.log(`🔐 CORS configurado para: http://localhost:5173`);
-      console.log(`\n📋 Rutas disponibles:`);
+      console.log(`\n📋 Rutas disponibles:\n`);
+
+      console.log(`   🔓 PÚBLICAS:`);
       console.log(`   ✅ GET  /health`);
       console.log(`   ✅ POST /api/auth/login`);
       console.log(`   ✅ POST /api/auth/register`);
       console.log(`   ✅ GET  /api/usuarios`);
       console.log(`   ✅ GET  /api/personas`);
       console.log(`   ✅ GET  /api/perfiles`);
-      console.log(`   🔒 POST /api/reservas (protegida)`);
-      console.log(`   🔒 GET  /api/reservas (protegida)`);
-      console.log(`   🔒 GET  /api/reservas/:id (protegida)`);
-      console.log(`   🔒 DELETE /api/reservas/:id (protegida)\n`);
+
+      console.log(`\n   🔒 PROTEGIDAS (requieren autenticación):`);
+      console.log(`   🔒 GET/POST  /api/reservas`);
+      console.log(`   🔒 GET/PUT/DELETE /api/reservas/:id`);
+
+      console.log(`\n   🔒 GESTIÓN DE TIPOS DE PERSONAS:`);
+      console.log(`   🔒 GET  /api/tipos-persona`);
+      console.log(`   🔒 GET  /api/tipos-persona/activos`);
+      console.log(`   🔒 GET  /api/tipos-persona/:id`);
+      console.log(`   🔒 POST /api/tipos-persona`);
+      console.log(`   🔒 PUT  /api/tipos-persona/:id`);
+      console.log(`   🔒 DELETE /api/tipos-persona/:id`);
+      console.log(`   🔒 GET  /api/alojamientos`);
+      console.log(`   🔒 GET  /api/alojamientos/activos`);
+      console.log(`   🔒 GET  /api/alojamientos/:id`);
+      console.log(`   🔒 POST /api/alojamientos`);
+      console.log(`   🔒 PUT  /api/alojamientos/:id`);
+      console.log(`   🔒 DELETE /api/alojamientos/:id`);
+
+      console.log(`\n   🔒 GESTIÓN DE RUTAS:`);
+      console.log(`   🔒 GET  /api/rutas`);
+      console.log(`   🔒 GET  /api/rutas/activas`);
+      console.log(`   🔒 GET  /api/rutas/duracion/:duracion`);
+      console.log(`   🔒 GET  /api/rutas/:id`);
+      console.log(`   🔒 POST /api/rutas`);
+      console.log(`   🔒 PUT  /api/rutas/:id`);
+      console.log(`   🔒 DELETE /api/rutas/:id`);
+
+      console.log(`\n   🔒 GESTIÓN DE TIPOS DE ACTIVIDADES:`);
+      console.log(`   🔒 GET  /api/tipos-actividad`);
+      console.log(`   🔒 GET  /api/tipos-actividad/activos`);
+      console.log(`   🔒 GET  /api/tipos-actividad/codigo/:codigo`);
+      console.log(`   🔒 GET  /api/tipos-actividad/:id`);
+      console.log(`   🔒 POST /api/tipos-actividad`);
+      console.log(`   🔒 PUT  /api/tipos-actividad/:id`);
+      console.log(`   🔒 DELETE /api/tipos-actividad/:id`);
+
+      console.log(`\n   🔒 GESTIÓN DE ACTIVIDADES ECOTURÍSTICAS:`);
+      console.log(`   🔒 GET  /api/actividades`);
+      console.log(`   🔒 GET  /api/actividades/estado/:estado`);
+      console.log(`   🔒 GET  /api/actividades/visitante/:id_persona`);
+      console.log(`   🔒 GET  /api/actividades/ruta/:id_ruta`);
+      console.log(`   🔒 GET  /api/actividades/:id`);
+      console.log(`   🔒 POST /api/actividades`);
+      console.log(`   🔒 PUT  /api/actividades/:id`);
+      console.log(`   🔒 DELETE /api/actividades/:id\n`);
     });
   } catch (error) {
     console.error("❌ Error al iniciar el servidor:", error.message);

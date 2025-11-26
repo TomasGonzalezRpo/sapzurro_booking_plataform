@@ -35,6 +35,7 @@ const UserMenu = () => {
   const getBadgeColor = () => {
     switch (user.rol) {
       case "Administrador":
+      case "Admin":
         return "bg-purple-100 text-purple-700 border-purple-300";
       case "Aliado":
         return "bg-emerald-100 text-emerald-700 border-emerald-300";
@@ -42,6 +43,11 @@ const UserMenu = () => {
         return "bg-blue-100 text-blue-700 border-blue-300";
     }
   };
+
+  // Verificar si es admin (acepta "Admin" o "Administrador")
+  const isAdmin = user.rol === "Administrador" || user.rol === "Admin";
+  const isAliado = user.rol === "Aliado";
+  const isAdminOrAliado = isAdmin || isAliado;
 
   return (
     <div className="relative" ref={menuRef}>
@@ -92,7 +98,7 @@ const UserMenu = () => {
           {/* Opciones del menú */}
           <div className="py-2">
             {/* Panel de control (solo para Admin y Aliado) */}
-            {(user.rol === "Administrador" || user.rol === "Aliado") && (
+            {isAdminOrAliado && (
               <button
                 onClick={() => {
                   setIsOpen(false);
@@ -106,8 +112,7 @@ const UserMenu = () => {
                 <div>
                   <p className="font-medium text-gray-800">Panel de Control</p>
                   <p className="text-xs text-gray-500">
-                    Gestiona tu{" "}
-                    {user.rol === "Administrador" ? "plataforma" : "negocio"}
+                    Gestiona tu {isAdmin ? "plataforma" : "negocio"}
                   </p>
                 </div>
               </button>
@@ -118,7 +123,7 @@ const UserMenu = () => {
               onClick={() => {
                 setIsOpen(false);
                 if (window.goToUserDashboard) {
-                  window.goToUserDashboard();
+                  window.goToUserDashboard("perfil");
                 }
               }}
               className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-all flex items-center space-x-3 group"
@@ -137,7 +142,7 @@ const UserMenu = () => {
               onClick={() => {
                 setIsOpen(false);
                 if (window.goToUserDashboard) {
-                  window.goToUserDashboard();
+                  window.goToUserDashboard("reservas");
                 }
               }}
               className="w-full px-4 py-3 text-left hover:bg-cyan-50 transition-all flex items-center space-x-3 group"

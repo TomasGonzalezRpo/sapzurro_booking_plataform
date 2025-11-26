@@ -1,3 +1,4 @@
+// backend/models/Usuario.js
 const db = require("../config/database");
 const bcrypt = require("bcrypt");
 
@@ -14,6 +15,7 @@ const Usuario = db.sequelize.define(
       unique: true,
       allowNull: false,
     },
+    // El campo 'password' mapea a la columna 'contrasena' en la base de datos
     password: {
       type: db.DataTypes.STRING(255),
       allowNull: false,
@@ -55,15 +57,16 @@ const Usuario = db.sequelize.define(
     timestamps: false,
     freezeTableName: true,
     hooks: {
-      // Solo hashear en creación
-      beforeCreate: async (usuario) => {
-        if (usuario.password) {
+      beforeSave: async (usuario) => {
+        // 'password' es el nombre del atributo en el modelo (mapeado a 'contrasena')
+        if (usuario.changed("password")) {
+          console.log("🔒 Hasheando contraseña en SAVE (Create o Update)");
+
+          // Generar el salt y hashear la contraseña
           const salt = await bcrypt.genSalt(10);
           usuario.password = await bcrypt.hash(usuario.password, salt);
         }
       },
-      // NO hashear en actualización (porque ya viene hasheado desde AuthController)
-      // beforeUpdate, beforeSave y beforeBulkUpdate se ELIMINAN
     },
   }
 );

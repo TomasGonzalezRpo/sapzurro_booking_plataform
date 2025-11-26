@@ -1,4 +1,4 @@
-// src/components/UserDashboard.jsx
+// src/components/Usuarios/UserDashboard.jsx
 
 import React, { useState } from "react";
 import { useAuth } from "../../contexts/AuthContext";
@@ -7,9 +7,9 @@ import UserDashboardHeader from "./UserDashboardHeader";
 import MisReservasContent from "./MisReservasContent";
 import MiPerfilContent from "./MiPerfilContent";
 
-const UserDashboard = ({ onBackToHome }) => {
+const UserDashboard = ({ onBackToHome, initialSection = "perfil" }) => {
   const { user } = useAuth();
-  const [activeView, setActiveView] = useState("reservas");
+  const [activeView, setActiveView] = useState(initialSection);
 
   // Verificar que esté autenticado
   if (!user) {
@@ -45,7 +45,7 @@ const UserDashboard = ({ onBackToHome }) => {
       case "perfil":
         return <MiPerfilContent />;
       default:
-        return <MisReservasContent />;
+        return <MiPerfilContent />;
     }
   };
 

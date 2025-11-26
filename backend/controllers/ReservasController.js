@@ -1,7 +1,7 @@
 // backend/controllers/ReservasController.js
 const { sequelize } = require("../models/index");
 
-// 🔑 NO se importan datos de validación
+// NO se importan datos de validación
 // Las actividades se validan igual que hoteles/restaurantes
 // (sin validaciones en backend - se guardan directamente)
 
@@ -83,7 +83,7 @@ exports.crearReserva = async (req, res) => {
       });
     }
 
-    // 🔑 INSERTAR RESERVA EN LA BASE DE DATOS
+    // INSERTAR RESERVA EN LA BASE DE DATOS
     const [result] = await sequelize.query(
       `INSERT INTO reservas (
         id_usuario,

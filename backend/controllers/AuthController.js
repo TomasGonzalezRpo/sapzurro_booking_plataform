@@ -44,6 +44,7 @@ exports.register = async (req, res) => {
       tipo_documento,
       numero_documento,
       id_perfil,
+      id_tipo_persona,
     } = req.body;
 
     const plainPassword = password || contrasena;
@@ -91,6 +92,7 @@ exports.register = async (req, res) => {
     if (!personaInstance) {
       personaInstance = await Persona.create(
         {
+          id_tipo_persona: id_tipo_persona || 1,
           nombres,
           apellidos,
           correo,
@@ -104,12 +106,11 @@ exports.register = async (req, res) => {
       );
     }
 
-    const hashed = await bcrypt.hash(plainPassword, 10);
-
+    // ✅ NO hashear aquí, el modelo lo hace en beforeCreate
     const nuevoUsuario = await Usuario.create(
       {
         usuario,
-        password: hashed,
+        password: plainPassword, // ← Enviar sin hashear
         id_persona: personaInstance.id_persona,
         id_perfil: id_perfil || 2,
         estado: 1,
@@ -171,44 +172,72 @@ exports.login = async (req, res) => {
         .json({ message: "Debe proporcionar correo/usuario y contraseña." });
     }
 
-    let usuario = null;
-    if (correo) {
-      const persona = await Persona.findOne({ where: { correo } });
-      if (persona) {
-        usuario = await Usuario.findOne({
-          where: { id_persona: persona.id_persona },
-          include: [
-            { model: Persona, as: "personaInfo" },
-            { model: Perfil, as: "perfil" },
-          ],
-        });
-      }
-    }
+    console.log("🔐 Login intent - identifier:", identifier);
 
-    if (!usuario) {
-      usuario = await Usuario.findOne({
-        where: { usuario: identifier },
-        include: [
-          { model: Persona, as: "personaInfo" },
-          { model: Perfil, as: "perfil" },
-        ],
-      });
-    }
+    // ✅ USAR SQL DIRECTO en lugar de Sequelize
+    const sequelize = Usuario.sequelize;
 
-    if (!usuario) {
+    let query = `
+      SELECT 
+        u.id_usuario,
+        u.usuario,
+        u.contrasena as password,
+        u.estado,
+        u.id_persona,
+        u.id_perfil,
+        p.nombres,
+        p.apellidos,
+        p.correo,
+        p.telefono,
+        p.direccion,
+        pf.nombre as rol
+      FROM usuario u
+      LEFT JOIN persona p ON u.id_persona = p.id_persona
+      LEFT JOIN perfil pf ON u.id_perfil = pf.id_perfil
+      WHERE u.usuario = ? OR p.correo = ?
+      LIMIT 1
+    `;
+
+    const results = await sequelize.query(query, {
+      replacements: [identifier, identifier],
+      type: sequelize.QueryTypes.SELECT,
+    });
+
+    console.log("📊 Query results:", results);
+
+    if (!results || results.length === 0) {
+      console.log("❌ Usuario no encontrado:", identifier);
       return res.status(400).json({ message: "Credenciales inválidas." });
     }
 
+    const usuario = results[0];
+    console.log("✅ Usuario encontrado:", usuario.usuario);
+
+    // Comparar contraseña
     const match = await bcrypt.compare(plainPassword, usuario.password);
     if (!match) {
+      console.log("❌ Contraseña incorrecta para:", usuario.usuario);
       return res.status(401).json({ message: "Contraseña incorrecta." });
     }
 
     if (usuario.estado !== 1) {
+      console.log("❌ Usuario inactivo:", usuario.usuario);
       return res.status(403).json({ message: "Usuario inactivo." });
     }
 
-    const payload = buildUserPayload(usuario);
+    console.log("✅ Login exitoso para:", usuario.usuario);
+
+    const payload = {
+      id_usuario: usuario.id_usuario,
+      username: usuario.usuario,
+      id_perfil: usuario.id_perfil,
+      rol: usuario.rol || "Usuario",
+      nombres: usuario.nombres || "",
+      apellidos: usuario.apellidos || "",
+      correo: usuario.correo || "",
+      estado: usuario.estado,
+    };
+
     const token = jwt.sign(
       { id_usuario: payload.id_usuario, username: payload.username },
       JWT_SECRET,
@@ -217,7 +246,7 @@ exports.login = async (req, res) => {
 
     return res.status(200).json({ user: payload, token });
   } catch (error) {
-    console.error("AuthController.login error:", error);
+    console.error("❌ AuthController.login error:", error);
     return res
       .status(500)
       .json({ message: "Error al autenticar", error: error.message });
@@ -240,6 +269,7 @@ exports.registerAliado = async (req, res) => {
       direccion,
       tipo_documento,
       numero_documento,
+      id_tipo_persona,
       nombreNegocio,
       tipoNegocio,
       descripcionNegocio,
@@ -294,6 +324,7 @@ exports.registerAliado = async (req, res) => {
 
     const nuevaPersona = await Persona.create(
       {
+        id_tipo_persona: id_tipo_persona || 1,
         nombres,
         apellidos,
         correo,
@@ -306,12 +337,11 @@ exports.registerAliado = async (req, res) => {
       { transaction: t }
     );
 
-    const hashed = await bcrypt.hash(plainPassword, 10);
-
+    // ✅ NO hashear aquí, el modelo lo hace en beforeCreate
     await Usuario.create(
       {
         usuario,
-        password: hashed,
+        password: plainPassword, // ← Enviar sin hashear
         id_persona: nuevaPersona.id_persona,
         id_perfil: 3,
         estado: 0,

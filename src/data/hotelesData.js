@@ -209,11 +209,11 @@ export const hotelesDemo = [
   // ==============================
   {
     id: 4,
-    nombre: "El Chilena Hotel",
+    nombre: "El Chileno Hotel",
     descripcion:
       "Alojamiento ecológico con compromiso ambiental y experiencia única",
     descripcionCompleta:
-      "El Chilena Hotel es pionero en turismo sostenible en la región. Funcionamos 100% con energía solar y sistemas de recolección de agua lluvia. Nuestras instalaciones están diseñadas para minimizar el impacto ambiental. Ofrecemos experiencias educativas sobre conservación marina y selva tropical. El restaurante usa ingredientes orgánicos de nuestra huerta. Parte de nuestras ganancias se destinan a proyectos comunitarios locales.",
+      "El Chileno Hotel es pionero en turismo sostenible en la región. Funcionamos 100% con energía solar y sistemas de recolección de agua lluvia. Nuestras instalaciones están diseñadas para minimizar el impacto ambiental. Ofrecemos experiencias educativas sobre conservación marina y selva tropical. El restaurante usa ingredientes orgánicos de nuestra huerta. Parte de nuestras ganancias se destinan a proyectos comunitarios locales.",
     precioDesde: 150000,
     calificacion: 3.8,
     imagenes: [

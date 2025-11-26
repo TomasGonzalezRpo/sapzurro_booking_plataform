@@ -1,3 +1,4 @@
+// src/components/Auth/RegisterForm.jsx
 import React, { useState } from "react";
 import {
   User,
@@ -23,9 +24,27 @@ const RegisterForm = ({
     username: "",
     password: "",
     confirmPassword: "",
+    id_tipo_persona: 1, // ← NUEVO: Default Local
   });
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+
+  // Tipos de personas disponibles
+  const tiposPersona = [
+    { id: 1, nombre: "Local", descripcion: "Visitante local de Sapzurro" },
+    { id: 2, nombre: "Visitante Nacional", descripcion: "Turista colombiano" },
+    {
+      id: 3,
+      nombre: "Visitante Extranjero",
+      descripcion: "Turista internacional",
+    },
+    { id: 4, nombre: "Grupo", descripcion: "Más de 3 personas" },
+    {
+      id: 5,
+      nombre: "Escuela/Universidad",
+      descripcion: "Estudiantes en excursión",
+    },
+  ];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -78,6 +97,7 @@ const RegisterForm = ({
           username: "",
           password: "",
           confirmPassword: "",
+          id_tipo_persona: 1,
         });
       } else {
         setError(result.message || "Error al crear usuario");
@@ -110,6 +130,29 @@ const RegisterForm = ({
       )}
 
       <form onSubmit={handleSubmit} className="space-y-4">
+        {/* Tipo de Persona - NUEVO */}
+        <div>
+          <label className="block text-sm font-medium text-gray-700 mb-2">
+            ¿Qué tipo de visitante eres? <span className="text-red-500">*</span>
+          </label>
+          <select
+            value={formData.id_tipo_persona}
+            onChange={(e) =>
+              setFormData({
+                ...formData,
+                id_tipo_persona: parseInt(e.target.value),
+              })
+            }
+            className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-cyan-500 focus:border-transparent"
+          >
+            {tiposPersona.map((tipo) => (
+              <option key={tipo.id} value={tipo.id}>
+                {tipo.nombre} - {tipo.descripcion}
+              </option>
+            ))}
+          </select>
+        </div>
+
         {/* Nombres y Apellidos */}
         <div className="grid md:grid-cols-2 gap-4">
           <div>

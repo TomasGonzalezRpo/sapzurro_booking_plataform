@@ -1,4 +1,3 @@
-// src/App.jsx
 import React, { useState, useEffect } from "react";
 import { useAuth } from "./contexts/AuthContext";
 import Header from "./components/Header";
@@ -8,7 +7,7 @@ import RestaurantesSection from "./components/RestaurantesSection";
 import Footer from "./components/Footer";
 import AuthModal from "./components/Auth/AuthModal";
 import AdminPanel from "./components/Admin/AdminPanel";
-import UserDashboard from "./components/Usuarios/UserDashboard"; // 🔑 IMPORTAR
+import UserDashboard from "./components/Usuarios/UserDashboard";
 import ResetPasswordForm from "./components/Auth/ResetPasswordForm";
 import ActivitiesCard from "./components/ActivitiesCard.jsx";
 import RutaCard from "./components/RutaCard.jsx";
@@ -26,7 +25,8 @@ const App = () => {
   const [activeSection, setActiveSection] = useState("inicio");
   const [isScrolled, setIsScrolled] = useState(false);
   const [isAdminView, setIsAdminView] = useState(false);
-  const [isUserDashboardView, setIsUserDashboardView] = useState(false); // 🔑 NUEVO
+  const [isUserDashboardView, setIsUserDashboardView] = useState(false);
+  const [userDashboardSection, setUserDashboardSection] = useState("perfil"); // ← NUEVO
   const [showResetPassword, setShowResetPassword] = useState(false);
 
   useEffect(() => {
@@ -34,14 +34,16 @@ const App = () => {
     setShowResetPassword(path === "/reset-password");
   }, []);
 
-  // 🔑 FUNCIONES GLOBALES PARA NAVEGACIÓN
+  // FUNCIONES GLOBALES PARA NAVEGACIÓN
   useEffect(() => {
     window.goToAdmin = () => setIsAdminView(true);
     window.goToHome = () => {
       setIsAdminView(false);
       setIsUserDashboardView(false);
     };
-    window.goToUserDashboard = () => {
+    // ← ACTUALIZADO: Ahora acepta parámetro de sección
+    window.goToUserDashboard = (section = "perfil") => {
+      setUserDashboardSection(section);
       setIsUserDashboardView(true);
     };
 
@@ -96,18 +98,20 @@ const App = () => {
     );
   }
 
-  // 🔑 MOSTRAR ADMIN PANEL
+  // MOSTRAR ADMIN PANEL
   if (isAdminView) {
     return <AdminPanel onBackToHome={() => setIsAdminView(false)} />;
   }
 
-  // 🔑 MOSTRAR USER DASHBOARD
+  // MOSTRAR USER DASHBOARD con sección específica
   if (isUserDashboardView) {
     return (
       <UserDashboard
+        initialSection={userDashboardSection}
         onBackToHome={() => {
           setIsAdminView(false);
           setIsUserDashboardView(false);
+          setUserDashboardSection("perfil");
         }}
       />
     );

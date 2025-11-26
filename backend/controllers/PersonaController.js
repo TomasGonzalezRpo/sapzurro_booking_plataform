@@ -1,6 +1,6 @@
 // backend/controllers/PersonaController.js
 
-// 🎯 IMPORTANTE: Verifica que esta ruta a tu modelo Persona sea correcta.
+// Verifica que esta ruta a tu modelo Persona sea correcta.
 const Persona = require("../models/Persona");
 
 // 1. LEER TODOS (GET)

@@ -1,21 +1,30 @@
-// backend/models/Perfil.js
+// backend/models/Ruta.js
 const db = require("../config/database");
 
-const Perfil = db.sequelize.define(
-  "Perfil",
+const Ruta = db.sequelize.define(
+  "Ruta",
   {
-    id_perfil: {
+    id_ruta: {
       type: db.DataTypes.INTEGER,
       primaryKey: true,
       autoIncrement: true,
     },
     nombre: {
-      type: db.DataTypes.STRING(50),
+      type: db.DataTypes.STRING(100),
       allowNull: false,
     },
-    descripcion: {
-      type: db.DataTypes.STRING(200),
+    duracion: {
+      type: db.DataTypes.STRING(50),
+      allowNull: false,
+      comment: "Ej: 2 horas, 3 días, etc",
+    },
+    observaciones: {
+      type: db.DataTypes.TEXT,
       allowNull: true,
+    },
+    valor: {
+      type: db.DataTypes.DECIMAL(10, 2),
+      allowNull: false,
     },
     estado: {
       type: db.DataTypes.TINYINT,
@@ -24,10 +33,10 @@ const Perfil = db.sequelize.define(
     },
   },
   {
-    tableName: "perfil",
+    tableName: "ruta",
     timestamps: false,
     freezeTableName: true,
   }
 );
 
-module.exports = Perfil;
+module.exports = Ruta;

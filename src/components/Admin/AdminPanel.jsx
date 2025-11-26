@@ -7,13 +7,20 @@ import PerfilManagement from "./CRUD/PerfilManagement";
 import PersonaManagement from "./CRUD/PersonaManagement";
 import UsuarioManagement from "./CRUD/UsuarioManagement";
 import ReservasManagement from "./CRUD/ReservasManagement";
+import AlojamientoManagement from "./CRUD/AlojamientoManagement";
+import RutaManagement from "./CRUD/RutaManagement";
+import TipoActividadManagement from "./CRUD/TipoActividadManagement";
+import ActividadManagement from "./CRUD/ActividadManagement";
 
 const AdminPanel = ({ onBackToHome }) => {
   const { user } = useAuth();
   const [activeView, setActiveView] = useState("dashboard");
 
-  // Verificar que sea administrador
-  if (!user || user.rol !== "Administrador") {
+  // Verificar que sea administrador (acepta "Admin" o "Administrador")
+  const isAdmin =
+    user && (user.rol === "Administrador" || user.rol === "Admin");
+
+  if (!isAdmin) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-100">
         <div className="bg-white p-8 rounded-2xl shadow-xl text-center">
@@ -51,6 +58,14 @@ const AdminPanel = ({ onBackToHome }) => {
         return <UsuarioManagement />;
       case "reservas":
         return <ReservasManagement />;
+      case "alojamientos":
+        return <AlojamientoManagement />;
+      case "rutas":
+        return <RutaManagement />;
+      case "tipos-actividades":
+        return <TipoActividadManagement />;
+      case "actividades":
+        return <ActividadManagement />;
       default:
         return <Dashboard />;
     }

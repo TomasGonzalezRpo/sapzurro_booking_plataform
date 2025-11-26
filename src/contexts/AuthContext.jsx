@@ -1,4 +1,4 @@
-// AuthProvider.jsx - VERSIÓN MEJORADA
+// AuthProvider.jsx - VERSIÓN MEJORADA Y CORREGIDA
 import React, {
   createContext,
   useContext,
@@ -20,8 +20,21 @@ axios.defaults.withCredentials = true;
 // Interceptor: añade el token a cada petición
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);
+  console.log(
+    "🔑 Token enviado en request:",
+    token ? "✅ Presente" : "❌ Ausente"
+  );
+
   if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
+    // Asegurarse de que tenga el formato correcto
+    const formattedToken = token.startsWith("Bearer ")
+      ? token
+      : `Bearer ${token}`;
+    config.headers.Authorization = formattedToken;
+    console.log(
+      "📨 Authorization header:",
+      config.headers.Authorization.substring(0, 20) + "..."
+    );
   }
   return config;
 });
@@ -106,6 +119,7 @@ export const AuthProvider = ({ children }) => {
         // ✨ NUEVO: Guardar un token mock para usuarios de prueba
         const mockToken = `mock_token_${mail}_${Date.now()}`;
         localStorage.setItem(TOKEN_KEY, mockToken);
+        console.log("✅ Token mock guardado:", mockToken);
 
         const u = buildUser(mock);
         setUser(u);
@@ -114,10 +128,13 @@ export const AuthProvider = ({ children }) => {
       }
 
       // Login real
+      console.log("🔐 Intentando login con:", email);
       const response = await axios.post(`${API_URL}/login`, {
         correo: email,
         password,
       });
+
+      console.log("✅ Login response:", response.data);
 
       const userData = response.data?.user || response.data;
 
@@ -132,6 +149,7 @@ export const AuthProvider = ({ children }) => {
       // ✨ NUEVO: Guardar el token del backend
       if (response.data?.token) {
         localStorage.setItem(TOKEN_KEY, response.data.token);
+        console.log("✅ Token JWT guardado en localStorage");
       }
 
       const u = buildUser(userData);
@@ -139,7 +157,7 @@ export const AuthProvider = ({ children }) => {
       setIsAuthModalOpen(false);
       return { success: true, from: "backend" };
     } catch (error) {
-      console.error("Error en login:", error);
+      console.error("❌ Error en login:", error);
       const msg =
         error.response?.data?.message ||
         error.message ||
@@ -161,19 +179,26 @@ export const AuthProvider = ({ children }) => {
         apellidos: formData.apellidos,
         correo: formData.correo,
         telefono: formData.telefono ?? "",
-        tipo_documento: formData.tipo_documento ?? null,
-        numero_documento: formData.numero_documento ?? null,
+        direccion: formData.direccion ?? "",
+        tipo_documento: formData.tipo_documento ?? "CC",
+        numero_documento: formData.numero_documento ?? "",
+        id_tipo_persona: formData.id_tipo_persona ?? 1, // ← AGREGAR TIPO DE PERSONA
       };
+
+      console.log("📝 Registro payload:", payload);
 
       const response = await axios.post(`${API_URL}/register`, payload, {
         headers: { "Content-Type": "application/json" },
       });
+
+      console.log("✅ Registro response:", response.data);
 
       const data = response.data || {};
 
       // ✨ NUEVO: Guardar token tras registro
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
+        console.log("✅ Token JWT guardado después de registro");
       }
 
       if (data.user) {
@@ -188,7 +213,10 @@ export const AuthProvider = ({ children }) => {
         user: data.user ?? null,
       };
     } catch (err) {
-      console.error("registerUser error:", err?.response?.data || err.message);
+      console.error(
+        "❌ registerUser error:",
+        err?.response?.data || err.message
+      );
       const msg =
         err.response?.data?.message ||
         err.response?.data?.error ||
@@ -215,15 +243,21 @@ export const AuthProvider = ({ children }) => {
         nombreNegocio: formData.nombreNegocio,
         tipoNegocio: formData.tipoNegocio,
         descripcionNegocio: formData.descripcionNegocio ?? "",
-        tipo_documento: formData.tipo_documento ?? null,
-        numero_documento: formData.numero_documento ?? null,
+        tipo_documento: formData.tipo_documento ?? "CC",
+        numero_documento: formData.numero_documento ?? "",
+        id_tipo_persona: formData.id_tipo_persona ?? 1, // ← AGREGAR TIPO DE PERSONA
       };
+
+      console.log("📝 Aliado registro payload:", payload);
 
       const response = await axios.post(`${API_URL}/register-aliado`, payload, {
         headers: { "Content-Type": "application/json" },
       });
 
       const data = response.data || {};
+
+      console.log("✅ Aliado registro response:", response.data);
+
       return {
         success: true,
         message:
@@ -232,7 +266,7 @@ export const AuthProvider = ({ children }) => {
       };
     } catch (err) {
       console.error(
-        "registerAliado error:",
+        "❌ registerAliado error:",
         err?.response?.data || err.message
       );
       const msg =
@@ -283,9 +317,10 @@ export const AuthProvider = ({ children }) => {
   };
 
   const logout = () => {
+    console.log("🚪 Cerrando sesión...");
     setUser(null);
     localStorage.removeItem(STORAGE_KEY);
-    localStorage.removeItem(TOKEN_KEY); // ✨ NUEVO
+    localStorage.removeItem(TOKEN_KEY);
     window.location.href = "/";
   };
 
