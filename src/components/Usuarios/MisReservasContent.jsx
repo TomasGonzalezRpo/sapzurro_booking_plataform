@@ -23,7 +23,7 @@ const MisReservasContent = () => {
   const [expandedId, setExpandedId] = useState(null);
   const [cancelando, setCancelando] = useState(null);
 
-  // 🔑 OBTENER MIS RESERVAS
+  // OBTENER MIS RESERVAS
   useEffect(() => {
     const obtenerReservas = async () => {
       try {
@@ -56,11 +56,11 @@ const MisReservasContent = () => {
     obtenerReservas();
   }, []);
 
-  // 🔑 FILTRAR RESERVAS
+  // FILTRAR RESERVAS
   const reservasFiltradas =
     filtro === "todas" ? reservas : reservas.filter((r) => r.estado === filtro);
 
-  // 🔑 CANCELAR RESERVA
+  // CANCELAR RESERVA
   const handleCancelarReserva = async (id_reserva) => {
     if (!window.confirm("¿Estás seguro de que deseas cancelar esta reserva?")) {
       return;
@@ -93,7 +93,7 @@ const MisReservasContent = () => {
     }
   };
 
-  // 🔑 OBTENER COLOR DEL ESTADO
+  // OBTENER COLOR DEL ESTADO
   const getEstadoColor = (estado) => {
     switch (estado) {
       case "confirmada":

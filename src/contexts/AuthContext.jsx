@@ -1,4 +1,4 @@
-// AuthProvider.jsx - VERSIÓN MEJORADA Y CORREGIDA
+// src/contexts/AuthContext.jsx
 import React, {
   createContext,
   useContext,
@@ -14,10 +14,8 @@ const TOKEN_KEY = "sapzurro_token";
 
 const API_URL = "http://localhost:5000/api/auth";
 
-// Configurar axios para incluir credenciales en TODAS las peticiones
 axios.defaults.withCredentials = true;
 
-// Interceptor: añade el token a cada petición
 axios.interceptors.request.use((config) => {
   const token = localStorage.getItem(TOKEN_KEY);
   console.log(
@@ -26,7 +24,6 @@ axios.interceptors.request.use((config) => {
   );
 
   if (token) {
-    // Asegurarse de que tenga el formato correcto
     const formattedToken = token.startsWith("Bearer ")
       ? token
       : `Bearer ${token}`;
@@ -116,7 +113,7 @@ export const AuthProvider = ({ children }) => {
           );
         }
 
-        // ✨ NUEVO: Guardar un token mock para usuarios de prueba
+        // Guardar un token mock para usuarios de prueba
         const mockToken = `mock_token_${mail}_${Date.now()}`;
         localStorage.setItem(TOKEN_KEY, mockToken);
         console.log("✅ Token mock guardado:", mockToken);
@@ -127,7 +124,7 @@ export const AuthProvider = ({ children }) => {
         return { success: true, from: "mock" };
       }
 
-      // Login real
+      // Login usuario real
       console.log("🔐 Intentando login con:", email);
       const response = await axios.post(`${API_URL}/login`, {
         correo: email,
@@ -146,7 +143,7 @@ export const AuthProvider = ({ children }) => {
         throw new Error("El usuario está inactivo o ha sido inhabilitado.");
       }
 
-      // ✨ NUEVO: Guardar el token del backend
+      // Guardar el token del backend
       if (response.data?.token) {
         localStorage.setItem(TOKEN_KEY, response.data.token);
         console.log("✅ Token JWT guardado en localStorage");
@@ -195,7 +192,7 @@ export const AuthProvider = ({ children }) => {
 
       const data = response.data || {};
 
-      // ✨ NUEVO: Guardar token tras registro
+      // Guardar token tras registro
       if (data.token) {
         localStorage.setItem(TOKEN_KEY, data.token);
         console.log("✅ Token JWT guardado después de registro");

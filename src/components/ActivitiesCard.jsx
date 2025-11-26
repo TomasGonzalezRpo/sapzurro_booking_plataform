@@ -1,5 +1,6 @@
+// src/components/ActivitiesCard.jsx
 import React, { useState } from "react";
-import { useAuth } from "../contexts/AuthContext"; // 🔑 IMPORTAR useAuth
+import { useAuth } from "../contexts/AuthContext";
 import axios from "axios";
 import {
   Star,
@@ -40,18 +41,18 @@ const getIconComponent = (iconName) => {
 };
 
 const ActivitiesCard = ({ activity }) => {
-  const { user, isAuthenticated, openAuthModal } = useAuth(); // 🔑 OBTENER USER
+  const { user, isAuthenticated, openAuthModal } = useAuth();
   const [isExpanded, setIsExpanded] = useState(false);
   const [showInfo, setShowInfo] = useState(false);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [reservaStep, setReservaStep] = useState(1);
-  const [loading, setLoading] = useState(false); // 🔑 NUEVO
-  const [error, setError] = useState(null); // 🔑 NUEVO
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
   const [reservaData, setReservaData] = useState({
     fecha: "",
     participantes: 1,
     horario: "",
-    comentarios: "", // 🔑 NUEVO: para requisitos especiales
+    comentarios: "",
   });
 
   const categoryIcons = {
@@ -94,7 +95,7 @@ const ActivitiesCard = ({ activity }) => {
     setIsExpanded(!isExpanded);
     if (!isExpanded) {
       setReservaStep(1);
-      setError(null); // 🔑 LIMPIAR ERRORES
+      setError(null);
     }
   };
 
@@ -106,15 +107,15 @@ const ActivitiesCard = ({ activity }) => {
     if (reservaStep > 1) setReservaStep(reservaStep - 1);
   };
 
-  // 🔑 NUEVA FUNCIÓN DE CONFIRMACIÓN PARA ACTIVIDADES
+  // FUNCIÓN DE CONFIRMACIÓN PARA ACTIVIDADES
   const confirmarReserva = async () => {
-    // 1️⃣ VERIFICAR QUE ESTÉ AUTENTICADO
+    // VERIFICAR QUE ESTÉ AUTENTICADO
     if (!isAuthenticated || !user) {
       openAuthModal(); // Abrir modal de login
       return;
     }
 
-    // 2️⃣ VALIDAR DATOS BÁSICOS
+    // VALIDAR DATOS BÁSICOS
     if (
       !reservaData.fecha ||
       !reservaData.horario ||
@@ -128,7 +129,7 @@ const ActivitiesCard = ({ activity }) => {
     setError(null);
 
     try {
-      // 3️⃣ CONVERTIR HORARIO A HORA (formato 24h)
+      // CONVERTIR HORARIO A HORA (formato 24h)
       const horaMap = {
         mañana: "08:00",
         tarde: "13:00",
@@ -136,7 +137,7 @@ const ActivitiesCard = ({ activity }) => {
       };
       const hora = horaMap[reservaData.horario] || "10:00";
 
-      // 4️⃣ PREPARAR DATOS DE LA RESERVA
+      // PREPARAR DATOS DE LA RESERVA
       const payload = {
         tipo_servicio: "actividad",
         id_servicio: activity.id || activity.name,
@@ -150,7 +151,7 @@ const ActivitiesCard = ({ activity }) => {
         notas_admin: reservaData.comentarios || "Sin comentarios especiales", // Guardar comentarios como notas
       };
 
-      // 5️⃣ ENVIAR AL BACKEND
+      // ENVIAR AL BACKEND
       const response = await axios.post(
         "http://localhost:5000/api/reservas",
         payload,
@@ -483,7 +484,7 @@ const ActivitiesCard = ({ activity }) => {
       {/* Formulario de reserva expandible */}
       {isExpanded && (
         <div className="border-t border-gray-200 bg-gradient-to-b from-gray-50 to-white p-6">
-          {/* 🔑 MOSTRAR ERRORES SI LOS HAY */}
+          {/* MOSTRAR ERRORES SI LOS HAY */}
           {error && (
             <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-4">
               <p className="font-semibold">Error:</p>

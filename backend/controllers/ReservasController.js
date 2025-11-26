@@ -1,10 +1,6 @@
 // backend/controllers/ReservasController.js
 const { sequelize } = require("../models/index");
 
-// NO se importan datos de validación
-// Las actividades se validan igual que hoteles/restaurantes
-// (sin validaciones en backend - se guardan directamente)
-
 // =============== CREAR RESERVA (genérica para cualquier servicio) ===============
 exports.crearReserva = async (req, res) => {
   try {

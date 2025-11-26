@@ -85,6 +85,31 @@ const AdminSidebar = ({ activeView, setActiveView, onBackToHome }) => {
 
       {/* Footer del sidebar */}
       <div className="p-4 border-t border-gray-700 space-y-2 sticky bottom-0 bg-gray-800">
+        {/* Mi Perfil y Mis Reservas */}
+        <button
+          onClick={() => {
+            if (window.goToUserDashboard) {
+              window.goToUserDashboard("perfil");
+            }
+          }}
+          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-cyan-300 hover:bg-cyan-900/20 transition-all"
+        >
+          <UserCog className="w-5 h-5" />
+          <span className="font-medium text-sm">Mi Perfil</span>
+        </button>
+
+        <button
+          onClick={() => {
+            if (window.goToUserDashboard) {
+              window.goToUserDashboard("reservas");
+            }
+          }}
+          className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-cyan-300 hover:bg-cyan-900/20 transition-all"
+        >
+          <Calendar className="w-5 h-5" />
+          <span className="font-medium text-sm">Mis Reservas</span>
+        </button>
+
         <button
           onClick={handleVolverSitio}
           className="w-full flex items-center space-x-3 px-4 py-3 rounded-lg text-gray-300 hover:bg-gray-700 transition-all"

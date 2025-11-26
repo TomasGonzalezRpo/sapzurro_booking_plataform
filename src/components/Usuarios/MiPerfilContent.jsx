@@ -37,7 +37,7 @@ const MiPerfilContent = () => {
 
   const [datosCopia, setDatosCopia] = useState({});
 
-  // 🔑 OBTENER MIS DATOS
+  // OBTENER MIS DATOS
   useEffect(() => {
     const obtenerMiPerfil = async () => {
       try {
@@ -86,20 +86,20 @@ const MiPerfilContent = () => {
     obtenerMiPerfil();
   }, []);
 
-  // 🔑 MANEJAR CAMBIOS EN INPUTS
+  // MANEJAR CAMBIOS EN INPUTS
   const handleChange = (e) => {
     const { name, value } = e.target;
     setDatos({ ...datos, [name]: value });
   };
 
-  // 🔑 CANCELAR EDICIÓN
+  // CANCELAR EDICIÓN
   const handleCancelar = () => {
     setDatos(datosCopia);
     setIsEditing(false);
     setError(null);
   };
 
-  // 🔑 GUARDAR CAMBIOS
+  // GUARDAR CAMBIOS
   const handleGuardar = async () => {
     try {
       setSaving(true);
