@@ -58,17 +58,22 @@ const Usuario = db.sequelize.define(
     freezeTableName: true,
     hooks: {
       beforeSave: async (usuario) => {
-        // 'password' es el nombre del atributo en el modelo (mapeado a 'contrasena')
+        // Solo hashear si el campo password ha cambiado Y NO es ya un hash
         if (usuario.changed("password")) {
-          console.log("🔒 Hasheando contraseña en SAVE (Create o Update)");
-
-          // Generar el salt y hashear la contraseña
-          const salt = await bcrypt.genSalt(10);
-          usuario.password = await bcrypt.hash(usuario.password, salt);
+          // Si el password ya empieza con el prefijo de bcrypt, no lo vuelvas a hashear
+          if (!usuario.password.startsWith("$2b$")) {
+            console.log("🔒 Hasheando contraseña plana en el Modelo...");
+            const salt = await bcrypt.genSalt(10);
+            usuario.password = await bcrypt.hash(usuario.password, salt);
+          } else {
+            console.log(
+              "⏭️ La contraseña ya es un hash, saltando doble hasheo.",
+            );
+          }
         }
       },
     },
-  }
+  },
 );
 
 module.exports = Usuario;

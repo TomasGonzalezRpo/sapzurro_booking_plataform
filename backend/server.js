@@ -24,30 +24,31 @@ const actividadRoutes = require("./routes/actividad.routes");
 
 const app = express();
 const PORT = process.env.PORT || 5000;
+
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 
-// MIDDLEWARE CORS MANUAL (funciona mejor que la librería cors)
+// ====================================================================
+// MIDDLEWARE CORS MANUAL
+// ====================================================================
 app.use((req, res, next) => {
   const origin = "http://localhost:5173";
   res.header("Access-Control-Allow-Origin", origin);
   res.header("Access-Control-Allow-Credentials", "true");
   res.header(
     "Access-Control-Allow-Methods",
-    "GET,PUT,POST,DELETE,PATCH,OPTIONS"
+    "GET,PUT,POST,DELETE,PATCH,OPTIONS",
   );
 
-  // Permitir todos los headers que el cliente solicita
   const requestHeaders = req.headers["access-control-request-headers"];
   if (requestHeaders) {
     res.header("Access-Control-Allow-Headers", requestHeaders);
   } else {
     res.header(
       "Access-Control-Allow-Headers",
-      "Content-Type,Authorization,Cache-Control,Pragma,X-Requested-With"
+      "Content-Type,Authorization,Cache-Control,Pragma,X-Requested-With",
     );
   }
 
-  // Responder a peticiones OPTIONS
   if (req.method === "OPTIONS") {
     return res.sendStatus(200);
   }
@@ -57,16 +58,28 @@ app.use((req, res, next) => {
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// MIDDLEWARE DE AUTENTICACIÓN
+// ====================================================================
+// MIDDLEWARE DE AUTENTICACIÓN (REFORZADO)
+// ====================================================================
 const authenticateToken = (req, res, next) => {
   const authHeader = req.headers["authorization"];
-  const token = authHeader && authHeader.split(" ")[1]; // "Bearer TOKEN"
+
+  // Extraer token y limpiar valores nulos o falsos del frontend
+  const token =
+    authHeader && authHeader.startsWith("Bearer ")
+      ? authHeader.split(" ")[1]
+      : null;
 
   console.log("🔐 Verificando token...");
   console.log("Authorization header:", authHeader ? "Presente" : "Ausente");
 
-  if (!token) {
-    console.log("❌ No hay token");
+  if (
+    !token ||
+    token === "null" ||
+    token === "undefined" ||
+    token.startsWith("mock_token")
+  ) {
+    console.log("❌ Token inválido o ausente");
     return res.status(401).json({
       success: false,
       message: "Debe iniciar sesión para completar la acción",
@@ -78,11 +91,17 @@ const authenticateToken = (req, res, next) => {
       console.error("❌ Token inválido:", err.message);
       return res.status(403).json({
         success: false,
-        message: "Token inválido o expirado",
+        message:
+          err.name === "TokenExpiredError"
+            ? "Sesión expirada"
+            : "Token inválido o expirado",
       });
     }
     req.user = user;
-    console.log("✅ Token válido para usuario:", user.username);
+    console.log(
+      "✅ Token válido para usuario:",
+      user.username || user.id_usuario,
+    );
     next();
   });
 };
@@ -97,17 +116,15 @@ app.use("/api/personas", personaRoutes);
 app.use("/api/usuarios", usuarioRoutes);
 app.use("/api/auth", authRoutes);
 
-// RUTAS PROTEGIDAS (requieren autenticación)
 app.use("/api/reservas", authenticateToken, reservasRoutes);
 
-// NUEVAS RUTAS PROTEGIDAS
 app.use("/api/tipos-persona", authenticateToken, tipoPersonaRoutes);
 app.use("/api/alojamientos", authenticateToken, alojamientoRoutes);
 app.use("/api/rutas", authenticateToken, rutaRoutes);
 app.use("/api/tipos-actividad", authenticateToken, tipoActividadRoutes);
 app.use("/api/actividades", authenticateToken, actividadRoutes);
 
-// 🔍 Ruta de prueba (para verificar que el servidor está corriendo)
+// Ruta de prueba
 app.get("/health", (req, res) => {
   res.json({ status: "✅ Servidor funcionando", time: new Date() });
 });
@@ -115,7 +132,6 @@ app.get("/health", (req, res) => {
 // ====================================================================
 // Manejo de errores
 // ====================================================================
-
 app.use((err, req, res, next) => {
   console.error("❌ Error no manejado:", err);
   res.status(500).json({
@@ -132,12 +148,12 @@ const startServer = async () => {
 
     await sequelize.sync({ alter: false });
     console.log(
-      "🛠️ Modelos sincronizados con la base de datos (Perfil, TipoPersona, Persona, Usuario, Alojamiento, Ruta, TipoActividad, Actividad)."
+      "🛠️ Modelos sincronizados con la base de datos (Perfil, TipoPersona, Persona, Usuario, Alojamiento, Ruta, TipoActividad, Actividad).",
     );
 
     app.listen(PORT, () => {
       console.log(
-        `\n🚀 Servidor Express corriendo en http://localhost:${PORT}`
+        `\n🚀 Servidor Express corriendo en http://localhost:${PORT}`,
       );
       console.log(`🔐 CORS configurado para: http://localhost:5173`);
       console.log(`\n📋 Rutas disponibles:\n`);

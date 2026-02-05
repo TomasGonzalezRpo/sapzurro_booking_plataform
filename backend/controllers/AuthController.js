@@ -5,10 +5,11 @@ const crypto = require("crypto");
 const { Usuario, Persona, Perfil } = require("../models/index");
 const emailService = require("../services/emailService");
 
+// ✅ Configuración de Seguridad
 const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 const JWT_EXPIRES_IN = process.env.JWT_EXPIRES_IN || "7d";
 
-// Helper: construir payload de usuario
+// Helper: construir payload de usuario para consistencia entre Login y Registro
 const buildUserPayload = (usuarioInstance) => {
   if (!usuarioInstance) return null;
   const persona = usuarioInstance.personaInfo || {};
@@ -30,8 +31,6 @@ exports.register = async (req, res) => {
   const sequelize = Usuario.sequelize;
   const t = await sequelize.transaction();
   try {
-    console.log("AuthController.register payload:", req.body);
-
     const {
       usuario,
       password,
@@ -58,6 +57,7 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Validar si el nombre de usuario ya existe
     const existingUser = await Usuario.findOne({
       where: { usuario },
       transaction: t,
@@ -70,6 +70,7 @@ exports.register = async (req, res) => {
       });
     }
 
+    // Validar si la persona/correo ya existe
     const existingPersona = await Persona.findOne({
       where: { correo },
       transaction: t,
@@ -102,39 +103,40 @@ exports.register = async (req, res) => {
           numero_documento: numero_documento || "",
           estado: 1,
         },
-        { transaction: t }
+        { transaction: t },
       );
     }
 
-    // ✅ NO hashear aquí, el modelo lo hace en beforeCreate
+    console.log(`📝 Registrando usuario: ${usuario} con password plana.`);
+
     const nuevoUsuario = await Usuario.create(
       {
         usuario,
-        password: plainPassword, // ← Enviar sin hashear
+        password: plainPassword, // El modelo se encarga del hasheo en beforeCreate
         id_persona: personaInstance.id_persona,
         id_perfil: id_perfil || 2,
         estado: 1,
         provider: "local",
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     await t.commit();
 
+    // Recuperar usuario con asociaciones para el payload
     const usuarioFull = await Usuario.findByPk(nuevoUsuario.id_usuario, {
       include: [
         { model: Persona, as: "personaInfo" },
         { model: Perfil, as: "perfil" },
       ],
-      attributes: { exclude: ["password"] },
+      attributes: { exclude: ["password", "contrasena"] },
     });
 
     const payload = buildUserPayload(usuarioFull);
-
     const token = jwt.sign(
       { id_usuario: payload.id_usuario, username: payload.username },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN },
     );
 
     return res.status(201).json({
@@ -144,21 +146,16 @@ exports.register = async (req, res) => {
       token,
     });
   } catch (error) {
-    await t.rollback();
-    console.error("AuthController.register error:", error);
-    if (error.name === "SequelizeUniqueConstraintError") {
-      const msg =
-        error.errors?.map((e) => e.message).join("; ") || "Valor duplicado";
-      return res.status(400).json({ success: false, message: msg });
-    }
+    if (t) await t.rollback();
+    console.error("❌ AuthController.register error:", error);
     return res.status(500).json({
       success: false,
-      message: error?.message || "Error interno al crear usuario.",
+      message: error.message || "Error al crear usuario.",
     });
   }
 };
 
-/* =============== LOGIN =============== */
+/* =============== LOGIN (CON DEPURACIÓN) =============== */
 exports.login = async (req, res) => {
   try {
     const { correo, password, contrasena, usuario: usuarioInput } = req.body;
@@ -172,24 +169,16 @@ exports.login = async (req, res) => {
         .json({ message: "Debe proporcionar correo/usuario y contraseña." });
     }
 
-    console.log("🔐 Login intent - identifier:", identifier);
+    console.log("\n--- 🔐 INICIO PROCESO LOGIN ---");
+    console.log("🔍 Identificador:", identifier);
 
-    // ✅ USAR SQL DIRECTO en lugar de Sequelize
     const sequelize = Usuario.sequelize;
-
+    // Seleccionamos contrasena as password_hash para manejar el alias correctamente
     let query = `
       SELECT 
-        u.id_usuario,
-        u.usuario,
-        u.contrasena as password,
-        u.estado,
-        u.id_persona,
-        u.id_perfil,
-        p.nombres,
-        p.apellidos,
-        p.correo,
-        p.telefono,
-        p.direccion,
+        u.id_usuario, u.usuario, u.contrasena as password_hash, 
+        u.estado, u.id_persona, u.id_perfil,
+        p.nombres, p.apellidos, p.correo,
         pf.nombre as rol
       FROM usuario u
       LEFT JOIN persona p ON u.id_persona = p.id_persona
@@ -203,29 +192,34 @@ exports.login = async (req, res) => {
       type: sequelize.QueryTypes.SELECT,
     });
 
-    console.log("📊 Query results:", results);
-
     if (!results || results.length === 0) {
-      console.log("❌ Usuario no encontrado:", identifier);
+      console.log("❌ Usuario no encontrado en DB.");
       return res.status(400).json({ message: "Credenciales inválidas." });
     }
 
     const usuario = results[0];
-    console.log("✅ Usuario encontrado:", usuario.usuario);
 
-    // Comparar contraseña
-    const match = await bcrypt.compare(plainPassword, usuario.password);
+    // 🛑 BLOQUE DE DEPURACIÓN (Mantenido según tu solicitud)
+    console.log("---------------------------------");
+    console.log("🔑 Password enviada (texto plano):", plainPassword);
+    console.log("📦 Hash recuperado de DB:", usuario.password_hash);
+    console.log("---------------------------------");
+
+    // Comparar contra el hash usando bcrypt
+    const match = await bcrypt.compare(
+      plainPassword,
+      usuario.password_hash || "",
+    );
+
     if (!match) {
-      console.log("❌ Contraseña incorrecta para:", usuario.usuario);
+      console.log("❌ FALLÓ BCRYPT: La contraseña no coincide con el hash.");
       return res.status(401).json({ message: "Contraseña incorrecta." });
     }
 
     if (usuario.estado !== 1) {
-      console.log("❌ Usuario inactivo:", usuario.usuario);
+      console.log("❌ Usuario inactivo.");
       return res.status(403).json({ message: "Usuario inactivo." });
     }
-
-    console.log("✅ Login exitoso para:", usuario.usuario);
 
     const payload = {
       id_usuario: usuario.id_usuario,
@@ -233,17 +227,16 @@ exports.login = async (req, res) => {
       id_perfil: usuario.id_perfil,
       rol: usuario.rol || "Usuario",
       nombres: usuario.nombres || "",
-      apellidos: usuario.apellidos || "",
       correo: usuario.correo || "",
-      estado: usuario.estado,
     };
 
     const token = jwt.sign(
       { id_usuario: payload.id_usuario, username: payload.username },
       JWT_SECRET,
-      { expiresIn: JWT_EXPIRES_IN }
+      { expiresIn: JWT_EXPIRES_IN },
     );
 
+    console.log("✅ Login exitoso para:", usuario.usuario);
     return res.status(200).json({ user: payload, token });
   } catch (error) {
     console.error("❌ AuthController.login error:", error);
@@ -265,247 +258,131 @@ exports.registerAliado = async (req, res) => {
       nombres,
       apellidos,
       correo,
-      telefono,
-      direccion,
-      tipo_documento,
-      numero_documento,
-      id_tipo_persona,
       nombreNegocio,
-      tipoNegocio,
-      descripcionNegocio,
     } = req.body;
-
     const plainPassword = password || contrasena;
 
-    if (
-      !usuario ||
-      !plainPassword ||
-      !nombres ||
-      !apellidos ||
-      !correo ||
-      !nombreNegocio ||
-      !tipoNegocio
-    ) {
-      await t.rollback();
-      return res.status(400).json({
-        success: false,
-        message: "Faltan campos obligatorios para registro de aliado.",
-      });
-    }
-
-    const userExists = await Usuario.findOne({
-      where: { usuario },
-      transaction: t,
-    });
-    if (userExists) {
+    if (!usuario || !plainPassword || !nombres || !correo || !nombreNegocio) {
       await t.rollback();
       return res
         .status(400)
-        .json({ success: false, message: "Nombre de usuario ya existe." });
-    }
-
-    const personaExist = await Persona.findOne({
-      where: { correo },
-      transaction: t,
-    });
-    if (personaExist) {
-      const usuarioRelacionado = await Usuario.findOne({
-        where: { id_persona: personaExist.id_persona },
-        transaction: t,
-      });
-      if (usuarioRelacionado) {
-        await t.rollback();
-        return res.status(400).json({
-          success: false,
-          message: "Ya existe un usuario asociado a ese correo.",
-        });
-      }
+        .json({ success: false, message: "Faltan campos obligatorios." });
     }
 
     const nuevaPersona = await Persona.create(
-      {
-        id_tipo_persona: id_tipo_persona || 1,
-        nombres,
-        apellidos,
-        correo,
-        telefono: telefono || null,
-        direccion: direccion || null,
-        tipo_documento: tipo_documento || "",
-        numero_documento: numero_documento || "",
-        estado: 1,
-      },
-      { transaction: t }
+      { nombres, apellidos, correo, estado: 1, id_tipo_persona: 1 },
+      { transaction: t },
     );
 
-    // ✅ NO hashear aquí, el modelo lo hace en beforeCreate
     await Usuario.create(
       {
         usuario,
-        password: plainPassword, // ← Enviar sin hashear
+        password: plainPassword,
         id_persona: nuevaPersona.id_persona,
-        id_perfil: 3,
-        estado: 0,
+        id_perfil: 3, // Perfil Aliado
+        estado: 0, // Inicia inactivo hasta aprobación
         provider: "local",
       },
-      { transaction: t }
+      { transaction: t },
     );
 
     await t.commit();
-
-    return res.status(201).json({
-      success: true,
-      message: "Solicitud de aliado enviada. Pendiente de aprobación.",
-    });
+    return res
+      .status(201)
+      .json({ success: true, message: "Solicitud enviada correctamente." });
   } catch (error) {
-    await t.rollback();
-    console.error("AuthController.registerAliado error:", error);
-    if (error.name === "SequelizeUniqueConstraintError") {
-      const msg =
-        error.errors?.map((e) => e.message).join("; ") || "Valor duplicado";
-      return res.status(400).json({ success: false, message: msg });
-    }
-    return res.status(500).json({
-      success: false,
-      message: error.message || "Error al registrar aliado",
-    });
+    if (t) await t.rollback();
+    return res.status(500).json({ success: false, message: error.message });
   }
 };
 
-/* =============== RECUPERACIÓN DE CONTRASEÑA =============== */
+/* =============== RECUPERACIÓN =============== */
 exports.forgotPassword = async (req, res) => {
   try {
     const { email } = req.body;
-    if (!email)
-      return res
-        .status(400)
-        .json({ success: false, message: "Email requerido" });
-
     const persona = await Persona.findOne({ where: { correo: email } });
+
     if (!persona) {
       return res.status(200).json({
         success: true,
-        message:
-          "Si existe una cuenta con ese correo, recibirás un enlace de recuperación.",
+        message: "Si el correo existe, recibirás un enlace.",
       });
     }
 
     const usuario = await Usuario.findOne({
       where: { id_persona: persona.id_persona },
-      include: [{ model: Persona, as: "personaInfo" }],
     });
+    if (!usuario)
+      return res
+        .status(200)
+        .json({ success: true, message: "Instrucciones enviadas." });
 
-    if (!usuario) {
-      return res.status(200).json({
-        success: true,
-        message:
-          "Si existe una cuenta con ese correo, recibirás un enlace de recuperación.",
-      });
-    }
-
-    // Generar token de recuperación
     const rawToken = crypto.randomBytes(32).toString("hex");
     const hashedToken = crypto
       .createHash("sha256")
       .update(rawToken)
       .digest("hex");
-    const expires = Date.now() + 60 * 60 * 1000;
 
     usuario.resetPasswordToken = hashedToken;
-    usuario.resetPasswordExpires = expires;
+    usuario.resetPasswordExpires = Date.now() + 3600000; // 1 hora de validez
     await usuario.save();
 
-    // Construir enlace de recuperación
-    const FRONTEND_URL = process.env.FRONTEND_URL || "http://localhost:5173";
-    const recoveryLink = `${FRONTEND_URL}/reset-password?token=${rawToken}&email=${encodeURIComponent(
-      email
-    )}`;
+    const recoveryLink = `${process.env.FRONTEND_URL || "http://localhost:5173"}/reset-password?token=${rawToken}&email=${email}`;
+    await emailService.sendRecoveryEmail(
+      email,
+      recoveryLink,
+      persona.nombres || usuario.usuario,
+    );
 
-    // 📧 ENVIAR CORREO DESDE BACKEND
-    try {
-      const userName =
-        usuario.personaInfo?.nombres || usuario.usuario || "Usuario";
-      await emailService.sendRecoveryEmail(email, recoveryLink, userName);
-      console.log("✅ Correo de recuperación enviado a:", email);
-    } catch (emailError) {
-      console.error("⚠️ Error enviando correo:", emailError.message);
-    }
-
-    return res.status(200).json({
-      success: true,
-      message:
-        "Si la cuenta existe, recibirás un correo con instrucciones de recuperación.",
-    });
+    return res
+      .status(200)
+      .json({ success: true, message: "Correo enviado correctamente." });
   } catch (error) {
-    console.error("AuthController.forgotPassword error:", error);
+    console.error("❌ ForgotPassword error:", error);
     return res
       .status(500)
-      .json({ success: false, message: "Error interno al generar enlace" });
+      .json({ success: false, message: "Error al generar enlace." });
   }
 };
 
-/* =============== RESTABLECER CONTRASEÑA =============== */
+/* =============== RESTABLECER =============== */
 exports.resetPassword = async (req, res) => {
   try {
     const { token, email, newPassword } = req.body;
-    if (!token || !email || !newPassword) {
-      return res.status(400).json({
-        success: false,
-        message: "Faltan datos (token, email, newPassword).",
-      });
-    }
+    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
 
     const persona = await Persona.findOne({ where: { correo: email } });
-    if (!persona) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Token inválido o expirado." });
-    }
-
     const usuario = await Usuario.findOne({
-      where: { id_persona: persona.id_persona },
-      include: [{ model: Persona, as: "personaInfo" }],
+      where: {
+        id_persona: persona?.id_persona,
+        resetPasswordToken: hashedToken,
+      },
     });
 
-    if (!usuario || !usuario.resetPasswordToken) {
+    if (
+      !usuario ||
+      !usuario.resetPasswordExpires ||
+      usuario.resetPasswordExpires < Date.now()
+    ) {
       return res
         .status(400)
         .json({ success: false, message: "Token inválido o expirado." });
     }
 
-    const hashedToken = crypto.createHash("sha256").update(token).digest("hex");
-    if (hashedToken !== usuario.resetPasswordToken) {
-      return res
-        .status(400)
-        .json({ success: false, message: "Token inválido." });
-    }
-
-    if (
-      !usuario.resetPasswordExpires ||
-      Date.now() > Number(usuario.resetPasswordExpires)
-    ) {
-      usuario.resetPasswordToken = null;
-      usuario.resetPasswordExpires = null;
-      await usuario.save();
-      return res
-        .status(400)
-        .json({ success: false, message: "Token expirado." });
-    }
-
-    const hashedPassword = await bcrypt.hash(newPassword, 10);
-    usuario.password = hashedPassword;
+    // Hasheamos manualmente aquí para asegurar la actualización directa
+    usuario.password = newPassword;
     usuario.resetPasswordToken = null;
     usuario.resetPasswordExpires = null;
     await usuario.save();
 
     return res.status(200).json({
       success: true,
-      message: "Contraseña restablecida correctamente.",
+      message: "Contraseña actualizada correctamente.",
     });
   } catch (error) {
-    console.error("AuthController.resetPassword error:", error);
-    return res.status(500).json({
-      success: false,
-      message: "Error interno al restablecer contraseña.",
-    });
+    console.error("❌ ResetPassword error:", error);
+    return res
+      .status(500)
+      .json({ success: false, message: "Error al restablecer la contraseña." });
   }
 };

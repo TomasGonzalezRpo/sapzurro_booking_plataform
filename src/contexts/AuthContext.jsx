@@ -16,25 +16,37 @@ const API_URL = "http://localhost:5000/api/auth";
 
 axios.defaults.withCredentials = true;
 
-axios.interceptors.request.use((config) => {
-  const token = localStorage.getItem(TOKEN_KEY);
-  console.log(
-    "🔑 Token enviado en request:",
-    token ? "✅ Presente" : "❌ Ausente"
-  );
+axios.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem(TOKEN_KEY);
 
-  if (token) {
-    const formattedToken = token.startsWith("Bearer ")
-      ? token
-      : `Bearer ${token}`;
-    config.headers.Authorization = formattedToken;
-    console.log(
-      "📨 Authorization header:",
-      config.headers.Authorization.substring(0, 20) + "..."
-    );
-  }
-  return config;
-});
+    if (token) {
+      if (!token.startsWith("mock_token_")) {
+        const formattedToken = token.startsWith("Bearer ")
+          ? token
+          : `Bearer ${token}`;
+
+        config.headers.Authorization = formattedToken;
+
+        console.log(
+          "📨 Authorization header enviado (JWT Real):",
+          config.headers.Authorization.substring(0, 25) + "...",
+        );
+      } else {
+        console.log(
+          "ℹ️ Usando usuario de prueba: No se envía Authorization Header",
+        );
+      }
+    } else {
+      console.log("🔑 Token ausente");
+    }
+
+    return config;
+  },
+  (error) => {
+    return Promise.reject(error);
+  },
+);
 
 const MOCK_USERS = {
   "test@admin.com": {
@@ -109,7 +121,7 @@ export const AuthProvider = ({ children }) => {
 
         if (mock.password && mock.password !== password) {
           throw new Error(
-            "Correo o contraseña incorrectos (usuario de prueba)."
+            "Correo o contraseña incorrectos (usuario de prueba).",
           );
         }
 
@@ -212,7 +224,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error(
         "❌ registerUser error:",
-        err?.response?.data || err.message
+        err?.response?.data || err.message,
       );
       const msg =
         err.response?.data?.message ||
@@ -264,7 +276,7 @@ export const AuthProvider = ({ children }) => {
     } catch (err) {
       console.error(
         "❌ registerAliado error:",
-        err?.response?.data || err.message
+        err?.response?.data || err.message,
       );
       const msg =
         err.response?.data?.message ||
@@ -284,14 +296,14 @@ export const AuthProvider = ({ children }) => {
       const response = await axios.post(
         `${API_URL}/forgot-password`,
         { email },
-        { headers: { "Content-Type": "application/json" } }
+        { headers: { "Content-Type": "application/json" } },
       );
 
       console.log("✅ Respuesta del backend:", response.data);
 
       if (!response.data.success) {
         throw new Error(
-          response.data.message || "Error al recuperar contraseña"
+          response.data.message || "Error al recuperar contraseña",
         );
       }
 
@@ -338,7 +350,7 @@ export const AuthProvider = ({ children }) => {
       openAuthModal,
       closeAuthModal,
     }),
-    [user, isAuthModalOpen, loading]
+    [user, isAuthModalOpen, loading],
   );
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
